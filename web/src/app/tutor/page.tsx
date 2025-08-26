@@ -6,12 +6,14 @@ export default function TutorPage() {
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);
   const [docId, setDocId] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    setUploadStatus("Uploading...");
     const fd = new FormData();
     fd.append("file", file);
     fd.append("title", file.name);
@@ -31,15 +33,35 @@ export default function TutorPage() {
         return;
       }
 
-      await fetch("/api/rag/ingest", {
+      // Enqueue background job
+      const enq = await fetch("/api/rag/ingest/enqueue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ docId: up.docId, rawText }),
-      });
-      
-      alert("Document uploaded and ingested successfully!");
+      }).then((r) => r.json());
+
+      const jobId = enq.jobId as string;
+      setUploadStatus("Ingestion started...");
+
+      // Poll for job status
+      let done = false;
+      while (!done) {
+        const st = await fetch(`/api/rag/ingest/status?jobId=${jobId}`).then((r) => r.json());
+        const pct = typeof st.progress === "number" ? st.progress : 0;
+        setUploadStatus(`Ingestion: ${pct}% (state=${st.state})`);
+        
+        if (st.state === "completed" || st.state === "failed" || st.status === "not_found") {
+          done = true;
+        }
+        
+        if (!done) {
+          await new Promise((res) => setTimeout(res, 1000));
+        }
+      }
+
+      setUploadStatus("Ingestion completed successfully!");
     } catch (error) {
-      alert("Upload failed");
+      setUploadStatus("Upload failed");
     }
   }
 
@@ -100,6 +122,9 @@ export default function TutorPage() {
             />
             {docId && (
               <p className="text-xs text-gray-500">Document ID: {docId}</p>
+            )}
+            {uploadStatus && (
+              <p className="text-sm text-gray-600">{uploadStatus}</p>
             )}
           </div>
         </div>
