@@ -29,25 +29,26 @@ Exit criteria: Can sign in with seeded users; role-gated routes enforced. **COMP
 
 ---
 
-## Phase 2 — RAG Foundations (IN PROGRESS) 🔄
-- Install `openai`, `ai`, `zod`
-- Enable pgvector in Postgres and Prisma types
-- Create `RagDocument` and `RagChunk` models with `embedding vector(1536)` + index
-- Implement helpers: chunk, embed, vector search
-- API:
+## Phase 2 — RAG Foundations (DONE) ✅
+- ✅ Install `openai`, `ai`, `zod`
+- ✅ Enable pgvector in Postgres and Prisma types
+- ✅ Create `RagDocument` and `RagChunk` models with `embedding vector(1536)` + index
+- ✅ Implement helpers: chunk, embed, vector search
+- ✅ API:
   - `/api/content/upload` (store doc meta, length)
   - `/api/rag/ingest` (chunk → embed → insert)
   - `/api/rag/query` (top‑k retrieval)
-- Minimal UI page `/rag` for upload + ask (non‑streaming)
+- ✅ Minimal UI page `/rag` for upload + ask (non‑streaming)
 
-Exit criteria: Upload .txt, ingest, ask a question, receive grounded answer with snippets.
+Exit criteria: Upload .txt, ingest, ask a question, receive grounded answer with snippets. **COMPLETED**
 
 ---
 
-## Phase 3 — Streaming Tutor Endpoint + UI
+## Phase 3 — Streaming Tutor Endpoint + UI (IN PROGRESS) 🔄
 - Add `/api/chat/lesson` streaming variant (Vercel AI SDK)
 - Client page `/tutor` with streaming answer area
 - Basic citations format like `[1]`, `[2]`
+- Integrate RAG retrieval with streaming LLM responses
 
 Exit criteria: See streamed answers citing retrieved context.
 

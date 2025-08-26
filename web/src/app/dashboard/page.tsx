@@ -2,6 +2,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -40,6 +41,12 @@ export default function Dashboard() {
               <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                 {session.role}
               </div>
+              <Link
+                href="/tutor"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                AI Tutor
+              </Link>
               <button
                 onClick={() => signOut({ callbackUrl: "/signin" })}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -64,6 +71,14 @@ export default function Dashboard() {
               <div className="space-y-2 text-sm text-gray-500">
                 <p>Email: {session.user?.email}</p>
                 {session.user?.name && <p>Name: {session.user.name}</p>}
+              </div>
+              <div className="mt-6">
+                <Link
+                  href="/tutor"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
+                >
+                  Start Learning with AI Tutor
+                </Link>
               </div>
             </div>
           </div>

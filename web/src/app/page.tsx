@@ -30,6 +30,12 @@ export default function Home() {
                 >
                   Go to Dashboard
                 </Link>
+                <Link
+                  href="/tutor"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors"
+                >
+                  AI Tutor
+                </Link>
               </div>
             </div>
           ) : (
@@ -43,6 +49,12 @@ export default function Home() {
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors"
                 >
                   Sign In
+                </Link>
+                <Link
+                  href="/tutor"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors"
+                >
+                  Try AI Tutor
                 </Link>
               </div>
             </div>
