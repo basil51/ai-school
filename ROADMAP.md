@@ -1,6 +1,6 @@
 # AI School — Roadmap
 
-This roadmap translates README.md and RAG.md into actionable phases. Each phase ends with a working milestone and clear exit criteria.
+This roadmap translates README.md, RAG.md, RAG2.md, and EMAILS.md into actionable phases. Each phase ends with a working milestone and clear exit criteria.
 
 ---
 
@@ -44,21 +44,23 @@ Exit criteria: Upload .txt, ingest, ask a question, receive grounded answer with
 
 ---
 
-## Phase 3 — Streaming Tutor Endpoint + UI (IN PROGRESS) 🔄
-- Add `/api/chat/lesson` streaming variant (Vercel AI SDK)
-- Client page `/tutor` with streaming answer area
-- Basic citations format like `[1]`, `[2]`
-- Integrate RAG retrieval with streaming LLM responses
+## Phase 3 — Streaming Tutor Endpoint + UI (DONE) ✅
+- ✅ Add `/api/chat/lesson` streaming variant (Vercel AI SDK)
+- ✅ Client page `/tutor` with streaming answer area
+- ✅ Basic citations format like `[1]`, `[2]`
+- ✅ Integrate RAG retrieval with streaming LLM responses
+- ✅ Navigation links from home and dashboard
 
-Exit criteria: See streamed answers citing retrieved context.
+Exit criteria: See streamed answers citing retrieved context. **COMPLETED**
 
 ---
 
-## Phase 4 — Ingestion at Scale (Background Jobs)
+## Phase 4 — Ingestion at Scale (Background Jobs) (IN PROGRESS) 🔄
 - Add Redis and BullMQ
 - Worker app to process ingestion (batch embeddings, progress updates)
 - API to enqueue jobs + status endpoint
 - Frontend polling for job status
+- Handle large documents efficiently
 
 Exit criteria: Large docs ingest asynchronously with visible progress until completion.
 
@@ -73,9 +75,11 @@ Exit criteria: Role‑based navigation; teachers upload; admins manage users and
 
 ---
 
-## Phase 6 — Quality & Search
+## Phase 6 — Quality & Search (RAGAS Evaluations)
+- RAGAS metrics: faithfulness, answer_relevancy, context_precision, context_recall
+- Nightly CI with GitHub Actions
+- Golden dataset with Q/A pairs
 - Hybrid search (BM25 + vector)
-- RAGAS based nightly evaluation and score tracking
 - Similarity thresholding + re‑ranking
 
 Exit criteria: Evaluation dashboard shows nightly scores; hybrid search improves answer quality.
@@ -92,10 +96,21 @@ Exit criteria: Deployed app with monitoring and documented runbooks.
 
 ---
 
-## Phase 8 — Stretch Goals
+## Phase 8 — Guardian Emails & Communication
+- Guardian ↔ Student linking with consent management
+- Weekly progress summaries via email (Resend/SMTP)
+- Automated cron jobs (Vercel Cron or GitHub Actions)
+- Email templates and unsubscribe management
+
+Exit criteria: Guardians receive weekly progress emails for consented students.
+
+---
+
+## Phase 9 — Stretch Goals
 - Multi‑tenant orgs (schools)
-- Guardian portal, attendance/grades integrations
+- Attendance/grades integrations
 - Classroom chat, lesson plans, assignment generation
+- Advanced analytics and reporting
 
 ---
 
