@@ -3,7 +3,7 @@ import { Queue, Job } from "bullmq";
 import IORedis from "ioredis";
 
 const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
-const queue = new Queue("rag:ingest", { connection });
+const queue = new Queue("rag_ingest", { connection });
 
 export async function GET(req: NextRequest) {
   try {

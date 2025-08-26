@@ -1,9 +1,9 @@
-import { Queue, QueueEvents, Worker, JobsOptions } from "bullmq";
+import { Queue, QueueEvents, JobsOptions } from "bullmq";
 import IORedis from "ioredis";
 
 const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
 
-export const RAG_INGEST_QUEUE = "rag:ingest";
+export const RAG_INGEST_QUEUE = "rag_ingest";
 
 export type IngestJobPayload = {
   docId: string;

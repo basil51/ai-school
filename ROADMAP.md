@@ -55,27 +55,29 @@ Exit criteria: See streamed answers citing retrieved context. **COMPLETED**
 
 ---
 
-## Phase 4 — Ingestion at Scale (Background Jobs) (IN PROGRESS) 🔄
-- Add Redis and BullMQ
-- Worker app to process ingestion (batch embeddings, progress updates)
-- API to enqueue jobs + status endpoint
-- Frontend polling for job status
-- Handle large documents efficiently
+## Phase 4 — Ingestion at Scale (Background Jobs) (DONE) ✅
+- ✅ Add Redis and BullMQ
+- ✅ Worker app to process ingestion (batch embeddings, progress updates)
+- ✅ API to enqueue jobs + status endpoint
+- ✅ Frontend polling for job status
+- ✅ Handle large documents efficiently
 
-Exit criteria: Large docs ingest asynchronously with visible progress until completion.
-
----
-
-## Phase 5 — UX + Admin
-- shadcn/ui integration for forms, modals, tables
-- Teacher‑only uploads; admin panel for users/docs
-- Role‑aware navigation and dashboards
-
-Exit criteria: Role‑based navigation; teachers upload; admins manage users and docs.
+Exit criteria: Large docs ingest asynchronously with visible progress until completion. **COMPLETED**
 
 ---
 
-## Phase 6 — Quality & Search (RAGAS Evaluations)
+## Phase 5 — UX + Admin (DONE) ✅
+- ✅ Install and configure shadcn/ui components
+- ✅ Teacher‑only uploads; admin panel for users/docs
+- ✅ Role‑aware navigation and dashboards
+- ✅ Modern UI components and forms
+- ✅ Comprehensive admin panel with user and document management
+
+Exit criteria: Role‑based navigation; teachers upload; admins manage users and docs. **COMPLETED**
+
+---
+
+## Phase 6 — Quality & Search (RAGAS Evaluations) (IN PROGRESS) 🔄
 - RAGAS metrics: faithfulness, answer_relevancy, context_precision, context_recall
 - Nightly CI with GitHub Actions
 - Golden dataset with Q/A pairs

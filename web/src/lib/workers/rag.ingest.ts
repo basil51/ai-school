@@ -8,7 +8,7 @@ const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379"
 const prisma = new PrismaClient();
 
 export const ingestWorker = new Worker(
-  "rag:ingest",
+  "rag_ingest",
   async (job: Job<{ docId: string; rawText: string; batchSize?: number }>) => {
     const { docId, rawText, batchSize = 64 } = job.data;
     const chunks = chunkText(rawText);
@@ -24,11 +24,19 @@ export const ingestWorker = new Worker(
         const c = batch[j];
         const v = vectors[j];
         const vecLiteral = `[${v.join(",")}]`;
-        const created = await prisma.ragChunk.create({ data: { docId, content: c.text } });
+        // Create chunk and update with embedding using raw SQL
+        const result = await prisma.$queryRaw`
+          INSERT INTO "RagChunk" ("docId", "content", "createdAt") 
+          VALUES (${docId}, ${c.text}, NOW()) 
+          RETURNING id
+        `;
+        
+        const chunkId = (result as { id: string }[])[0].id;
+        
         await prisma.$executeRawUnsafe(
           'UPDATE "RagChunk" SET embedding = $1::vector WHERE id = $2',
           vecLiteral,
-          created.id,
+          chunkId,
         );
         processed++;
       }

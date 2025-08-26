@@ -42,7 +42,7 @@ ${contextBlock}`;
       messages: [{ role: "user", content: user }],
     });
 
-    return result.toAIStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("Streaming chat error:", error);
     return new Response(

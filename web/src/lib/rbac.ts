@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth";
 
 export async function requireRole(roles: string[]) {
   const session = await getServerSession();
-  if (!session || !roles.includes((session as any).role)) {
+  const narrowed = session as unknown as { role?: string } | null;
+  if (!narrowed?.role || !roles.includes(narrowed.role)) {
     throw new Response("Forbidden", { status: 403 });
   }
 }

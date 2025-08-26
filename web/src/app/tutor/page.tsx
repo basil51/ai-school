@@ -1,5 +1,22 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  BookOpen, 
+  Upload, 
+  MessageCircle, 
+  Brain, 
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  Loader2
+} from "lucide-react";
 
 export default function TutorPage() {
   const [question, setQuestion] = useState("");
@@ -7,12 +24,14 @@ export default function TutorPage() {
   const [busy, setBusy] = useState(false);
   const [docId, setDocId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
+  //const [uploadLoading, setUploadLoading] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    //setUploadLoading(true);
     setUploadStatus("Uploading...");
     const fd = new FormData();
     fd.append("file", file);
@@ -62,6 +81,9 @@ export default function TutorPage() {
       setUploadStatus("Ingestion completed successfully!");
     } catch (error) {
       setUploadStatus("Upload failed");
+      console.error("Upload failed:", error);
+    } finally {
+      //setUploadLoading(false);
     }
   }
 
@@ -107,62 +129,130 @@ export default function TutorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">AI Tutor</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">AI Tutor</h1>
+            <p className="text-gray-600 mt-2">Your personalized AI learning assistant</p>
+          </div>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Brain className="h-4 w-4" />
+            AI Powered
+          </Badge>
+        </div>
         
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Upload Learning Material</h2>
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Upload textbook or notes (.txt for demo)
-            </label>
-            <input
-              type="file"
-              onChange={handleUpload}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            {docId && (
-              <p className="text-xs text-gray-500">Document ID: {docId}</p>
-            )}
-            {uploadStatus && (
-              <p className="text-sm text-gray-600">{uploadStatus}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Ask Your AI Tutor</h2>
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Ask a question about your uploaded material
-            </label>
-            <textarea
-              ref={textRef}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              rows={4}
-              className="w-full rounded border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="e.g., Explain the distributive property with an example"
-            />
-            <button
-              onClick={ask}
-              disabled={busy || !question.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {busy ? "Thinking..." : "Ask Tutor"}
-            </button>
-          </div>
-        </div>
-
-        {answer && (
-          <div className="bg-white rounded-lg shadow p-6 mt-6">
-            <h3 className="text-lg font-semibold mb-4">Tutor Response</h3>
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                {answer}
+        <div className="grid gap-6">
+          {/* Upload Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload Learning Material
+              </CardTitle>
+              <CardDescription>
+                Upload textbooks, notes, or educational content for the AI tutor to reference
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="file">Select File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".txt"
+                  onChange={handleUpload}
+                  className="mt-1"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Currently supports .txt files. PDF support coming soon.
+                </p>
               </div>
-            </div>
-          </div>
-        )}
+              
+              {docId && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <FileText className="h-4 w-4" />
+                  Document ID: {docId}
+                </div>
+              )}
+              
+              {uploadStatus && (
+                <Alert>
+                  {uploadStatus.includes("completed") ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : uploadStatus.includes("failed") ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+                  <AlertDescription>{uploadStatus}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Chat Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Ask Your AI Tutor
+              </CardTitle>
+              <CardDescription>
+                Ask questions about your uploaded material and get instant, contextual answers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="question">Your Question</Label>
+                <Textarea
+                  id="question"
+                  ref={textRef}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="e.g., Explain the distributive property with an example"
+                  className="mt-1 min-h-[120px]"
+                />
+              </div>
+              
+              <Button
+                onClick={ask}
+                disabled={busy || !question.trim()}
+                className="w-full"
+                size="lg"
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Thinking...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="h-4 w-4 mr-2" />
+                    Ask Tutor
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Response Section */}
+          {answer && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Tutor Response
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose max-w-none">
+                  <div className="whitespace-pre-wrap text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-md border">
+                    {answer}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

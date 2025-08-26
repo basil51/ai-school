@@ -1,16 +1,38 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { FileText, Upload, Search, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function RagPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [uploadLoading, setUploadLoading] = useState(false);
+
+  // Check if user has permission to access this page
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || ((session as any).role !== "teacher" && (session as any).role !== "admin")) {
+      router.push("/dashboard");
+    }
+  }, [session, status, router]);
 
   async function handleUpload() {
     if (!file) return;
     
+    setUploadLoading(true);
     setUploadStatus("Uploading...");
     const fd = new FormData();
     fd.append("file", file);
@@ -33,6 +55,7 @@ export default function RagPage() {
         
         if (ingestRes.ok) {
           setUploadStatus("Document uploaded and ingested successfully!");
+          setFile(null);
         } else {
           setUploadStatus("Uploaded but ingestion failed");
         }
@@ -41,6 +64,9 @@ export default function RagPage() {
       }
     } catch (error) {
       setUploadStatus("Upload failed");
+      console.error("Upload failed:", error);
+    } finally {
+      setUploadLoading(false);
     }
   }
 
@@ -66,63 +92,157 @@ export default function RagPage() {
       }
     } catch (error) {
       setAnswer("Failed to process query");
+      console.error("Query failed:", error);
     } finally {
       setLoading(false);
     }
   }
 
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session || ((session as any).role !== "teacher" && (session as any).role !== "admin")) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg">Access denied. Redirecting...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">RAG Demo</h1>
-        
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Upload Document</h2>
-          <div className="space-y-4">
-            <input
-              type="file"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            <button
-              onClick={handleUpload}
-              disabled={!file}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-              Upload & Ingest
-            </button>
-            {uploadStatus && (
-              <p className="text-sm text-gray-600">{uploadStatus}</p>
-            )}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Content Management</h1>
+            <p className="text-gray-600 mt-2">Upload and manage educational materials for the AI tutor</p>
           </div>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <FileText className="h-4 w-4" />
+            {(session as any).role}
+          </Badge>
         </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Ask a Question</h2>
-          <div className="space-y-4">
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask a question about your uploaded document..."
-              className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none"
-            />
-            <button
-              onClick={handleAsk}
-              disabled={loading || !question.trim()}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-              {loading ? "Searching..." : "Ask"}
-            </button>
-            
-            {answer && (
-              <div className="mt-4">
-                <h3 className="font-semibold mb-2">Results:</h3>
-                <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96">
-                  {answer}
-                </pre>
+        
+        <div className="grid gap-6">
+          {/* Upload Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload Document
+              </CardTitle>
+              <CardDescription>
+                Upload educational materials (.txt files) to be processed by the AI tutor
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="file">Select File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".txt"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  className="mt-1"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Currently supports .txt files only
+                </p>
               </div>
-            )}
-          </div>
+              
+              <Button
+                onClick={handleUpload}
+                disabled={!file || uploadLoading}
+                className="w-full"
+              >
+                {uploadLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload & Process
+                  </>
+                )}
+              </Button>
+              
+              {uploadStatus && (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{uploadStatus}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Query Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Test Document Search
+              </CardTitle>
+              <CardDescription>
+                Test the RAG system by asking questions about uploaded documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="question">Question</Label>
+                <Textarea
+                  id="question"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Ask a question about your uploaded documents..."
+                  className="mt-1 min-h-[100px]"
+                />
+              </div>
+              
+              <Button
+                onClick={handleAsk}
+                disabled={loading || !question.trim()}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Documents
+                  </>
+                )}
+              </Button>
+              
+              {answer && (
+                <div className="mt-4">
+                  <Label>Search Results</Label>
+                  <div className="mt-2 bg-gray-50 p-4 rounded-md border">
+                    <pre className="text-sm overflow-auto max-h-96 whitespace-pre-wrap">
+                      {answer}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,0 +1,64 @@
+
+> web@0.1.0 build /home/basel/Projects/AI-school/web
+> next build --turbopack
+
+   ▲ Next.js 15.5.0 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 17ms
+ ✓ Compiled successfully in 12.8s
+   Linting and checking validity of types ...
+
+./src/app/rag/page.tsx
+65:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+92:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/tutor/page.tsx
+27:10  Warning: 'uploadLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+82:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/19) ...
+   Generating static pages (4/19) 
+   Generating static pages (9/19) 
+   Generating static pages (14/19) 
+ ✓ Generating static pages (19/19)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                         Size  First Load JS
+┌ ○ /                              963 B         128 kB
+├ ○ /_not-found                      0 B         127 kB
+├ ○ /admin                       34.9 kB         173 kB
+├ ƒ /api/admin/documents             0 B            0 B
+├ ƒ /api/admin/documents/[id]        0 B            0 B
+├ ƒ /api/admin/users                 0 B            0 B
+├ ƒ /api/admin/users/[id]            0 B            0 B
+├ ƒ /api/auth/[...nextauth]          0 B            0 B
+├ ƒ /api/auth/register               0 B            0 B
+├ ƒ /api/chat/lesson                 0 B            0 B
+├ ƒ /api/content/upload              0 B            0 B
+├ ƒ /api/rag/ingest                  0 B            0 B
+├ ƒ /api/rag/ingest/enqueue          0 B            0 B
+├ ƒ /api/rag/ingest/status           0 B            0 B
+├ ƒ /api/rag/query                   0 B            0 B
+├ ○ /dashboard                   4.05 kB         142 kB
+├ ○ /rag                          3.2 kB         141 kB
+├ ○ /signin                      1.15 kB         128 kB
+└ ○ /tutor                        3.8 kB         142 kB
++ First Load JS shared by all     139 kB
+  ├ chunks/18554f5761aa8bbb.js   17.1 kB
+  ├ chunks/90ae3b3c88d5b326.js   59.2 kB
+  ├ chunks/aa259c8931e9ae12.js   11.9 kB
+  ├ chunks/b6e7e5e8f4a5c4bc.js     13 kB
+  ├ chunks/a67275d9e7561a67.css  11.6 kB
+  └ other shared chunks (total)  26.1 kB
+
+
+ƒ Middleware                     64.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -16,12 +16,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the document
-    const document = await prisma.ragDocument.findUnique({
-      where: { id: docId },
-    });
+    // Get the document using raw SQL
+    const document = await prisma.$queryRaw`SELECT id FROM "RagDocument" WHERE id = ${docId}`;
 
-    if (!document) {
+    if (!Array.isArray(document) || document.length === 0) {
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
@@ -40,18 +38,20 @@ export async function POST(request: NextRequest) {
       const embedding = embeddings[i];
       const vectorLiteral = `[${embedding.join(",")}]`;
 
-      const createdChunk = await prisma.ragChunk.create({
-        data: {
-          docId,
-          content: chunk.text,
-        },
-      });
-
+      // Create chunk and update with embedding using raw SQL
+      const result = await prisma.$queryRaw`
+        INSERT INTO "RagChunk" ("docId", "content", "createdAt") 
+        VALUES (${docId}, ${chunk.text}, NOW()) 
+        RETURNING id
+      `;
+      
+      const chunkId = (result as { id: string }[])[0].id;
+      
       // Update with embedding
       await prisma.$executeRawUnsafe(
         'UPDATE "RagChunk" SET embedding = $1::vector WHERE id = $2',
         vectorLiteral,
-        createdChunk.id
+        chunkId
       );
     }
 

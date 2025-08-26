@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: "/home/basel/Projects/AI-school/web",
+  },
 };
 
 export default nextConfig;

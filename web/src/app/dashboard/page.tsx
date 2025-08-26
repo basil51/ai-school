@@ -3,6 +3,19 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { 
+  BookOpen, 
+  Users, 
+  Settings, 
+  LogOut, 
+  GraduationCap, 
+  FileText,
+  BarChart3
+} from "lucide-react";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -26,62 +39,183 @@ export default function Dashboard() {
     return null;
   }
 
+  const userRole = (session as any).role;
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "admin": return "destructive";
+      case "teacher": return "default";
+      case "guardian": return "secondary";
+      case "student": return "outline";
+      default: return "outline";
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "admin": return <Settings className="h-4 w-4" />;
+      case "teacher": return <GraduationCap className="h-4 w-4" />;
+      case "guardian": return <Users className="h-4 w-4" />;
+      case "student": return <BookOpen className="h-4 w-4" />;
+      default: return <BookOpen className="h-4 w-4" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">AI School Dashboard</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-700">
-                Welcome, {session.user?.name || session.user?.email}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex justify-end">
+          <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    {session.user?.name?.charAt(0) || session.user?.email?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-sm">
+                  <div className="font-medium text-gray-900">
+                    {session.user?.name || session.user?.email}
+                  </div>
+                  <Badge variant={getRoleColor(userRole)} className="text-xs">
+                    {getRoleIcon(userRole)}
+                    <span className="ml-1">{userRole}</span>
+                  </Badge>
+                </div>
               </div>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                {session.role}
-              </div>
-              <Link
-                href="/tutor"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                AI Tutor
-              </Link>
-              <button
+              <Button
                 onClick={() => signOut({ callbackUrl: "/signin" })}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                variant="outline"
+                size="sm"
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
-              </button>
-            </div>
+              </Button>
           </div>
         </div>
-      </nav>
+      </div>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Welcome to AI School!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                You are signed in as a <span className="font-semibold">{session.role}</span>
-              </p>
-              <div className="space-y-2 text-sm text-gray-500">
-                <p>Email: {session.user?.email}</p>
-                {session.user?.name && <p>Name: {session.user.name}</p>}
-              </div>
-              <div className="mt-6">
-                <Link
-                  href="/tutor"
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
-                >
-                  Start Learning with AI Tutor
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* AI Tutor Card */}
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  AI Tutor
+                </CardTitle>
+                <CardDescription>
+                  Start learning with our AI-powered tutor
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/tutor">
+                  <Button className="w-full">
+                    Start Learning
+                  </Button>
                 </Link>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+
+            {/* RAG Upload Card - Teacher/Admin only */}
+            {(userRole === "teacher" || userRole === "admin") && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="h-5 w-5 mr-2" />
+                    Upload Content
+                  </CardTitle>
+                  <CardDescription>
+                    Upload educational materials for the AI tutor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/rag">
+                    <Button className="w-full" variant="outline">
+                      Upload Documents
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Admin Panel Card - Admin only */}
+            {userRole === "admin" && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Admin Panel
+                  </CardTitle>
+                  <CardDescription>
+                    Manage users and system settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/admin">
+                    <Button className="w-full" variant="outline">
+                      Manage System
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Analytics Card - Admin/Teacher only */}
+            {(userRole === "admin" || userRole === "teacher") && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="h-5 w-5 mr-2" />
+                    Analytics
+                  </CardTitle>
+                  <CardDescription>
+                    View learning analytics and insights
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full" variant="outline" disabled>
+                    Coming Soon
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
+
+          {/* User Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Information</CardTitle>
+              <CardDescription>Your profile and account details</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-sm text-gray-900">{session.user?.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <p className="text-sm text-gray-900">{session.user?.name || "Not provided"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <div className="flex items-center mt-1">
+                    <Badge variant={getRoleColor(userRole)}>
+                      {getRoleIcon(userRole)}
+                      <span className="ml-1">{userRole}</span>
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Member Since</label>
+                  <p className="text-sm text-gray-900">
+                    Welcome!
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
