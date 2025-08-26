@@ -64,3 +64,22 @@ model VerificationToken {
   expires    DateTime
   @@unique([identifier, token])
 }
+
+// --- RAG Models ---
+model RagDocument {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  length    Int
+  createdAt DateTime @default(now())
+  chunks    RagChunk[]
+}
+
+model RagChunk {
+  id        String   @id @default(cuid())
+  docId     String
+  content   String   @db.Text
+  embedding Unsupported("vector(1536)")
+  document  RagDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

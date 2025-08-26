@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     restart: unless-stopped
     ports:
       - "5433:5432"
@@ -11,6 +11,7 @@ services:
       POSTGRES_DB: ai_school
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
   pgdata:
 

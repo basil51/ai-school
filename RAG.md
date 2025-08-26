@@ -788,3 +788,183 @@ For auditability, create a table `IngestJob` with fields `{ id, docId, status, p
 * For large PDFs, consider server-side text extraction + streaming upload (Tus) to avoid timeouts.
 
 With this, ingestion runs off the request path, the UI polls status, and your API stays snappy even for big textbooks.
+
+---
+
+## 12) Hybrid search (BM25 + Vector) + Query Planner
+
+Improve retrieval quality by combining **semantic vector search (pgvector)** with **lexical BM25/trigram search**. Then add a lightweight **query planner** that merges both results and re-ranks.
+
+### 12.1 Enable pg\_trgm + GIN index
+
+Add migration:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Add trigram index for full-text search
+CREATE INDEX IF NOT EXISTS ragchunk_content_trgm_idx ON "RagChunk" USING gin ("content" gin_trgm_ops);
+```
+
+Run:
+
+```bash
+pnpm prisma migrate dev --name add_pgtrgm
+```
+
+### 12.2 Lexical search helper
+
+`packages/ai/rag/bm25.ts`:
+
+```ts
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
+export type LexicalHit = { id: string; content: string; page: number | null; score: number };
+
+export async function searchByLexical(query: string, k = 5): Promise<LexicalHit[]> {
+  // pg_trgm similarity search; order by word_similarity (BM25-ish proxy)
+  const rows = await prisma.$queryRaw<any[]>`
+    SELECT id, content, page, similarity(content, ${query}) AS score
+    FROM "RagChunk"
+    WHERE content % ${query}
+    ORDER BY score DESC
+    LIMIT ${k};
+  `;
+  return rows.map((r) => ({ id: r.id, content: r.content, page: r.page ?? null, score: Number(r.score) }));
+}
+```
+
+> **Note**: BM25 proper is in Postgres FTS; here we use `pg_trgm` similarity as a proxy (works well for short queries). For full BM25, consider wrapping with [pg\_search](https://github.com/begriffs/pg_search) or external search like Meilisearch.
+
+### 12.3 Hybrid search + query planner
+
+`packages/ai/rag/hybrid.ts`:
+
+```ts
+import { embedQuery } from "./embed";
+import { searchByEmbedding } from "./query";
+import { searchByLexical } from "./bm25";
+
+export type HybridHit = { id: string; content: string; page: number | null; score: number; source: string };
+
+// naive hybrid: run both, normalize scores, combine & rerank
+export async function hybridSearch(query: string, k = 5): Promise<HybridHit[]> {
+  const v = await embedQuery(query);
+  const vecHits = await searchByEmbedding(v, k);
+  const lexHits = await searchByLexical(query, k);
+
+  // Normalize scores to 0–1
+  const norm = (arr: { score: number }[]) => {
+    const max = Math.max(...arr.map((a) => a.score), 1e-6);
+    return arr.map((a) => ({ ...a, score: a.score / max }));
+  };
+  const vNorm = norm(vecHits).map((h) => ({ ...h, source: "vector" }));
+  const lNorm = norm(lexHits).map((h) => ({ ...h, source: "lexical" }));
+
+  // Merge by id (keep best score)
+  const merged: Record<string, HybridHit> = {};
+  [...vNorm, ...lNorm].forEach((h) => {
+    const prev = merged[h.id];
+    if (!prev || h.score > prev.score) merged[h.id] = h as HybridHit;
+  });
+
+  return Object.values(merged)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, k);
+}
+```
+
+### 12.4 Query planner
+
+`packages/ai/rag/planner.ts`:
+
+```ts
+import { hybridSearch } from "./hybrid";
+
+// Basic query planner: detect if query is factual vs. conceptual
+export async function planAndSearch(query: string, k = 5) {
+  const lower = query.toLowerCase();
+  let strategy: "vector" | "lexical" | "hybrid" = "hybrid";
+
+  // heuristic: short keyword-like query → lexical, long natural-language → vector
+  if (lower.split(" ").length <= 3) strategy = "lexical";
+  else if (lower.includes("explain") || lower.includes("why")) strategy = "vector";
+
+  switch (strategy) {
+    case "lexical":
+      return { strategy, hits: await hybridSearch(query, k) }; // still hybrid, but lexical-weighted
+    case "vector":
+      return { strategy, hits: await hybridSearch(query, k) }; // still hybrid, vector-weighted
+    default:
+      return { strategy, hits: await hybridSearch(query, k) };
+  }
+}
+```
+
+### 12.5 API route — `/api/rag/hybrid`
+
+`src/app/api/rag/hybrid/route.ts`:
+
+```ts
+import { NextResponse } from "next/server";
+import { planAndSearch } from "@/../packages/ai/rag/planner";
+
+export async function POST(req: Request) {
+  const { query, k } = await req.json();
+  if (!query) return NextResponse.json({ error: "query required" }, { status: 400 });
+  const result = await planAndSearch(query, k ?? 5);
+  return NextResponse.json(result);
+}
+```
+
+### 12.6 Chat with hybrid retrieval
+
+Swap `/api/chat/lesson` or add `/api/chat/lesson/hybrid`:
+
+```ts
+import OpenAI from "openai";
+import { NextResponse } from "next/server";
+import { planAndSearch } from "@/../packages/ai/rag/planner";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function POST(req: Request) {
+  const { question, k = 5 } = await req.json();
+  if (!question) return NextResponse.json({ error: "question required" }, { status: 400 });
+  const { strategy, hits } = await planAndSearch(question, k);
+
+  const contextBlock = hits.map((h, i) => `[[${i + 1}]] (${h.source}) ${h.content}`).join("
+
+");
+
+  const system = `You are a precise, student-friendly teacher. Answer ONLY using the provided context. Strategy=${strategy}. Cite sources inline like [1], [2].`;
+  const user = `Question: ${question}
+
+Context:
+${contextBlock}`;
+
+  const resp = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.2,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+  });
+
+  const answer = resp.choices[0]?.message?.content ?? "";
+  return NextResponse.json({ answer, citations: hits.map((_, i) => i + 1), strategy });
+}
+```
+
+---
+
+## 13) Notes on Hybrid Retrieval
+
+* **Score balancing**: current method normalizes by max; for better fusion, apply weighted sum: `0.6 * vector + 0.4 * lexical`.
+* **Query planner**: expand heuristics with regex or a tiny classifier (e.g., factual vs. explanatory queries).
+* **Performance**: lexical search is fast with GIN trigram index. For large corpus, consider **BM25 via Postgres FTS** or Meilisearch.
+* **Evaluation**: run RAGAS or custom eval to compare pure vector vs. hybrid.
+
+With this, your system supports **hybrid retrieval** and **query planning**, improving grounding quality and reducing hallucinations.

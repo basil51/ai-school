@@ -16,18 +16,20 @@ Exit criteria: `pnpm dev` runs and DB is migrated/seeded.
 
 ---
 
-## Phase 1 — Auth + RBAC
-- Add NextAuth Credentials provider
-- Register endpoint hashing passwords (argon2)
-- JWT session with role on token/session
-- Middleware protecting `/dashboard`, `/teacher`, `/admin`
-- Simple sign-in form and sign-out
+## Phase 1 — Auth + RBAC (DONE) ✅
+- ✅ NextAuth Credentials provider
+- ✅ Register endpoint hashing passwords (argon2)
+- ✅ JWT session with role on token/session
+- ✅ Middleware protecting `/dashboard`, `/teacher`, `/admin`
+- ✅ Simple sign-in form and sign-out
+- ✅ Dashboard with user info and role display
+- ✅ RBAC utilities for API route protection
 
-Exit criteria: Can sign in with seeded users; role-gated routes enforced.
+Exit criteria: Can sign in with seeded users; role-gated routes enforced. **COMPLETED**
 
 ---
 
-## Phase 2 — RAG Foundations (Local, Non‑Streaming)
+## Phase 2 — RAG Foundations (IN PROGRESS) 🔄
 - Install `openai`, `ai`, `zod`
 - Enable pgvector in Postgres and Prisma types
 - Create `RagDocument` and `RagChunk` models with `embedding vector(1536)` + index
