@@ -19,6 +19,7 @@
 - Create `.env.production` mapping
 - Document secrets in README (no values)
 - Add Vercel environment variables for OPENAI_API_KEY, DATABASE_URL, NEXTAUTH_SECRET
+ - Add `web/.env.example` file to document required vars
 
 2) Database
 - Provision managed Postgres
@@ -42,6 +43,7 @@
 - Vercel project for `web/`
 - Preview deployments on PRs
 - Production promotion flow
+ - Add scripts: `pnpm migrate:deploy`, `pnpm build`, `pnpm start`
 
 6) Runbooks
 - Incident response checklist

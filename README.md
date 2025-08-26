@@ -572,3 +572,29 @@ Login with:
 * Visit `/api/auth/signin` and sign in with seeded users.
 
 You now have **auth + roles + seed data** ready to go. Next, we can scaffold **RAG ingestion** and the first **lesson/tutor** endpoints.
+
+---
+
+## 11) Deploy (Phase 7)
+
+### Environment variables
+Create envs in Vercel (or `.env.production` locally):
+
+```
+NEXTAUTH_URL=https://your-app.vercel.app
+NEXTAUTH_SECRET=replace-with-strong-secret
+DATABASE_URL=postgresql://user:pass@host:5432/ai_school?schema=public
+OPENAI_API_KEY=sk-...
+REDIS_URL=redis://user:pass@host:6379
+```
+
+### Migrations and start
+
+```
+cd web
+pnpm install
+pnpm migrate:deploy
+pnpm build && pnpm start
+```
+
+Health check: `GET /api/health` should return `{ status: "ok" }`.
