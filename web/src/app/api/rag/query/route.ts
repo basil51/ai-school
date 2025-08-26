@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { embedQuery } from "@/lib/rag/embed";
-import { searchByEmbedding } from "@/lib/rag/query";
+import { searchByEmbedding, searchHybrid } from "@/lib/rag/query";
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, k = 5 } = await request.json();
+    const { query, k = 5, mode = "hybrid", alpha = 0.5 } = await request.json();
 
     if (!query) {
       return NextResponse.json(
@@ -16,8 +16,10 @@ export async function POST(request: NextRequest) {
     // Generate embedding for the query
     const embedding = await embedQuery(query);
     
-    // Search for similar chunks
-    const results = await searchByEmbedding(embedding, Math.min(k, 20));
+    // Search
+    const results = mode === "vector"
+      ? await searchByEmbedding(embedding, Math.min(k, 20))
+      : await searchHybrid(embedding, query, Math.min(k, 20), alpha);
 
     return NextResponse.json({
       query,

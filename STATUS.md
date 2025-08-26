@@ -11,6 +11,10 @@ Last updated: 2025-08-26
 - ✅ **Phase 4 COMPLETED**: Background Ingestion (Redis, BullMQ, async processing)
 - ✅ **Phase 5 COMPLETED**: UX + Admin (shadcn/ui, role-based uploads, admin panel)
 - 🔄 **Phase 6 IN PROGRESS**: Quality & Search (RAGAS evaluations, hybrid search)
+ - 🔄 **Phase 6 IN PROGRESS**: Quality & Search (RAGAS evaluations, hybrid search)
+   - ✅ Hybrid search (BM25 + vector) added
+   - ✅ FTS (GIN) index on content
+   - ✅ `/rag` UI controls (mode, alpha)
 - Web app running on http://localhost:3000
 
 ## Completed (to date)
@@ -41,7 +45,9 @@ Last updated: 2025-08-26
 - ✅ Enhanced dashboard with role-specific features
 
 ## In Progress
-- 🔄 **Phase 6: Quality & Search** - RAGAS evaluations, hybrid search
+- 🔄 **Phase 6: Quality & Search**
+  - ✅ Hybrid search live (mode + alpha)
+  - Next: thresholding/re‑ranking; RAGAS scaffold; nightly CI
 
 ## Blockers/Risks
 - None currently.

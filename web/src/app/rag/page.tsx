@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Upload, Search, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function RagPage() {
   const { data: session, status } = useSession();
@@ -20,6 +22,8 @@ export default function RagPage() {
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [mode, setMode] = useState<"hybrid" | "vector">("hybrid");
+  const [alpha, setAlpha] = useState<number>(0.5);
 
   // Check if user has permission to access this page
   useEffect(() => {
@@ -80,7 +84,7 @@ export default function RagPage() {
       const res = await fetch("/api/rag/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, k: 5 }),
+        body: JSON.stringify({ query: question, k: 5, mode, alpha }),
       });
       
       const data = await res.json();
@@ -211,6 +215,33 @@ export default function RagPage() {
                   placeholder="Ask a question about your uploaded documents..."
                   className="mt-1 min-h-[100px]"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Mode</Label>
+                  <Select value={mode} onValueChange={(v) => setMode(v as any)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hybrid">Hybrid (lexical + vector)</SelectItem>
+                      <SelectItem value="vector">Vector only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Alpha (vector weight): {alpha.toFixed(2)}</Label>
+                  <div className="mt-3">
+                    <Slider
+                      value={[alpha]}
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      onValueChange={(v) => setAlpha(v[0] ?? 0.5)}
+                    />
+                  </div>
+                </div>
               </div>
               
               <Button
