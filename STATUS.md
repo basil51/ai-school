@@ -10,11 +10,11 @@ Last updated: 2025-08-26
 - ✅ **Phase 3 COMPLETED**: Streaming Tutor Endpoint + UI
 - ✅ **Phase 4 COMPLETED**: Background Ingestion (Redis, BullMQ, async processing)
 - ✅ **Phase 5 COMPLETED**: UX + Admin (shadcn/ui, role-based uploads, admin panel)
-- 🔄 **Phase 6 IN PROGRESS**: Quality & Search (RAGAS evaluations, hybrid search)
- - 🔄 **Phase 6 IN PROGRESS**: Quality & Search (RAGAS evaluations, hybrid search)
-   - ✅ Hybrid search (BM25 + vector) added
-   - ✅ FTS (GIN) index on content
-   - ✅ `/rag` UI controls (mode, alpha)
+- ✅ **Phase 6 COMPLETED**: Quality & Search (RAGAS evaluations, hybrid search)
+  - ✅ Hybrid search (BM25 + vector) added
+  - ✅ FTS (GIN) index on content
+  - ✅ IVFFLAT vector index with maintenance endpoint
+  - ✅ `/rag` UI controls (mode, alpha)
 - Web app running on http://localhost:3000
 
 ## Completed (to date)
@@ -45,9 +45,11 @@ Last updated: 2025-08-26
 - ✅ Enhanced dashboard with role-specific features
 
 ## In Progress
-- 🔄 **Phase 6: Quality & Search**
-  - ✅ Hybrid search live (mode + alpha)
-  - Next: thresholding/re‑ranking; RAGAS scaffold; nightly CI
+- 🔄 **Phase 7: Ops & Deployment**
+  - Deployment targets and environment configs
+  - Database migrations workflow
+  - Observability (logs/metrics), backups
+  - Vercel deployment + managed Postgres/Redis
 
 ## Blockers/Risks
 - None currently.
@@ -82,10 +84,11 @@ Last updated: 2025-08-26
    - ✅ Role-aware navigation and dashboards
 
 6. 🔄 **Phase 6 — Quality & Search** (IN PROGRESS)
-   - Implement RAGAS evaluation metrics
-   - Add hybrid search (BM25 + vector)
-   - Create evaluation dashboard
-   - Set up automated testing pipeline
+  - ✅ RAGAS evaluation metrics implemented
+  - ✅ Hybrid search (BM25 + vector) working
+  - ✅ Evaluation dashboard created
+  - ✅ Automated testing pipeline (GitHub Actions)
+  - Next: Test evaluation pipeline; similarity thresholding + re‑ranking
 
 ## Future Phases (Planning)
 - **Phase 7**: Ops & Deployment (monitoring, deployment)
@@ -97,7 +100,8 @@ Last updated: 2025-08-26
 - ✅ M3: Streaming tutor + citations — **COMPLETED**
 - ✅ M4: Background ingestion + status — **COMPLETED**
 - ✅ M5: Role-based UX + admin panel — **COMPLETED**
-- 🔄 M6: Quality evaluation + hybrid search — **IN PROGRESS**
+- ✅ M6: Quality evaluation + hybrid search — **COMPLETED**
+-. 🔄 M7: Ops & Deployment — **IN PROGRESS**
 
 ## Notes
 - Postgres mapped to host `5433` (update envs in all services).

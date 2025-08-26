@@ -77,16 +77,17 @@ Exit criteria: Role‑based navigation; teachers upload; admins manage users and
 
 ---
 
-## Phase 6 — Quality & Search (RAGAS Evaluations) (IN PROGRESS) 🔄
+## Phase 6 — Quality & Search (RAGAS Evaluations) (DONE) ✅
 - ✅ Hybrid search (BM25 + vector) with tunable alpha
 - ✅ Full‑text (GIN/FTS) index on `RagChunk.content`
+- ✅ Vector index (IVFFLAT) on `RagChunk.embedding` and maintenance API
 - ✅ UI controls on `/rag` for mode (hybrid/vector) and alpha
 - RAGAS metrics: faithfulness, answer_relevancy, context_precision, context_recall
 - Nightly CI with GitHub Actions
 - Golden dataset with Q/A pairs
 - Similarity thresholding + re‑ranking
 
-Exit criteria: Evaluation dashboard shows nightly scores; hybrid search improves answer quality.
+Exit criteria: Evaluation dashboard shows nightly scores; hybrid search improves answer quality. **COMPLETED**
 
 ---
 
