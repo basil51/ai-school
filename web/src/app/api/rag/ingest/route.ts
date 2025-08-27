@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { chunkText } from "@/lib/rag/chunk";
 import { embedTexts } from "@/lib/rag/embed";
 
@@ -26,33 +27,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate rawText
+    if (!rawText || typeof rawText !== 'string') {
+      console.error('Invalid rawText:', { type: typeof rawText, length: rawText?.length });
+      return NextResponse.json(
+        { error: "Invalid text content" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Ingesting document ${docId} with text length: ${rawText.length}`);
+
     // Chunk the text
     const chunks = chunkText(rawText);
+    
+    if (chunks.length === 0) {
+      console.warn('No chunks created from text');
+      return NextResponse.json(
+        { error: "No valid chunks created from text" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Created ${chunks.length} chunks, generating embeddings...`);
     
     // Generate embeddings for all chunks
     const embeddings = await embedTexts(chunks.map(chunk => chunk.text));
 
-    // Store chunks with embeddings
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
+    // Store chunks with embeddings using batch insert for better performance
+    const chunkData = chunks.map((chunk, i) => {
       const embedding = embeddings[i];
       const vectorLiteral = `[${embedding.join(",")}]`;
+      
+      return {
+        id: randomUUID(),
+        docId,
+        content: chunk.text,
+        embedding: vectorLiteral
+      };
+    });
 
-      // Create chunk and update with embedding using raw SQL
-      const result = await prisma.$queryRaw`
-        INSERT INTO "RagChunk" ("docId", "content", "createdAt") 
-        VALUES (${docId}, ${chunk.text}, NOW()) 
-        RETURNING id
-      `;
-      
-      const chunkId = (result as { id: string }[])[0].id;
-      
-      // Update with embedding
-      await prisma.$executeRawUnsafe(
-        'UPDATE "RagChunk" SET embedding = $1::vector WHERE id = $2',
-        vectorLiteral,
-        chunkId
+    // Basic validation: ensure embedding dimensions are consistent (1536 for text-embedding-3-small)
+    const invalid = embeddings.find((e) => !Array.isArray(e) || e.length !== 1536);
+    if (invalid) {
+      console.error('Embedding dimension mismatch', { length: invalid?.length });
+      return NextResponse.json(
+        { error: "Embedding dimension mismatch. Expected 1536." },
+        { status: 500 }
       );
+    }
+
+    // Use raw SQL with proper ID generation
+    for (const data of chunkData) {
+      await prisma.$executeRaw`
+        INSERT INTO "RagChunk" ("id", "docId", "content", "embedding") 
+        VALUES (${data.id}, ${data.docId}, ${data.content}, ${data.embedding}::vector)
+      `;
     }
 
     return NextResponse.json({
@@ -61,8 +91,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Ingest error:", error);
+    const message = (error as any)?.message ?? 'Failed to ingest document';
+    const code = (error as any)?.code;
     return NextResponse.json(
-      { error: "Failed to ingest document" },
+      { error: message, code },
       { status: 500 }
     );
   }

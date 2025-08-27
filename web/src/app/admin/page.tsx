@@ -178,6 +178,8 @@ export default function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
           <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
+          <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
+          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
@@ -303,18 +305,80 @@ export default function AdminPage() {
                       <TableCell>{doc.chunks.length} chunks</TableCell>
                       <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteDocument(doc.id)}
-                        >
-                          Delete
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => router.push(`/admin/documents/${doc.id}`)}
+                          >
+                            Manage Chunks
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteDocument(doc.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="evaluations" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>RAGAS Evaluations</CardTitle>
+              <CardDescription>Quality metrics for the RAG system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  View detailed evaluation results and metrics
+                </p>
+                <Button onClick={() => window.open('/admin/evaluations', '_blank')}>
+                  Open Evaluation Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="maintenance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Indexes</CardTitle>
+              <CardDescription>Check status and rebuild vector/text indexes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Button onClick={async () => {
+                  try {
+                    const res = await fetch('/api/admin/maintenance/indexes');
+                    const data = await res.json();
+                    alert(`Chunks: ${data.count}\nIndexes:\n${(data.indexes||[]).map((i:any)=>i.indexname).join('\n')}`);
+                  } catch (e) { console.error(e); }
+                }}>Status</Button>
+                <Button onClick={async () => {
+                  try {
+                    const res = await fetch('/api/admin/maintenance/indexes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'ivfflat', reindexGin: true }) });
+                    const data = await res.json();
+                    alert(`Rebuilt IVFFLAT (lists=${data.lists}) on ${data.count} chunks`);
+                  } catch (e) { console.error(e); }
+                }}>Rebuild IVFFLAT</Button>
+                <Button variant="outline" onClick={async () => {
+                  try {
+                    const res = await fetch('/api/admin/maintenance/indexes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'hnsw', m: 16, ef_construction: 64, reindexGin: true }) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed');
+                    alert('Rebuilt HNSW indexes');
+                  } catch (e:any) { alert(e.message || 'HNSW not supported'); }
+                }}>Rebuild HNSW</Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
