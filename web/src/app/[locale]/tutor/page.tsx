@@ -17,8 +17,13 @@ import {
   AlertCircle,
   Loader2
 } from "lucide-react";
+import { useTranslations } from "@/lib/useTranslations";
+import { useParams } from "next/navigation";
 
 export default function TutorPage() {
+  const { dict } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,7 +37,7 @@ export default function TutorPage() {
     if (!file) return;
     
     //setUploadLoading(true);
-    setUploadStatus("Uploading...");
+    setUploadStatus(dict?.tutor?.uploading || "Uploading...");
     const fd = new FormData();
     fd.append("file", file);
     fd.append("title", file.name);
@@ -60,14 +65,17 @@ export default function TutorPage() {
       }).then((r) => r.json());
 
       const jobId = enq.jobId as string;
-      setUploadStatus("Ingestion started...");
+      setUploadStatus(dict?.tutor?.ingestionStarted || "Ingestion started...");
 
       // Poll for job status
       let done = false;
       while (!done) {
         const st = await fetch(`/api/rag/ingest/status?jobId=${jobId}`).then((r) => r.json());
         const pct = typeof st.progress === "number" ? st.progress : 0;
-        setUploadStatus(`Ingestion: ${pct}% (state=${st.state})`);
+        const progressText = (dict?.tutor?.ingestionProgress || "Ingestion: {progress}% (state={state})")
+          .replace('{progress}', pct.toString())
+          .replace('{state}', st.state);
+        setUploadStatus(progressText);
         
         if (st.state === "completed" || st.state === "failed" || st.status === "not_found") {
           done = true;
@@ -78,9 +86,9 @@ export default function TutorPage() {
         }
       }
 
-      setUploadStatus("Ingestion completed successfully!");
+      setUploadStatus(dict?.tutor?.ingestionCompleted || "Ingestion completed successfully!");
     } catch (error) {
-      setUploadStatus("Upload failed");
+      setUploadStatus(dict?.tutor?.uploadFailed || "Upload failed");
       console.error("Upload failed:", error);
     } finally {
       //setUploadLoading(false);
@@ -120,7 +128,7 @@ export default function TutorPage() {
       }
     } catch (error) {
       console.error("Streaming error:", error);
-      setAnswer("Failed to get streaming response");
+      setAnswer(dict?.tutor?.failedToGetResponse || "Failed to get streaming response");
     } finally {
       setBusy(false);
     }
@@ -131,12 +139,12 @@ export default function TutorPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">AI Tutor</h1>
-            <p className="text-gray-600 mt-2">Your personalized AI learning assistant</p>
+            <h1 className="text-3xl font-bold text-gray-900">{dict?.tutor?.title || "AI Tutor"}</h1>
+            <p className="text-gray-600 mt-2">{dict?.tutor?.subtitle || "Your personalized AI learning assistant"}</p>
           </div>
           <Badge variant="outline" className="flex items-center gap-1">
             <Brain className="h-4 w-4" />
-            AI Powered
+            {dict?.tutor?.aiPowered || "AI Powered"}
           </Badge>
         </div>
         
@@ -146,15 +154,15 @@ export default function TutorPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5" />
-                Upload Learning Material
+                {dict?.tutor?.uploadLearningMaterial || "Upload Learning Material"}
               </CardTitle>
               <CardDescription>
-                Upload textbooks, notes, or educational content for the AI tutor to reference
+                {dict?.tutor?.uploadLearningMaterialDescription || "Upload textbooks, notes, or educational content for the AI tutor to reference"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="file">Select File</Label>
+                <Label htmlFor="file">{dict?.tutor?.selectFile || "Select File"}</Label>
                 <Input
                   id="file"
                   type="file"
@@ -163,14 +171,14 @@ export default function TutorPage() {
                   className="mt-1"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Currently supports .txt files. PDF support coming soon.
+                  {dict?.tutor?.currentlySupports || "Currently supports .txt files. PDF support coming soon."}
                 </p>
               </div>
               
               {docId && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <FileText className="h-4 w-4" />
-                  Document ID: {docId}
+                  {dict?.tutor?.documentId || "Document ID"}: {docId}
                 </div>
               )}
               
@@ -194,21 +202,21 @@ export default function TutorPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
-                Ask Your AI Tutor
+                {dict?.tutor?.askYourAITutor || "Ask Your AI Tutor"}
               </CardTitle>
               <CardDescription>
-                Ask questions about your uploaded material and get instant, contextual answers
+                {dict?.tutor?.askYourAITutorDescription || "Ask questions about your uploaded material and get instant, contextual answers"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="question">Your Question</Label>
+                <Label htmlFor="question">{dict?.tutor?.yourQuestion || "Your Question"}</Label>
                 <Textarea
                   id="question"
                   ref={textRef}
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="e.g., Explain the distributive property with an example"
+                  placeholder={dict?.tutor?.questionPlaceholder || "e.g., Explain the distributive property with an example"}
                   className="mt-1 min-h-[120px]"
                 />
               </div>
@@ -222,12 +230,12 @@ export default function TutorPage() {
                 {busy ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Thinking...
+                    {dict?.tutor?.thinking || "Thinking..."}
                   </>
                 ) : (
                   <>
                     <Brain className="h-4 w-4 mr-2" />
-                    Ask Tutor
+                    {dict?.tutor?.askTutor || "Ask Tutor"}
                   </>
                 )}
               </Button>
@@ -240,7 +248,7 @@ export default function TutorPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
-                  Tutor Response
+                  {dict?.tutor?.tutorResponse || "Tutor Response"}
                 </CardTitle>
               </CardHeader>
               <CardContent>

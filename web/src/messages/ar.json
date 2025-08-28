@@ -151,6 +151,8 @@
   },
   "tutor": {
     "title": "المعلم الذكي",
+    "subtitle": "مساعدك الذكي الشخصي للتعلم",
+    "aiPowered": "مدعوم بالذكاء الاصطناعي",
     "askQuestion": "اطرح سؤالاً",
     "uploadDocument": "رفع مستند",
     "startChat": "ابدأ المحادثة",
@@ -167,7 +169,23 @@
     "noDocumentUploaded": "لم يتم رفع أي مستند بعد",
     "uploadFirst": "ارفع مستنداً أولاً لبدء التعلم",
     "supportedFormats": "الصيغ المدعومة: PDF, DOCX, TXT",
-    "maxFileSize": "الحد الأقصى لحجم الملف: 10 ميجابايت"
+    "maxFileSize": "الحد الأقصى لحجم الملف: 10 ميجابايت",
+    "uploadLearningMaterial": "رفع المواد التعليمية",
+    "uploadLearningMaterialDescription": "ارفع الكتب المدرسية والملاحظات أو المحتوى التعليمي للمعلم الذكي للرجوع إليه",
+    "selectFile": "اختر ملف",
+    "currentlySupports": "يدعم حالياً ملفات .txt. دعم PDF قريباً.",
+    "documentId": "معرف المستند",
+    "askYourAITutor": "اسأل معلمك الذكي",
+    "askYourAITutorDescription": "اطرح أسئلة حول المواد المرفوعة واحصل على إجابات فورية ومتساقطة",
+    "yourQuestion": "سؤالك",
+    "questionPlaceholder": "مثال: اشرح خاصية التوزيع مع مثال",
+    "askTutor": "اسأل المعلم",
+    "tutorResponse": "رد المعلم",
+    "uploading": "جاري الرفع...",
+    "ingestionStarted": "بدأت المعالجة...",
+    "ingestionCompleted": "تمت المعالجة بنجاح!",
+    "ingestionProgress": "المعالجة: {progress}% (الحالة={state})",
+    "failedToGetResponse": "فشل في الحصول على الاستجابة المتدفقة"
   },
   "rag": {
     "title": "نظام RAG",

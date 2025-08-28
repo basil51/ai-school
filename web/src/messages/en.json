@@ -151,6 +151,8 @@
   },
   "tutor": {
     "title": "AI Tutor",
+    "subtitle": "Your personalized AI learning assistant",
+    "aiPowered": "AI Powered",
     "askQuestion": "Ask a question",
     "uploadDocument": "Upload Document",
     "startChat": "Start Chat",
@@ -167,7 +169,23 @@
     "noDocumentUploaded": "No document uploaded yet",
     "uploadFirst": "Upload a document first to start learning",
     "supportedFormats": "Supported formats: PDF, DOCX, TXT",
-    "maxFileSize": "Max file size: 10MB"
+    "maxFileSize": "Max file size: 10MB",
+    "uploadLearningMaterial": "Upload Learning Material",
+    "uploadLearningMaterialDescription": "Upload textbooks, notes, or educational content for the AI tutor to reference",
+    "selectFile": "Select File",
+    "currentlySupports": "Currently supports .txt files. PDF support coming soon.",
+    "documentId": "Document ID",
+    "askYourAITutor": "Ask Your AI Tutor",
+    "askYourAITutorDescription": "Ask questions about your uploaded material and get instant, contextual answers",
+    "yourQuestion": "Your Question",
+    "questionPlaceholder": "e.g., Explain the distributive property with an example",
+    "askTutor": "Ask Tutor",
+    "tutorResponse": "Tutor Response",
+    "uploading": "Uploading...",
+    "ingestionStarted": "Ingestion started...",
+    "ingestionCompleted": "Ingestion completed successfully!",
+    "ingestionProgress": "Ingestion: {progress}% (state={state})",
+    "failedToGetResponse": "Failed to get streaming response"
   },
   "rag": {
     "title": "RAG System",
