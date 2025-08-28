@@ -13,6 +13,7 @@ import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useTranslations } from '@/lib/useTranslations';
 
 interface AnalyticsFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
@@ -29,40 +30,41 @@ export interface FilterState {
   sortOrder: 'asc' | 'desc';
 }
 
-const METRIC_OPTIONS = [
-  { value: 'users', label: 'Users' },
-  { value: 'documents', label: 'Documents' },
-  { value: 'questions', label: 'Questions' },
-  { value: 'storage', label: 'Storage' },
-  { value: 'activity', label: 'Activity' },
-  { value: 'growth', label: 'Growth Rate' },
-];
-
-const USER_ROLE_OPTIONS = [
-  { value: 'student', label: 'Students' },
-  { value: 'teacher', label: 'Teachers' },
-  { value: 'admin', label: 'Admins' },
-  { value: 'guardian', label: 'Guardians' },
-];
-
-const ACTIVITY_TYPE_OPTIONS = [
-  { value: 'user_login', label: 'User Login' },
-  { value: 'user_created', label: 'User Created' },
-  { value: 'document_uploaded', label: 'Document Uploaded' },
-  { value: 'document_processed', label: 'Document Processed' },
-  { value: 'question_asked', label: 'Question Asked' },
-  { value: 'settings_updated', label: 'Settings Updated' },
-  { value: 'organization_updated', label: 'Organization Updated' },
-];
-
-const SORT_OPTIONS = [
-  { value: 'date', label: 'Date' },
-  { value: 'user', label: 'User' },
-  { value: 'action', label: 'Action' },
-  { value: 'impact', label: 'Impact' },
-];
-
 export default function AnalyticsFilters({ onFiltersChange, className = '' }: AnalyticsFiltersProps) {
+  const { dict } = useTranslations();
+
+  const METRIC_OPTIONS = [
+    { value: 'users', label: dict?.filters?.options?.users || 'Users' },
+    { value: 'documents', label: dict?.filters?.options?.documents || 'Documents' },
+    { value: 'questions', label: dict?.filters?.options?.questions || 'Questions' },
+    { value: 'storage', label: dict?.filters?.options?.storage || 'Storage' },
+    { value: 'activity', label: dict?.filters?.options?.activity || 'Activity' },
+    { value: 'growth', label: dict?.filters?.options?.growthRate || 'Growth Rate' },
+  ];
+
+  const USER_ROLE_OPTIONS = [
+    { value: 'student', label: dict?.filters?.options?.students || 'Students' },
+    { value: 'teacher', label: dict?.filters?.options?.teachers || 'Teachers' },
+    { value: 'admin', label: dict?.filters?.options?.admins || 'Admins' },
+    { value: 'guardian', label: dict?.filters?.options?.guardians || 'Guardians' },
+  ];
+
+  const ACTIVITY_TYPE_OPTIONS = [
+    { value: 'user_login', label: dict?.filters?.options?.userLogin || 'User Login' },
+    { value: 'user_created', label: dict?.filters?.options?.userCreated || 'User Created' },
+    { value: 'document_uploaded', label: dict?.filters?.options?.documentUploaded || 'Document Uploaded' },
+    { value: 'document_processed', label: dict?.filters?.options?.documentProcessed || 'Document Processed' },
+    { value: 'question_asked', label: dict?.filters?.options?.questionAsked || 'Question Asked' },
+    { value: 'settings_updated', label: dict?.filters?.options?.settingsUpdated || 'Settings Updated' },
+    { value: 'organization_updated', label: dict?.filters?.options?.organizationUpdated || 'Organization Updated' },
+  ];
+
+  const SORT_OPTIONS = [
+    { value: 'date', label: dict?.filters?.options?.date || 'Date' },
+    { value: 'user', label: dict?.filters?.options?.user || 'User' },
+    { value: 'action', label: dict?.filters?.options?.action || 'Action' },
+    { value: 'impact', label: dict?.filters?.options?.impact || 'Impact' },
+  ];
   const [filters, setFilters] = useState<FilterState>({
     dateRange: undefined,
     metrics: ['users', 'documents', 'questions', 'storage'],
@@ -130,10 +132,10 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Filter className="h-4 w-4" />
-            Analytics Filters
+            {dict?.filters?.title || "Analytics Filters"}
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="ml-2">
-                {activeFiltersCount} active
+                {activeFiltersCount} {dict?.common?.active || "active"}
               </Badge>
             )}
           </CardTitle>
@@ -143,7 +145,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
               variant="outline"
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              {isExpanded ? 'Collapse' : 'Expand'}
+              {isExpanded ? (dict?.filters?.collapseFilters || 'Collapse') : (dict?.filters?.expandFilters || 'Expand')}
             </Button>
             <Button
               size="sm"
@@ -173,7 +175,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
                     format(filters.dateRange.from, 'MMM dd')
                   )
                 ) : (
-                  'Date Range'
+                  dict?.filters?.dateRange || 'Date Range'
                 )}
               </Button>
             </PopoverTrigger>
@@ -190,7 +192,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
           </Popover>
 
           <Input
-            placeholder="Search activities..."
+            placeholder={dict?.filters?.searchPlaceholder || "Search activities..."}
             value={filters.searchQuery}
             onChange={(e) => updateFilters({ searchQuery: e.target.value })}
             className="h-8 w-48"
@@ -198,7 +200,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
 
           <Select value={filters.sortBy} onValueChange={(value) => updateFilters({ sortBy: value })}>
             <SelectTrigger className="h-8 w-32">
-              <SelectValue />
+              <SelectValue placeholder={dict?.filters?.sortBy || "Sort by"} />
             </SelectTrigger>
             <SelectContent>
               {SORT_OPTIONS.map((option) => (
@@ -224,7 +226,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
           <div className="space-y-4 pt-4 border-t">
             {/* Metrics Selection */}
             <div>
-              <Label className="text-sm font-medium">Metrics</Label>
+              <Label className="text-sm font-medium">{dict?.filters?.metrics || "Metrics"}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {METRIC_OPTIONS.map((metric) => (
                   <div key={metric.value} className="flex items-center space-x-2">
@@ -243,7 +245,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
 
             {/* User Roles */}
             <div>
-              <Label className="text-sm font-medium">User Roles</Label>
+              <Label className="text-sm font-medium">{dict?.filters?.userRoles || "User Roles"}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {USER_ROLE_OPTIONS.map((role) => (
                   <div key={role.value} className="flex items-center space-x-2">
@@ -262,7 +264,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
 
             {/* Activity Types */}
             <div>
-              <Label className="text-sm font-medium">Activity Types</Label>
+              <Label className="text-sm font-medium">{dict?.filters?.activityTypes || "Activity Types"}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {ACTIVITY_TYPE_OPTIONS.map((type) => (
                   <div key={type.value} className="flex items-center space-x-2">
@@ -291,7 +293,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
                   } 
                 })}
               >
-                Last 7 Days
+                {dict?.filters?.last7Days || "Last 7 Days"}
               </Button>
               <Button
                 size="sm"
@@ -303,7 +305,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
                   } 
                 })}
               >
-                Last 30 Days
+                {dict?.filters?.last30Days || "Last 30 Days"}
               </Button>
               <Button
                 size="sm"
@@ -315,7 +317,7 @@ export default function AnalyticsFilters({ onFiltersChange, className = '' }: An
                   } 
                 })}
               >
-                Last 90 Days
+                {dict?.filters?.last90Days || "Last 90 Days"}
               </Button>
             </div>
           </div>

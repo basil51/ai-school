@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Users, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from '@/lib/useTranslations';
 
 interface Organization {
   id: string;
@@ -31,6 +32,7 @@ export default function OrganizationSwitcher({
   onOrganizationChange,
   compact = false 
 }: OrganizationSwitcherProps) {
+  const { dict } = useTranslations();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
@@ -83,10 +85,10 @@ export default function OrganizationSwitcher({
 
   const getTierBadge = (tier: string) => {
     const tierConfig = {
-      free: { variant: 'secondary' as const, text: 'Free' },
-      basic: { variant: 'default' as const, text: 'Basic' },
-      premium: { variant: 'default' as const, text: 'Premium' },
-      enterprise: { variant: 'destructive' as const, text: 'Enterprise' },
+      free: { variant: 'secondary' as const, text: dict?.organizationSwitcher?.tiers?.free || 'Free' },
+      basic: { variant: 'default' as const, text: dict?.organizationSwitcher?.tiers?.basic || 'Basic' },
+      premium: { variant: 'default' as const, text: dict?.organizationSwitcher?.tiers?.premium || 'Premium' },
+      enterprise: { variant: 'destructive' as const, text: dict?.organizationSwitcher?.tiers?.enterprise || 'Enterprise' },
     };
 
     const config = tierConfig[tier as keyof typeof tierConfig] || tierConfig.free;
@@ -97,7 +99,7 @@ export default function OrganizationSwitcher({
     return (
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4" />
-        <span className="text-sm">Loading...</span>
+        <span className="text-sm">{dict?.organizationSwitcher?.loading || "Loading..."}</span>
       </div>
     );
   }
@@ -111,14 +113,14 @@ export default function OrganizationSwitcher({
         <SelectTrigger className="w-[200px]">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            <SelectValue placeholder="Select organization" />
+            <SelectValue placeholder={dict?.organizationSwitcher?.selectOrganization || "Select organization"} />
           </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="system">
             <div className="flex items-center gap-2">
-              <span className="font-medium">System Admin</span>
-              <Badge variant="destructive" className="text-xs">Super</Badge>
+              <span className="font-medium">{dict?.organizationSwitcher?.systemAdmin || "System Admin"}</span>
+              <Badge variant="destructive" className="text-xs">{dict?.organizationSwitcher?.super || "Super"}</Badge>
             </div>
           </SelectItem>
           {organizations.map((org) => (
@@ -138,7 +140,7 @@ export default function OrganizationSwitcher({
     <Card className="w-full">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm">Organization Context</h3>
+          <h3 className="font-semibold text-sm">{dict?.organizationSwitcher?.organizationContext || "Organization Context"}</h3>
           <Building2 className="h-4 w-4 text-muted-foreground" />
         </div>
         
@@ -147,16 +149,16 @@ export default function OrganizationSwitcher({
           onValueChange={handleOrganizationChange}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select organization" />
+            <SelectValue placeholder={dict?.organizationSwitcher?.selectOrganization || "Select organization"} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="system">
               <div className="flex items-center justify-between w-full">
                 <div>
-                  <div className="font-medium">System Administration</div>
-                  <div className="text-xs text-muted-foreground">Manage all organizations</div>
+                  <div className="font-medium">{dict?.organizationSwitcher?.systemAdministration || "System Administration"}</div>
+                  <div className="text-xs text-muted-foreground">{dict?.organizationSwitcher?.manageAllOrganizations || "Manage all organizations"}</div>
                 </div>
-                <Badge variant="destructive" className="text-xs">Super</Badge>
+                <Badge variant="destructive" className="text-xs">{dict?.organizationSwitcher?.super || "Super"}</Badge>
               </div>
             </SelectItem>
             {organizations.map((org) => (
@@ -193,7 +195,7 @@ export default function OrganizationSwitcher({
               <div>
                 <div className="font-medium text-sm">{currentOrg.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  Currently managing this organization
+                  {dict?.organizationSwitcher?.currentlyManaging || "Currently managing this organization"}
                 </div>
               </div>
               {getTierBadge(currentOrg.tier)}

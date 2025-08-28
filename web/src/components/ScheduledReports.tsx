@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslations } from '@/lib/useTranslations';
 
 interface ScheduledReport {
   id: string;
@@ -42,39 +43,41 @@ interface ScheduledReportsProps {
   className?: string;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
-
-const DAY_OF_WEEK_OPTIONS = [
-  { value: '0', label: 'Sunday' },
-  { value: '1', label: 'Monday' },
-  { value: '2', label: 'Tuesday' },
-  { value: '3', label: 'Wednesday' },
-  { value: '4', label: 'Thursday' },
-  { value: '5', label: 'Friday' },
-  { value: '6', label: 'Saturday' },
-];
-
-const METRIC_OPTIONS = [
-  { value: 'users', label: 'User Statistics' },
-  { value: 'documents', label: 'Document Analytics' },
-  { value: 'questions', label: 'Question Activity' },
-  { value: 'storage', label: 'Storage Usage' },
-  { value: 'activity', label: 'Activity Feed' },
-  { value: 'growth', label: 'Growth Trends' },
-  { value: 'predictive', label: 'Predictive Analytics' },
-];
-
-const FORMAT_OPTIONS = [
-  { value: 'pdf', label: 'PDF Report' },
-  { value: 'csv', label: 'CSV Data' },
-  { value: 'html', label: 'HTML Email' },
-];
-
 export default function ScheduledReports({ organizationId, className = '' }: ScheduledReportsProps) {
+  const { dict } = useTranslations();
+
+  const FREQUENCY_OPTIONS = [
+    { value: 'daily', label: dict?.scheduledReports?.options?.daily || 'Daily' },
+    { value: 'weekly', label: dict?.scheduledReports?.options?.weekly || 'Weekly' },
+    { value: 'monthly', label: dict?.scheduledReports?.options?.monthly || 'Monthly' },
+  ];
+
+  const DAY_OF_WEEK_OPTIONS = [
+    { value: '0', label: dict?.scheduledReports?.options?.sunday || 'Sunday' },
+    { value: '1', label: dict?.scheduledReports?.options?.monday || 'Monday' },
+    { value: '2', label: dict?.scheduledReports?.options?.tuesday || 'Tuesday' },
+    { value: '3', label: dict?.scheduledReports?.options?.wednesday || 'Wednesday' },
+    { value: '4', label: dict?.scheduledReports?.options?.thursday || 'Thursday' },
+    { value: '5', label: dict?.scheduledReports?.options?.friday || 'Friday' },
+    { value: '6', label: dict?.scheduledReports?.options?.saturday || 'Saturday' },
+  ];
+
+  const METRIC_OPTIONS = [
+    { value: 'users', label: dict?.scheduledReports?.options?.userStatistics || 'User Statistics' },
+    { value: 'documents', label: dict?.scheduledReports?.options?.documentAnalytics || 'Document Analytics' },
+    { value: 'questions', label: dict?.scheduledReports?.options?.questionActivity || 'Question Activity' },
+    { value: 'storage', label: dict?.scheduledReports?.options?.storageUsage || 'Storage Usage' },
+    { value: 'activity', label: dict?.scheduledReports?.options?.activityFeed || 'Activity Feed' },
+    { value: 'growth', label: dict?.scheduledReports?.options?.growthTrends || 'Growth Trends' },
+    { value: 'predictive', label: dict?.scheduledReports?.options?.predictiveAnalytics || 'Predictive Analytics' },
+  ];
+
+  const FORMAT_OPTIONS = [
+    { value: 'pdf', label: dict?.scheduledReports?.options?.pdfReport || 'PDF Report' },
+    { value: 'csv', label: dict?.scheduledReports?.options?.csvData || 'CSV Data' },
+    { value: 'html', label: dict?.scheduledReports?.options?.htmlEmail || 'HTML Email' },
+  ];
+
   const [reports, setReports] = useState<ScheduledReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
