@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -26,6 +27,8 @@ export default function Topbar() {
   const homeHref = session ? `/${currentLocale}/dashboard` : `/${currentLocale}`;
   const userRole = (session as any)?.role;
   const { dict } = useTranslations();
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const getRoleDisplay = (role: string) => {
     switch (role) {
@@ -38,97 +41,131 @@ export default function Topbar() {
     }
   };
 
+  // Handle hover events for user dropdown
+  useEffect(() => {
+    const handleMouseEnter = () => setIsUserDropdownOpen(true);
+    const handleMouseLeave = () => setIsUserDropdownOpen(false);
+
+    const element = userDropdownRef.current;
+    if (element) {
+      element.addEventListener('mouseenter', handleMouseEnter);
+      element.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      if (element) {
+        element.removeEventListener('mouseenter', handleMouseEnter);
+        element.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, []);
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14 items-center">
-                        <Link href={homeHref} className="text-lg font-semibold text-gray-900 hover:opacity-80">
-                {currentLocale === 'ar' ? 'أكاديمية اجواء العلم بالذكاء الصناعي' : 'EduVibe AI Academy'}
-              </Link>
-          
-          {/* Language Switcher */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Globe className="h-4 w-4 mr-2" />
-                  {currentLocale === 'ar' ? 'العربية' : 'English'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center">
-                {locales.map((locale) => {
-                  const newPathname = pathname.replace(`/${currentLocale}`, `/${locale}`);
-                  return (
-                    <DropdownMenuItem key={locale} asChild>
-                      <Link href={newPathname}>
-                        {locale === 'ar' ? 'العربية' : 'English'}
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <Link href={homeHref} className="text-lg font-semibold text-gray-900 hover:opacity-80">
+            {currentLocale === 'ar' ? 'أكاديمية اجواء العلم بالذكاء الصناعي' : 'EduVibe AI Academy'}
+          </Link>
           
           {session && (
             <div className="flex items-center gap-4">
+              {/* Language Switcher */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Globe className="h-4 w-4 mr-2" />
+                    {currentLocale === 'ar' ? 'العربية' : 'English'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center">
+                  {locales.map((locale) => {
+                    const newPathname = pathname.replace(`/${currentLocale}`, `/${locale}`);
+                    return (
+                      <DropdownMenuItem key={locale} asChild>
+                        <Link href={newPathname}>
+                          {locale === 'ar' ? 'العربية' : 'English'}
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* User Menu */}
-              <div className="flex items-center gap-2">
+              <div 
+                ref={userDropdownRef}
+                className="relative flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors"
+              >
+                <User className="h-4 w-4 text-gray-600" />
                 <span className="text-sm text-gray-600">
                   {dict?.userMenu?.hi || "Hi,"} {session.user?.name || session.user?.email}
                 </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <User className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                                      <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {dict?.userMenu?.welcomeBack || "Welcome back,"} {session.user?.name || (dict?.userMenu?.user || 'User')}
-                        </p>
-                      <p className="text-xs leading-none text-muted-foreground">
+                
+                {/* Custom Dropdown */}
+                {isUserDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">
+                        {dict?.userMenu?.welcomeBack || "Welcome back,"} {session.user?.name || (dict?.userMenu?.user || 'User')}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
                         {session.user?.email}
                       </p>
-                      <div className="pt-1">
+                      <div className="mt-2">
                         <Badge variant={getRoleDisplay(userRole).variant} className="text-xs">
                           {getRoleDisplay(userRole).text}
                         </Badge>
                       </div>
                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/${currentLocale}/dashboard`}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>{dict?.userMenu?.dashboard || "Dashboard"}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {['admin', 'super_admin'].includes(userRole) && (
-                    <DropdownMenuItem asChild>
-                      <Link href={`/${currentLocale}/admin`}>
-                        <Users className="mr-2 h-4 w-4" />
-                        <span>{dict?.userMenu?.adminPanel || "Admin Panel"}</span>
+                    
+                    <div className="py-1">
+                      <Link 
+                        href={`/${currentLocale}/dashboard`}
+                        className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        {dict?.userMenu?.dashboard || "Dashboard"}
                       </Link>
-                    </DropdownMenuItem>
-                  )}
-                  {userRole === 'super_admin' && (
-                    <DropdownMenuItem asChild>
-                      <Link href={`/${currentLocale}/super-admin/organizations`}>
-                        <Building2 className="mr-2 h-4 w-4" />
-                        <span>{dict?.userMenu?.organizations || "Organizations"}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{dict?.userMenu?.logOut || "Log out"}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
+                      
+                      {['admin', 'super_admin'].includes(userRole) && (
+                        <Link 
+                          href={`/${currentLocale}/admin`}
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          {dict?.userMenu?.adminPanel || "Admin Panel"}
+                        </Link>
+                      )}
+                      
+                      {userRole === 'super_admin' && (
+                        <Link 
+                          href={`/${currentLocale}/super-admin/organizations`}
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <Building2 className="mr-2 h-4 w-4" />
+                          {dict?.userMenu?.organizations || "Organizations"}
+                        </Link>
+                      )}
+                      
+                      <div className="border-t border-gray-100 my-1"></div>
+                      
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setIsUserDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {dict?.userMenu?.logOut || "Log out"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
