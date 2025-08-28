@@ -15,6 +15,8 @@ import {
   HardDrive,
   Download
 } from 'lucide-react';
+import RealTimeActivityFeed from './RealTimeActivityFeed';
+import PredictiveAnalytics from './PredictiveAnalytics';
 import {
   ResponsiveContainer,
   PieChart,
@@ -358,9 +360,10 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="predictive">Predictive</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -520,35 +523,12 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
           </Card>
         </TabsContent>
 
+        <TabsContent value="predictive" className="space-y-6">
+          <PredictiveAnalytics organizationId={organizationId} />
+        </TabsContent>
+
         <TabsContent value="activity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {analytics.recentActivity.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">
-                  No recent activity
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {analytics.recentActivity.slice(0, 10).map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <div className="font-medium text-sm">{activity.action.replace(/_/g, ' ')}</div>
-                        <div className="text-xs text-muted-foreground">
-                          by {activity.user.name || activity.user.email}
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDate(activity.createdAt)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <RealTimeActivityFeed organizationId={organizationId} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
