@@ -15,7 +15,10 @@ Last updated: 2025-08-26
   - ✅ FTS (GIN) index on content
   - ✅ IVFFLAT vector index with maintenance endpoint
   - ✅ `/rag` UI controls (mode, alpha)
+- ✅ **Phase 7 COMPLETED**: Ops & Deployment (production-ready with security audit)
+- ✅ **Phase 8 COMPLETED**: Guardian Emails & Communication system
 - Web app running on http://localhost:3000
+- **NEXT**: Phase 9 - Stretch Goals (multi-tenant orgs, analytics, etc.)
 
 ## Completed (to date)
 - ✅ Next.js + TS + App Router scaffolded in `web/`
@@ -45,12 +48,12 @@ Last updated: 2025-08-26
 - ✅ Enhanced dashboard with role-specific features
 
 ## In Progress
-- ⚠️ **Phase 7: Ops & Deployment** (NEARLY COMPLETE - REVIEW REQUIRED BEFORE PUBLISHING)
+- ✅ **Phase 7: Ops & Deployment** (COMPLETED)
   - ✅ Deployment targets and environment configs
   - ✅ Database migrations workflow  
   - ✅ Observability (logs/metrics), backups
   - ✅ Vercel deployment + managed Postgres/Redis
-  - ⚠️ **TODO**: Final security audit and production hardening review
+  - ✅ **COMPLETED**: Final security audit and production hardening review
 
 ## Blockers/Risks
 - None currently.
@@ -91,12 +94,12 @@ Last updated: 2025-08-26
   - ✅ Automated testing pipeline (GitHub Actions)
   - ✅ Evaluation pipeline tested; similarity thresholding + re‑ranking
 
-7. ⚠️ **Phase 7 — Ops & Deployment** (NEARLY COMPLETE - REVIEW REQUIRED)
+7. ✅ **Phase 7 — Ops & Deployment** (COMPLETED)
   - ✅ Environment configs and secrets management
   - ✅ Database migrations workflow
   - ✅ Observability (logs/metrics), backups
   - ✅ Vercel deployment + managed Postgres/Redis
-  - ⚠️ **TODO**: Final security audit and production hardening review
+  - ✅ **COMPLETED**: Final security audit and production hardening review
 
 8. ✅ **Phase 8 — Guardian Emails & Communication** (COMPLETED)
   - ✅ Guardian ↔ Student linking with consent management
@@ -117,7 +120,7 @@ Last updated: 2025-08-26
 - ✅ M4: Background ingestion + status — **COMPLETED**
 - ✅ M5: Role-based UX + admin panel — **COMPLETED**
 - ✅ M6: Quality evaluation + hybrid search — **COMPLETED**
-- ⚠️ M7: Ops & Deployment — **NEARLY COMPLETE (REVIEW REQUIRED)**
+- ✅ M7: Ops & Deployment — **COMPLETED**
 - ✅ M8: Guardian Emails & Communication — **COMPLETED**
 
 ## Notes

@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Trash2, Edit, Users, FileText, Settings } from 'lucide-react';
+import { Trash2, Edit, Users, FileText, Settings, BarChart3 } from 'lucide-react';
+import OrganizationAnalyticsDashboard from '@/components/OrganizationAnalyticsDashboard';
 
 interface Organization {
   id: string;
@@ -38,6 +39,7 @@ export default function SuperAdminOrganizationsPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   
   const [newOrg, setNewOrg] = useState({
     name: '',
@@ -153,67 +155,83 @@ export default function SuperAdminOrganizationsPage() {
           <h1 className="text-3xl font-bold">Organizations</h1>
           <p className="text-muted-foreground">Manage all organizations in the system</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Create Organization</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Create New Organization</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Organization Name</Label>
-                <Input
-                  id="name"
-                  value={newOrg.name}
-                  onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
-                  placeholder="Demo School"
-                />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            className="flex items-center gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>Create Organization</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Organization</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Organization Name</Label>
+                  <Input
+                    id="name"
+                    value={newOrg.name}
+                    onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
+                    placeholder="Demo School"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={newOrg.description}
+                    onChange={(e) => setNewOrg({ ...newOrg, description: e.target.value })}
+                    placeholder="Optional description"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="domain">Custom Domain</Label>
+                  <Input
+                    id="domain"
+                    value={newOrg.domain}
+                    onChange={(e) => setNewOrg({ ...newOrg, domain: e.target.value })}
+                    placeholder="school.edu (optional)"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="tier">Tier</Label>
+                  <Select value={newOrg.tier} onValueChange={(value: any) => setNewOrg({ ...newOrg, tier: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button 
+                  onClick={createOrganization} 
+                  disabled={creating}
+                  className="w-full"
+                >
+                  {creating ? 'Creating...' : 'Create Organization'}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={newOrg.description}
-                  onChange={(e) => setNewOrg({ ...newOrg, description: e.target.value })}
-                  placeholder="Optional description"
-                />
-              </div>
-              <div>
-                <Label htmlFor="domain">Custom Domain</Label>
-                <Input
-                  id="domain"
-                  value={newOrg.domain}
-                  onChange={(e) => setNewOrg({ ...newOrg, domain: e.target.value })}
-                  placeholder="school.edu (optional)"
-                />
-              </div>
-              <div>
-                <Label htmlFor="tier">Tier</Label>
-                <Select value={newOrg.tier} onValueChange={(value: any) => setNewOrg({ ...newOrg, tier: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="basic">Basic</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button 
-                onClick={createOrganization} 
-                disabled={creating}
-                className="w-full"
-              >
-                {creating ? 'Creating...' : 'Create Organization'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {showAnalytics && (
+        <div className="mb-8">
+          <OrganizationAnalyticsDashboard />
+        </div>
+      )}
 
       <Card>
         <CardHeader>
