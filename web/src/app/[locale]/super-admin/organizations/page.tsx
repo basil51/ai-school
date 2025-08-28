@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import { Trash2, Users, FileText, Settings, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import OrganizationAnalyticsDashboard from '@/components/OrganizationAnalyticsDashboard';
 import OrganizationDetails from '@/components/OrganizationDetails';
+import { useTranslations } from '@/lib/useTranslations';
+import { useParams } from 'next/navigation';
 
 interface Organization {
   id: string;
@@ -39,6 +41,9 @@ interface Organization {
 
 
 export default function SuperAdminOrganizationsPage() {
+  const { dict } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -64,11 +69,11 @@ export default function SuperAdminOrganizationsPage() {
         const data = await response.json();
         setOrganizations(data);
       } else {
-        toast.error('Failed to fetch organizations');
+        toast.error(dict?.superAdmin?.failedToFetch || 'Failed to fetch organizations');
       }
     } catch (error) {
       console.error('Error fetching organizations:', error);
-      toast.error('Failed to fetch organizations');
+      toast.error(dict?.superAdmin?.failedToFetch || 'Failed to fetch organizations');
     } finally {
       setLoading(false);
     }
@@ -86,7 +91,7 @@ export default function SuperAdminOrganizationsPage() {
 
   const createOrganization = async () => {
     if (!newOrg.name) {
-      toast.error('Organization name is required');
+      toast.error(dict?.superAdmin?.organizationNameRequired || 'Organization name is required');
       return;
     }
 
@@ -105,21 +110,22 @@ export default function SuperAdminOrganizationsPage() {
         setOrganizations([organization, ...organizations]);
         setNewOrg({ name: '', description: '', domain: '', tier: 'free' });
         setIsDialogOpen(false);
-        toast.success('Organization created successfully');
+        toast.success(dict?.superAdmin?.organizationCreated || 'Organization created successfully');
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Failed to create organization');
+        toast.error(error.error || (dict?.superAdmin?.failedToCreate || 'Failed to create organization'));
       }
     } catch (error) {
       console.error('Error creating organization:', error);
-      toast.error('Failed to create organization');
+      toast.error(dict?.superAdmin?.failedToCreate || 'Failed to create organization');
     } finally {
       setCreating(false);
     }
   };
 
   const deleteOrganization = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+    const confirmMessage = (dict?.superAdmin?.confirmDelete || 'Are you sure you want to delete "{name}"? This action cannot be undone.').replace('{name}', name);
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -130,23 +136,23 @@ export default function SuperAdminOrganizationsPage() {
 
       if (response.ok) {
         setOrganizations(organizations.filter(org => org.id !== id));
-        toast.success('Organization deleted successfully');
+        toast.success(dict?.superAdmin?.organizationDeleted || 'Organization deleted successfully');
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Failed to delete organization');
+        toast.error(error.error || (dict?.superAdmin?.failedToDelete || 'Failed to delete organization'));
       }
     } catch (error) {
       console.error('Error deleting organization:', error);
-      toast.error('Failed to delete organization');
+      toast.error(dict?.superAdmin?.failedToDelete || 'Failed to delete organization');
     }
   };
 
   const getTierBadge = (tier: string) => {
     const tierConfig = {
-      free: { variant: 'secondary' as const, text: 'Free' },
-      basic: { variant: 'default' as const, text: 'Basic' },
-      premium: { variant: 'outline' as const, text: 'Premium', className: 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' },
-      enterprise: { variant: 'destructive' as const, text: 'Enterprise' },
+      free: { variant: 'secondary' as const, text: dict?.superAdmin?.tiers?.free || 'Free' },
+      basic: { variant: 'default' as const, text: dict?.superAdmin?.tiers?.basic || 'Basic' },
+      premium: { variant: 'outline' as const, text: dict?.superAdmin?.tiers?.premium || 'Premium', className: 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' },
+      enterprise: { variant: 'destructive' as const, text: dict?.superAdmin?.tiers?.enterprise || 'Enterprise' },
     };
     const config = tierConfig[tier as keyof typeof tierConfig] || tierConfig.free;
     return <Badge variant={config.variant} className={(config as any).className}>{config.text}</Badge>;
@@ -157,7 +163,7 @@ export default function SuperAdminOrganizationsPage() {
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center">Loading organizations...</div>
+        <div className="text-center">{dict?.superAdmin?.loadingOrganizations || "Loading organizations..."}</div>
       </div>
     );
   }
@@ -166,8 +172,8 @@ export default function SuperAdminOrganizationsPage() {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Organizations</h1>
-          <p className="text-muted-foreground">Manage all organizations in the system</p>
+          <h1 className="text-3xl font-bold">{dict?.superAdmin?.organizations || "Organizations"}</h1>
+          <p className="text-muted-foreground">{dict?.superAdmin?.organizationsDescription || "Manage all organizations in the system"}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -176,60 +182,60 @@ export default function SuperAdminOrganizationsPage() {
             className="flex items-center gap-2"
           >
             <BarChart3 className="h-4 w-4" />
-            {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+            {showAnalytics ? (dict?.superAdmin?.hideAnalytics || 'Hide Analytics') : (dict?.superAdmin?.showAnalytics || 'Show Analytics')}
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>Create Organization</Button>
+              <Button>{dict?.superAdmin?.createOrganization || "Create Organization"}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create New Organization</DialogTitle>
+                <DialogTitle>{dict?.superAdmin?.createNewOrganization || "Create New Organization"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Organization Name</Label>
+                  <Label htmlFor="name">{dict?.superAdmin?.organizationName || "Organization Name"}</Label>
                   <Input
                     id="name"
                     value={newOrg.name}
                     onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
-                    placeholder="Enter organization name"
+                    placeholder={dict?.superAdmin?.organizationNamePlaceholder || "Enter organization name"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{dict?.superAdmin?.description || "Description"}</Label>
                   <Input
                     id="description"
                     value={newOrg.description}
                     onChange={(e) => setNewOrg({ ...newOrg, description: e.target.value })}
-                    placeholder="Enter description (optional)"
+                    placeholder={dict?.superAdmin?.descriptionPlaceholder || "Enter description (optional)"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="domain">Custom Domain</Label>
+                  <Label htmlFor="domain">{dict?.superAdmin?.customDomain || "Custom Domain"}</Label>
                   <Input
                     id="domain"
                     value={newOrg.domain}
                     onChange={(e) => setNewOrg({ ...newOrg, domain: e.target.value })}
-                    placeholder="Enter custom domain (optional)"
+                    placeholder={dict?.superAdmin?.customDomainPlaceholder || "Enter custom domain (optional)"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tier">Tier</Label>
+                  <Label htmlFor="tier">{dict?.superAdmin?.tier || "Tier"}</Label>
                   <Select value={newOrg.tier} onValueChange={(value: any) => setNewOrg({ ...newOrg, tier: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">Free</SelectItem>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                      <SelectItem value="free">{dict?.superAdmin?.tiers?.free || "Free"}</SelectItem>
+                      <SelectItem value="basic">{dict?.superAdmin?.tiers?.basic || "Basic"}</SelectItem>
+                      <SelectItem value="premium">{dict?.superAdmin?.tiers?.premium || "Premium"}</SelectItem>
+                      <SelectItem value="enterprise">{dict?.superAdmin?.tiers?.enterprise || "Enterprise"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button onClick={createOrganization} disabled={creating} className="w-full">
-                  {creating ? 'Creating...' : 'Create Organization'}
+                  {creating ? (dict?.superAdmin?.creating || 'Creating...') : (dict?.superAdmin?.createOrganizationButton || 'Create Organization')}
                 </Button>
               </div>
             </DialogContent>
@@ -245,25 +251,25 @@ export default function SuperAdminOrganizationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Organizations ({organizations.length})</CardTitle>
+          <CardTitle>{dict?.superAdmin?.allOrganizations || "All Organizations"} ({organizations.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {organizations.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              No organizations found. Create one to get started.
+              {dict?.superAdmin?.noOrganizationsFound || "No organizations found. Create one to get started."}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead></TableHead>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Documents</TableHead>
-                  <TableHead>Domain</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{dict?.superAdmin?.organization || "Organization"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.tier || "Tier"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.users || "Users"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.documents || "Documents"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.domain || "Domain"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.status || "Status"}</TableHead>
+                  <TableHead>{dict?.superAdmin?.actions || "Actions"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -321,12 +327,12 @@ export default function SuperAdminOrganizationsPage() {
                             {org.domain}
                           </code>
                         ) : (
-                          <span className="text-muted-foreground text-sm">None</span>
+                          <span className="text-muted-foreground text-sm">{dict?.superAdmin?.none || "None"}</span>
                         )}
                       </TableCell>
                       <TableCell>
                         <Badge variant={org.isActive ? 'default' : 'secondary'}>
-                          {org.isActive ? 'Active' : 'Inactive'}
+                          {org.isActive ? (dict?.superAdmin?.active || 'Active') : (dict?.superAdmin?.inactive || 'Inactive')}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -335,6 +341,7 @@ export default function SuperAdminOrganizationsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => toggleRowExpansion(org.id)}
+                            title={dict?.superAdmin?.settings || "Settings"}
                           >
                             <Settings className="h-4 w-4" />
                           </Button>
@@ -342,6 +349,7 @@ export default function SuperAdminOrganizationsPage() {
                             size="sm"
                             variant="destructive"
                             onClick={() => deleteOrganization(org.id, org.name)}
+                            title={dict?.superAdmin?.delete || "Delete"}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
