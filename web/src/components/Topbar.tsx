@@ -78,8 +78,12 @@ export default function Topbar() {
               <div 
                 className="relative"
                 onMouseEnter={() => setIsUserDropdownOpen(true)}
-                onMouseLeave={() => {
-                  setTimeout(() => setIsUserDropdownOpen(false), 100);
+                onMouseLeave={(e) => {
+                  // Check if we're moving to the dropdown
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                    setTimeout(() => setIsUserDropdownOpen(false), 50);
+                  }
                 }}
               >
                 <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors">
@@ -91,7 +95,14 @@ export default function Topbar() {
                 
                 {/* Custom Dropdown */}
                 {isUserDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                  <div 
+                    className="absolute top-full right-0 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+                    style={{ marginTop: '0px' }}
+                    onMouseEnter={() => setIsUserDropdownOpen(true)}
+                    onMouseLeave={() => {
+                      setTimeout(() => setIsUserDropdownOpen(false), 50);
+                    }}
+                  >
                     <div className="p-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">
                         {dict?.userMenu?.welcomeBack || "Welcome back,"} {session.user?.name || (dict?.userMenu?.user || 'User')}
