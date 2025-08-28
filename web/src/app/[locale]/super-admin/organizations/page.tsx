@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -274,8 +274,8 @@ export default function SuperAdminOrganizationsPage() {
               </TableHeader>
               <TableBody>
                 {organizations.map((org) => (
-                  <>
-                    <TableRow key={org.id}>
+                  <React.Fragment key={org.id}>
+                    <TableRow>
                       <TableCell>
                         <Button
                           size="sm"
@@ -365,7 +365,7 @@ export default function SuperAdminOrganizationsPage() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>
