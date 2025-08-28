@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, Users, Building2, Globe } from "lucide-react";
+import { Settings, LogOut, Users, Building2, Globe, User } from "lucide-react";
 import { locales, Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";
 
@@ -72,43 +72,23 @@ export default function Topbar() {
           
           {session && (
             <div className="flex items-center gap-4">
-              {/* Quick Navigation for Admins */}
-              {['admin', 'super_admin'].includes(userRole) && (
-                <div className="hidden md:flex items-center gap-2">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/${currentLocale}/admin`}>
-                      <Users className="h-4 w-4 mr-2" />
-                      {dict?.userMenu?.adminPanel || "Admin"}
-                    </Link>
-                  </Button>
-                  {userRole === 'super_admin' && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/${currentLocale}/super-admin/organizations`}>
-                        <Building2 className="h-4 w-4 mr-2" />
-                        {dict?.userMenu?.organizations || "Organizations"}
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              )}
-
               {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {session.user?.name?.charAt(0) || session.user?.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  {dict?.userMenu?.hi || "Hi,"} {session.user?.name || session.user?.email}
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session.user?.name || (dict?.userMenu?.user || 'User')}
-                      </p>
+                                      <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {dict?.userMenu?.welcomeBack || "Welcome back,"} {session.user?.name || (dict?.userMenu?.user || 'User')}
+                        </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {session.user?.email}
                       </p>
@@ -148,7 +128,8 @@ export default function Topbar() {
                     <span>{dict?.userMenu?.logOut || "Log out"}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+                </DropdownMenu>
+              </div>
             </div>
           )}
         </div>

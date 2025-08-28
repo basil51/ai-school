@@ -1,17 +1,15 @@
 "use client";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   BookOpen, 
   Users, 
   Settings, 
-  LogOut, 
   GraduationCap, 
   FileText,
   BarChart3
@@ -70,37 +68,9 @@ export default function Dashboard() {
     return dict?.roles?.[role] || role;
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex justify-end">
-          <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {session.user?.name?.charAt(0) || session.user?.email?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-sm">
-                  <div className="font-medium text-gray-900">
-                    {session.user?.name || session.user?.email}
-                  </div>
-                  <Badge variant={getRoleColor(userRole)} className="text-xs">
-                    {getRoleIcon(userRole)}
-                    <span className="ml-1">{getRoleDisplay(userRole)}</span>
-                  </Badge>
-                </div>
-              </div>
-              <Button
-                onClick={() => signOut({ callbackUrl: `/${locale}/signin` })}
-                variant="outline"
-                size="sm"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                {dict?.auth?.signout || "Sign Out"}
-              </Button>
-          </div>
-        </div>
       </div>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

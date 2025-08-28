@@ -350,7 +350,9 @@
     "adminPanel": "Admin Panel",
     "organizations": "Organizations",
     "logOut": "Log out",
-    "user": "User"
+    "user": "User",
+    "hi": "Hi,",
+    "welcomeBack": "Welcome back,"
   },
   "analytics": {
     "predictiveAnalytics": "Predictive Analytics",

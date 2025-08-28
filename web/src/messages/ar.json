@@ -350,7 +350,9 @@
     "adminPanel": "لوحة الإدارة",
     "organizations": "المنظمات",
     "logOut": "تسجيل الخروج",
-    "user": "المستخدم"
+    "user": "المستخدم",
+    "hi": "مرحباً،",
+    "welcomeBack": "أهلاً بعودتك،"
   },
   "analytics": {
     "predictiveAnalytics": "التحليلات التنبؤية",
