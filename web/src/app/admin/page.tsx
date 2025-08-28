@@ -33,6 +33,9 @@ interface Organization {
   name: string;
   slug: string;
   tier: string;
+  monthlyQuestions: number;
+  monthlyDocuments: number;
+  storageUsed: number;
   settings?: {
     maxUsers: number;
     maxDocuments: number;

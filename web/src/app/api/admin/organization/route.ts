@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getOrganizationContext } from '@/lib/organization';
 import { prisma } from '@/lib/prisma';
 

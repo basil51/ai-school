@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { toSerializable } from '@/lib/utils';
 
@@ -35,7 +35,7 @@ export async function GET() {
       }),
       prisma.ragDocument.aggregate({
         _sum: {
-          fileSize: true,
+          length: true,
         },
       }),
       prisma.organization.count({
@@ -151,7 +151,7 @@ export async function GET() {
       totalUsers,
       totalDocuments,
       totalQuestions: totalQuestions._sum.monthlyQuestions || 0,
-      totalStorage: Number(totalStorage._sum.fileSize || 0),
+      totalStorage: Number(totalStorage._sum.length || 0),
       activeOrganizations,
       tierDistribution: tierStats,
       topOrganizations: topOrganizations.map(org => ({
@@ -161,7 +161,7 @@ export async function GET() {
         userCount: org._count.users,
         documentCount: org._count.documents,
         questionCount: org.monthlyQuestions,
-        storageUsed: Number(org.storageUsed),
+        storageUsed: Number(org.storageUsed || 0),
       })),
       recentActivity: recentActivity.map(activity => ({
         id: activity.id,

@@ -56,7 +56,7 @@ export default function ManageChunksPage() {
         setTotal(data.total);
       }
     } catch (e) {
-      console.error("Failed to fetch chunks", e);
+      console.error("Failed to fetch chunks", e, pageSize);
     } finally {
       setLoading(false);
     }

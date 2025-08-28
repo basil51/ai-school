@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           guardianEmail: guardian.email,
           studentEmail: student.email,
           status: 'failed',
-          reason: error.message,
+          reason: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }

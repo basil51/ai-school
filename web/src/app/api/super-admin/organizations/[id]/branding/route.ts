@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { toSerializable } from '@/lib/utils';
 import { z } from 'zod';
@@ -14,7 +14,7 @@ const updateBrandingSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -27,7 +27,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Super admin access required' }, { status: 403 });
     }
 
-    const organizationId = params.id;
+    const { id: organizationId } = await params;
     const body = await request.json();
     const { primaryColor, logoUrl, customDomain, isActive } = updateBrandingSchema.parse(body);
 
@@ -85,7 +85,7 @@ export async function PUT(
           organizationId,
           userId: user.id,
           action: 'organization_updated',
-          resourceType: 'organization',
+          resource: 'organization',
           resourceId: organizationId,
           details: {
             primaryColor,
@@ -103,7 +103,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: (error as any).errors },
         { status: 400 }
       );
     }
@@ -118,7 +118,7 @@ export async function PUT(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -131,7 +131,7 @@ export async function GET(
       return NextResponse.json({ error: 'Super admin access required' }, { status: 403 });
     }
 
-    const organizationId = params.id;
+    const { id: organizationId } = await params;
 
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },

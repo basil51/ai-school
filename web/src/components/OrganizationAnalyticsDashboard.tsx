@@ -13,8 +13,6 @@ import {
   TrendingUp, 
   Building2,
   Activity,
-  Globe,
-  DollarSign,
   BarChart3
 } from 'lucide-react';
 

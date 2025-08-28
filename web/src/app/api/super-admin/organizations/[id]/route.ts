@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { toSerializable } from '@/lib/utils';
 import { z } from 'zod';
@@ -122,7 +122,7 @@ export async function PATCH(
       );
     }
 
-    let dataToUpdate: any = { ...updateData };
+    const dataToUpdate: any = { ...updateData };
 
     // Handle name change (update slug)
     if (updateData.name && updateData.name !== existingOrg.name) {
@@ -224,7 +224,7 @@ export async function PATCH(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: (error as any).errors },
         { status: 400 }
       );
     }

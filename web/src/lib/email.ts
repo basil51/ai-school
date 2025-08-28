@@ -41,7 +41,7 @@ export class EmailService {
       console.error('Email sending failed:', error);
       
       // Log the failed email
-      await this.logEmail(data.to, data.templateId, data.subject, data.html, 'failed', error.message);
+      await this.logEmail(data.to, data.templateId, data.subject, data.html, 'failed', error instanceof Error ? error.message : 'Unknown error');
       
       throw error;
     }

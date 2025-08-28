@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { NextRequest } from 'next/server';
 import { getTenantFromHeaders } from '@/middleware/tenant';
-import { OrganizationTier } from '@prisma/client';
+//import { OrganizationTier } from '@prisma/client';
 
 export interface OrganizationContext {
   organizationId: string | null;
@@ -240,7 +240,7 @@ export async function logAuditActivity(
       resource,
       resourceId,
       details: details ? JSON.parse(JSON.stringify(details)) : null,
-      ipAddress: request?.ip || request?.headers.get('x-forwarded-for') || null,
+      ipAddress: request?.headers.get('x-forwarded-for') || request?.headers.get('x-real-ip') || null,
       userAgent: request?.headers.get('user-agent') || null,
     },
   });

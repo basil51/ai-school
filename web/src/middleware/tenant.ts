@@ -67,7 +67,7 @@ async function getOrganizationByDomain(domain: string): Promise<string | null> {
     // For now, we'll return null since we don't have database access in middleware
     return null;
   } catch (error) {
-    console.error('Error looking up organization by domain:', error);
+    console.error('Error looking up organization by domain:', error, domain);
     return null;
   }
 }

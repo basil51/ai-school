@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { toast } from 'sonner';
-import { Trash2, Edit, Users, FileText, Settings, BarChart3 } from 'lucide-react';
+import { Trash2, Users, FileText, Settings, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import OrganizationAnalyticsDashboard from '@/components/OrganizationAnalyticsDashboard';
+import OrganizationDetails from '@/components/OrganizationDetails';
 
 interface Organization {
   id: string;
@@ -34,12 +36,15 @@ interface Organization {
   };
 }
 
+
+
 export default function SuperAdminOrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   
   const [newOrg, setNewOrg] = useState({
     name: '',
@@ -67,6 +72,16 @@ export default function SuperAdminOrganizationsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleRowExpansion = (organizationId: string) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(organizationId)) {
+      newExpandedRows.delete(organizationId);
+    } else {
+      newExpandedRows.add(organizationId);
+    }
+    setExpandedRows(newExpandedRows);
   };
 
   const createOrganization = async () => {
@@ -133,17 +148,16 @@ export default function SuperAdminOrganizationsPage() {
       premium: { variant: 'outline' as const, text: 'Premium', className: 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' },
       enterprise: { variant: 'destructive' as const, text: 'Enterprise' },
     };
-
     const config = tierConfig[tier as keyof typeof tierConfig] || tierConfig.free;
     return <Badge variant={config.variant} className={(config as any).className}>{config.text}</Badge>;
   };
 
+
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading...</div>
-        </div>
+        <div className="text-center">Loading organizations...</div>
       </div>
     );
   }
@@ -168,7 +182,7 @@ export default function SuperAdminOrganizationsPage() {
             <DialogTrigger asChild>
               <Button>Create Organization</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create New Organization</DialogTitle>
               </DialogHeader>
@@ -179,7 +193,7 @@ export default function SuperAdminOrganizationsPage() {
                     id="name"
                     value={newOrg.name}
                     onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
-                    placeholder="Demo School"
+                    placeholder="Enter organization name"
                   />
                 </div>
                 <div>
@@ -188,7 +202,7 @@ export default function SuperAdminOrganizationsPage() {
                     id="description"
                     value={newOrg.description}
                     onChange={(e) => setNewOrg({ ...newOrg, description: e.target.value })}
-                    placeholder="Optional description"
+                    placeholder="Enter description (optional)"
                   />
                 </div>
                 <div>
@@ -197,7 +211,7 @@ export default function SuperAdminOrganizationsPage() {
                     id="domain"
                     value={newOrg.domain}
                     onChange={(e) => setNewOrg({ ...newOrg, domain: e.target.value })}
-                    placeholder="school.edu (optional)"
+                    placeholder="Enter custom domain (optional)"
                   />
                 </div>
                 <div>
@@ -214,11 +228,7 @@ export default function SuperAdminOrganizationsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button 
-                  onClick={createOrganization} 
-                  disabled={creating}
-                  className="w-full"
-                >
+                <Button onClick={createOrganization} disabled={creating} className="w-full">
                   {creating ? 'Creating...' : 'Create Organization'}
                 </Button>
               </div>
@@ -246,6 +256,7 @@ export default function SuperAdminOrganizationsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
                   <TableHead>Organization</TableHead>
                   <TableHead>Tier</TableHead>
                   <TableHead>Users</TableHead>
@@ -257,72 +268,96 @@ export default function SuperAdminOrganizationsPage() {
               </TableHeader>
               <TableBody>
                 {organizations.map((org) => (
-                  <TableRow key={org.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{org.name}</div>
-                        <div className="text-sm text-muted-foreground">/{org.slug}</div>
-                        {org.description && (
-                          <div className="text-xs text-muted-foreground">{org.description}</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getTierBadge(org.tier)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {org._count?.users || 0}
-                        {org.settings && (
-                          <span className="text-xs text-muted-foreground">
-                            /{org.settings.maxUsers}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        {org._count?.documents || 0}
-                        {org.settings && (
-                          <span className="text-xs text-muted-foreground">
-                            /{org.settings.maxDocuments}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {org.domain ? (
-                        <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                          {org.domain}
-                        </code>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">None</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={org.isActive ? 'default' : 'secondary'}>
-                        {org.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                  <>
+                    <TableRow key={org.id}>
+                      <TableCell>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => window.open(`/super-admin/organizations/${org.id}`, '_blank')}
+                          variant="ghost"
+                          onClick={() => toggleRowExpansion(org.id)}
                         >
-                          <Settings className="h-4 w-4" />
+                          {expandedRows.has(org.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteOrganization(org.id, org.name)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{org.name}</div>
+                          <div className="text-sm text-muted-foreground">/{org.slug}</div>
+                          {org.description && (
+                            <div className="text-xs text-muted-foreground">{org.description}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getTierBadge(org.tier)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {org._count?.users || 0}
+                          {org.settings && (
+                            <span className="text-xs text-muted-foreground">
+                              /{org.settings.maxUsers}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <FileText className="h-4 w-4" />
+                          {org._count?.documents || 0}
+                          {org.settings && (
+                            <span className="text-xs text-muted-foreground">
+                              /{org.settings.maxDocuments}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {org.domain ? (
+                          <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                            {org.domain}
+                          </code>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={org.isActive ? 'default' : 'secondary'}>
+                          {org.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleRowExpansion(org.id)}
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteOrganization(org.id, org.name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {expandedRows.has(org.id) && (
+                      <TableRow key={`${org.id}-expanded`}>
+                        <TableCell colSpan={8} className="p-0">
+                          <div className="p-6 bg-muted/30">
+                            <OrganizationDetails organizationId={org.id} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 ))}
               </TableBody>
             </Table>
@@ -332,3 +367,5 @@ export default function SuperAdminOrganizationsPage() {
     </div>
   );
 }
+
+

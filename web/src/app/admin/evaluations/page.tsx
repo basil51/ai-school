@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, TrendingUp, TrendingDown, CheckCircle, XCircle } from "lucide-react";
+import { RefreshCw, CheckCircle, XCircle } from "lucide-react";
 
 interface EvaluationResult {
   timestamp: string;
@@ -73,6 +73,7 @@ export default function EvaluationsPage() {
       setLastRun(mockResults[0]?.timestamp || null);
     } catch (err) {
       setError("Failed to fetch evaluation results");
+      console.error("Failed to fetch evaluation results", err);
     } finally {
       setLoading(false);
     }
