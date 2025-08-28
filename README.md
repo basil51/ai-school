@@ -1,6 +1,17 @@
-# AI School — Bootstrap README
+# AI School — Complete Learning Platform
 
-Kickstart a production-grade Next.js app with your stack: **pnpm, Next.js (App Router + TS), TailwindCSS, Axios, PostgreSQL (Prisma)**. This guide gets you from an empty folder to a running app with DB, auth, roles, seed script, linting, and scripts.
+A production-grade Next.js learning platform with AI-powered tutoring, RAG (Retrieval-Augmented Generation), and comprehensive guardian communication system. Built with **pnpm, Next.js (App Router + TS), TailwindCSS, PostgreSQL (Prisma), OpenAI, and Resend**.
+
+## Features
+
+- 🤖 **AI-Powered Tutoring**: Streaming chat with RAG-based responses
+- 📚 **Document Management**: Upload and ingest educational content
+- 🔍 **Hybrid Search**: BM25 + vector search for better retrieval
+- 📊 **Quality Evaluation**: RAGAS metrics for system performance
+- 👥 **Role-Based Access**: Students, Teachers, Guardians, Admins
+- 📧 **Guardian Communication**: Weekly progress reports via email
+- 🔄 **Background Processing**: Async document ingestion with Redis/BullMQ
+- 🎨 **Modern UI**: shadcn/ui components with responsive design
 
 ---
 

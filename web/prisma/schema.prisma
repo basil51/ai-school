@@ -19,6 +19,15 @@ enum Role {
   teacher
   guardian
   admin
+  super_admin
+}
+
+// --- Organization tiers ---
+enum OrganizationTier {
+  free
+  basic
+  premium
+  enterprise
 }
 
 model User {
@@ -27,10 +36,32 @@ model User {
   name      String?
   password  String?
   role      Role     @default(student)
+  organizationId String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  // Organization relationship
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
   // NextAuth relations
   accounts  Account[]
   sessions  Session[]
+  
+  // Guardian-Student relationships
+  guardianRelationships GuardianRelationship[] @relation("GuardianUser")
+  studentRelationships  GuardianRelationship[] @relation("StudentUser")
+  
+  // Email preferences
+  emailPreferences EmailPreference?
+  
+  // Progress tracking for emails
+  progressReports ProgressReport[]
+  
+  // Email logs
+  emailLogs EmailLog[]
+  
+  // Audit logs
+  auditLogs AuditLog[]
 }
 
 model Account {
@@ -65,13 +96,69 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// --- Organization Management ---
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  tier        OrganizationTier @default(free)
+  domain      String?  @unique // Optional custom domain
+  logoUrl     String?
+  primaryColor String? @default("#2563eb")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  users       User[]
+  documents   RagDocument[]
+  settings    OrganizationSettings?
+  auditLogs   AuditLog[]
+  
+  // Usage tracking
+  monthlyQuestions  Int @default(0)
+  monthlyDocuments  Int @default(0)
+  storageUsed      BigInt @default(0) // in bytes
+}
+
+model OrganizationSettings {
+  id             String @id @default(cuid())
+  organizationId String @unique
+  
+  // Feature flags
+  ragEnabled           Boolean @default(true)
+  guardianEmailsEnabled Boolean @default(true)
+  evaluationsEnabled   Boolean @default(false)
+  
+  // Limits based on tier
+  maxUsers            Int @default(50)
+  maxDocuments        Int @default(10)
+  maxQuestionsPerMonth Int @default(1000)
+  maxStorageBytes     BigInt @default(1073741824) // 1GB default
+  
+  // Customization
+  welcomeMessage      String?
+  customCss          String?
+  emailFromName      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
 // --- RAG Models ---
 model RagDocument {
   id        String   @id @default(cuid())
   title     String
   content   String   @db.Text
   length    Int
+  organizationId String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   chunks    RagChunk[]
 }
 
@@ -82,4 +169,114 @@ model RagChunk {
   embedding Unsupported("vector(1536)")
   document  RagDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+// --- Guardian-Student Relationships ---
+model GuardianRelationship {
+  id          String   @id @default(cuid())
+  guardianId  String
+  studentId   String
+  status      GuardianRelationshipStatus @default(pending)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  guardian    User     @relation("GuardianUser", fields: [guardianId], references: [id], onDelete: Cascade)
+  student     User     @relation("StudentUser", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([guardianId, studentId])
+}
+
+enum GuardianRelationshipStatus {
+  pending
+  approved
+  rejected
+  revoked
+}
+
+// --- Email Preferences ---
+model EmailPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  weeklyProgressEnabled Boolean  @default(true)
+  emailFrequency        EmailFrequency @default(weekly)
+  lastEmailSent         DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum EmailFrequency {
+  daily
+  weekly
+  monthly
+  never
+}
+
+// --- Progress Reports ---
+model ProgressReport {
+  id          String   @id @default(cuid())
+  userId      String
+  reportDate  DateTime @default(now())
+  sessionsCount Int    @default(0)
+  questionsAsked Int   @default(0)
+  topicsCovered String[] // Array of topics covered
+  timeSpent   Int      @default(0) // in minutes
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// --- Email Templates ---
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subject     String
+  htmlContent String   @db.Text
+  textContent String   @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Email logs using this template
+  emailLogs EmailLog[]
+}
+
+// --- Email Logs ---
+model EmailLog {
+  id          String   @id @default(cuid())
+  recipientId String
+  templateId  String?
+  subject     String
+  content     String   @db.Text
+  status      EmailStatus @default(sent)
+  sentAt      DateTime @default(now())
+  errorMessage String?
+  
+  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  template    EmailTemplate? @relation(fields: [templateId], references: [id])
+}
+
+enum EmailStatus {
+  sent
+  delivered
+  failed
+  bounced
+}
+
+// --- Audit Logging ---
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String?
+  userId         String?
+  action         String   // e.g., "user_created", "document_uploaded", "email_sent"
+  resource       String?  // e.g., "user", "document", "email"
+  resourceId     String?  // ID of the affected resource
+  details        Json?    // Additional details about the action
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+  
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

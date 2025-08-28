@@ -13,13 +13,31 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import OrganizationSwitcher from "@/components/OrganizationSwitcher";
 
 interface User {
   id: string;
   email: string;
   name: string | null;
-  role: "student" | "teacher" | "guardian" | "admin";
+  role: "student" | "teacher" | "guardian" | "admin" | "super_admin";
+  organizationId: string | null;
   createdAt: string;
+  organization?: {
+    name: string;
+    slug: string;
+  };
+}
+
+interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  tier: string;
+  settings?: {
+    maxUsers: number;
+    maxDocuments: number;
+    maxQuestionsPerMonth: number;
+  };
 }
 
 interface Document {
@@ -35,28 +53,32 @@ export default function AdminPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: "", name: "", role: "student" as const });
 
-  // Check if user is admin
+  // Check if user is admin or super_admin
   useEffect(() => {
     if (status === "loading") return;
-    if (!session || (session as any).role !== "admin") {
+    const userRole = (session as any)?.role;
+    if (!session || (!["admin", "super_admin"].includes(userRole))) {
       router.push("/dashboard");
     }
   }, [session, status, router]);
 
   useEffect(() => {
-    if (session && (session as any).role === "admin") {
+    const userRole = (session as any)?.role;
+    if (session && ["admin", "super_admin"].includes(userRole)) {
       fetchData();
     }
   }, [session]);
 
   const fetchData = async () => {
     try {
-      const [usersRes, docsRes] = await Promise.all([
+      const [usersRes, docsRes, orgRes] = await Promise.all([
         fetch("/api/admin/users"),
-        fetch("/api/admin/documents")
+        fetch("/api/admin/documents"),
+        fetch("/api/admin/organization")
       ]);
       
       if (usersRes.ok) {
@@ -67,6 +89,11 @@ export default function AdminPage() {
       if (docsRes.ok) {
         const docsData = await docsRes.json();
         setDocuments(docsData);
+      }
+
+      if (orgRes.ok) {
+        const orgData = await orgRes.json();
+        setOrganization(orgData);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -126,6 +153,7 @@ export default function AdminPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case "super_admin": return "destructive";
       case "admin": return "destructive";
       case "teacher": return "default";
       case "guardian": return "secondary";
@@ -144,7 +172,8 @@ export default function AdminPage() {
     );
   }
 
-  if (!session || (session as any).role !== "admin") {
+  const userRole = (session as any)?.role;
+  if (!session || (!["admin", "super_admin"].includes(userRole))) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -166,18 +195,86 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Super Admin Organization Switcher */}
+      {userRole === 'super_admin' && (
+        <div className="mb-6">
+          <OrganizationSwitcher 
+            currentOrgId={organization?.id || null}
+            compact={true}
+          />
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage users and documents</p>
+          <div className="flex items-center gap-2 mt-1">
+            {organization ? (
+              <div className="text-muted-foreground">
+                <span className="font-medium text-foreground">{organization.name}</span>
+                <span className="mx-2">•</span>
+                <span className="text-sm">{organization.tier.charAt(0).toUpperCase() + organization.tier.slice(1)} tier</span>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">
+                {userRole === 'super_admin' ? 'System-wide administration' : 'Manage users and documents'}
+              </p>
+            )}
+          </div>
         </div>
-        <Badge variant="outline">Admin</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">
+            {userRole === 'super_admin' ? 'Super Admin' : 'Admin'}
+          </Badge>
+          {userRole === 'super_admin' && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/super-admin/organizations')}
+            >
+              Manage Organizations
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Organization Usage Overview */}
+      {organization && organization.settings && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Organization Usage</CardTitle>
+            <CardDescription>Current usage against your {organization.tier} tier limits</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{users.length}</div>
+                <div className="text-sm text-muted-foreground">
+                  / {organization.settings.maxUsers} Users
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{documents.length}</div>
+                <div className="text-sm text-muted-foreground">
+                  / {organization.settings.maxDocuments} Documents
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{organization.monthlyQuestions || 0}</div>
+                <div className="text-sm text-muted-foreground">
+                  / {organization.settings.maxQuestionsPerMonth} Questions/Month
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
           <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
+          <TabsTrigger value="guardians">Guardians</TabsTrigger>
           <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
         </TabsList>
@@ -243,6 +340,7 @@ export default function AdminPage() {
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
+                    {userRole === 'super_admin' && <TableHead>Organization</TableHead>}
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -262,6 +360,18 @@ export default function AdminPage() {
                       <TableCell>
                         <Badge variant={getRoleColor(user.role)}>{user.role}</Badge>
                       </TableCell>
+                      {userRole === 'super_admin' && (
+                        <TableCell>
+                          {user.organization ? (
+                            <div className="text-sm">
+                              <div className="font-medium">{user.organization.name}</div>
+                              <div className="text-muted-foreground">/{user.organization.slug}</div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No organization</span>
+                          )}
+                        </TableCell>
+                      )}
                       <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <Button
@@ -325,6 +435,25 @@ export default function AdminPage() {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="guardians" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Guardian Relationships</CardTitle>
+              <CardDescription>Manage guardian-student relationships and email communications</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  Create and manage guardian-student relationships, send progress reports
+                </p>
+                <Button onClick={() => router.push('/admin/guardians')}>
+                  Manage Guardian Relationships
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

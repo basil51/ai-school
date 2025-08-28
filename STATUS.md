@@ -45,11 +45,12 @@ Last updated: 2025-08-26
 - ✅ Enhanced dashboard with role-specific features
 
 ## In Progress
-- 🔄 **Phase 7: Ops & Deployment**
-  - Deployment targets and environment configs
-  - Database migrations workflow
-  - Observability (logs/metrics), backups
-  - Vercel deployment + managed Postgres/Redis
+- ⚠️ **Phase 7: Ops & Deployment** (NEARLY COMPLETE - REVIEW REQUIRED BEFORE PUBLISHING)
+  - ✅ Deployment targets and environment configs
+  - ✅ Database migrations workflow  
+  - ✅ Observability (logs/metrics), backups
+  - ✅ Vercel deployment + managed Postgres/Redis
+  - ⚠️ **TODO**: Final security audit and production hardening review
 
 ## Blockers/Risks
 - None currently.
@@ -83,16 +84,31 @@ Last updated: 2025-08-26
    - ✅ Create admin panel for user and document management
    - ✅ Role-aware navigation and dashboards
 
-6. 🔄 **Phase 6 — Quality & Search** (IN PROGRESS)
+6. ✅ **Phase 6 — Quality & Search** (COMPLETED)
   - ✅ RAGAS evaluation metrics implemented
   - ✅ Hybrid search (BM25 + vector) working
   - ✅ Evaluation dashboard created
   - ✅ Automated testing pipeline (GitHub Actions)
-  - Next: Test evaluation pipeline; similarity thresholding + re‑ranking
+  - ✅ Evaluation pipeline tested; similarity thresholding + re‑ranking
+
+7. ⚠️ **Phase 7 — Ops & Deployment** (NEARLY COMPLETE - REVIEW REQUIRED)
+  - ✅ Environment configs and secrets management
+  - ✅ Database migrations workflow
+  - ✅ Observability (logs/metrics), backups
+  - ✅ Vercel deployment + managed Postgres/Redis
+  - ⚠️ **TODO**: Final security audit and production hardening review
+
+8. ✅ **Phase 8 — Guardian Emails & Communication** (COMPLETED)
+  - ✅ Guardian ↔ Student linking with consent management
+  - ✅ Weekly progress summaries via email (Resend/SMTP)
+  - ✅ Automated cron jobs (Vercel Cron or GitHub Actions)
+  - ✅ Email templates and unsubscribe management
+  - ✅ Admin UI for managing guardian relationships
+  - ✅ Email preferences and unsubscribe functionality
+  - ✅ Progress report generation and email sending
 
 ## Future Phases (Planning)
-- **Phase 7**: Ops & Deployment (monitoring, deployment)
-- **Phase 8**: Guardian Emails (weekly progress summaries)
+- **Phase 9**: Stretch Goals (multi-tenant orgs, analytics, etc.) - **NEXT**
 
 ## Milestones
 - ✅ M1: Auth working (login/logout, protected `/dashboard`) — **COMPLETED**
@@ -101,7 +117,8 @@ Last updated: 2025-08-26
 - ✅ M4: Background ingestion + status — **COMPLETED**
 - ✅ M5: Role-based UX + admin panel — **COMPLETED**
 - ✅ M6: Quality evaluation + hybrid search — **COMPLETED**
--. 🔄 M7: Ops & Deployment — **IN PROGRESS**
+- ⚠️ M7: Ops & Deployment — **NEARLY COMPLETE (REVIEW REQUIRED)**
+- ✅ M8: Guardian Emails & Communication — **COMPLETED**
 
 ## Notes
 - Postgres mapped to host `5433` (update envs in all services).

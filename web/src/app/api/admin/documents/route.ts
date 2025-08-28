@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { getOrganizationContext } from "@/lib/organization";
 
 export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session || (session as any).role !== "admin") {
+    const userRole = (session as any)?.role;
+    if (!session || !["admin", "super_admin"].includes(userRole)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const context = await getOrganizationContext();
 
     // Use raw SQL to get documents with chunk counts
     const documents = await prisma.$queryRaw`
@@ -23,6 +25,7 @@ export async function GET(_req: NextRequest) {
         COUNT(c.id)::int as chunk_count
       FROM "RagDocument" d
       LEFT JOIN "RagChunk" c ON d.id = c."docId"
+      ${context && !context.isSuperAdmin && context.organizationId ? Prisma.sql`WHERE d."organizationId" = ${context.organizationId}` : Prisma.empty}
       GROUP BY d.id, d.title, d.length, d."createdAt"
       ORDER BY d."createdAt" DESC
     `;

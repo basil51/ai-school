@@ -92,11 +92,20 @@ export default function SignIn() {
           <p className="text-sm text-gray-600">
             Demo accounts:
           </p>
-          <div className="text-xs text-gray-500 mt-2 space-y-1">
+          <div className="text-xs text-gray-500 mt-2 space-y-2">
+            <div className="font-semibold text-red-600">Super Admin (All Organizations):</div>
+            <div>superadmin@example.com / super123</div>
+            
+            <div className="font-semibold text-blue-600 mt-3">Demo School Organization:</div>
             <div>admin@example.com / admin123</div>
             <div>teacher@example.com / teach123</div>
             <div>student@example.com / study123</div>
             <div>guardian@example.com / guard123</div>
+            
+            <div className="font-semibold text-green-600 mt-3">Tech Academy Organization:</div>
+            <div>admin2@example.com / admin123</div>
+            <div>teacher2@example.com / teach123</div>
+            <div>student3@example.com / study123</div>
           </div>
         </div>
       </div>
