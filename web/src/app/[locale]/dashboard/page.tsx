@@ -16,21 +16,26 @@ import {
   FileText,
   BarChart3
 } from "lucide-react";
+import { useTranslations } from "@/lib/useTranslations";
+import { useParams } from "next/navigation";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { dict, loading: dictLoading } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/signin");
+      router.push(`/${locale}/signin`);
     }
-  }, [status, router]);
+  }, [status, router, locale]);
 
-  if (status === "loading") {
+  if (status === "loading" || dictLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">{dict?.common?.loading || "Loading..."}</div>
       </div>
     );
   }
@@ -61,6 +66,10 @@ export default function Dashboard() {
     }
   };
 
+  const getRoleDisplay = (role: string) => {
+    return dict?.roles?.[role] || role;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -78,17 +87,17 @@ export default function Dashboard() {
                   </div>
                   <Badge variant={getRoleColor(userRole)} className="text-xs">
                     {getRoleIcon(userRole)}
-                    <span className="ml-1">{userRole}</span>
+                    <span className="ml-1">{getRoleDisplay(userRole)}</span>
                   </Badge>
                 </div>
               </div>
               <Button
-                onClick={() => signOut({ callbackUrl: "/signin" })}
+                onClick={() => signOut({ callbackUrl: `/${locale}/signin` })}
                 variant="outline"
                 size="sm"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {dict?.auth?.signout || "Sign Out"}
               </Button>
           </div>
         </div>
@@ -102,16 +111,16 @@ export default function Dashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <BookOpen className="h-5 w-5 mr-2" />
-                  AI Tutor
+                  {dict?.dashboard?.aiTutor || "AI Tutor"}
                 </CardTitle>
                 <CardDescription>
-                  Start learning with our AI-powered tutor
+                  {dict?.dashboard?.startLearningDescription || "Start learning with our AI-powered tutor"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/tutor">
+                <Link href={`/${locale}/tutor`}>
                   <Button className="w-full">
-                    Start Learning
+                    {dict?.dashboard?.startLearning || "Start Learning"}
                   </Button>
                 </Link>
               </CardContent>
@@ -123,16 +132,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <FileText className="h-5 w-5 mr-2" />
-                    Upload Content
+                    {dict?.dashboard?.uploadContent || "Upload Content"}
                   </CardTitle>
                   <CardDescription>
-                    Upload educational materials for the AI tutor
+                    {dict?.dashboard?.uploadContentDescription || "Upload educational materials for the AI tutor"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/rag">
+                  <Link href={`/${locale}/rag`}>
                     <Button className="w-full" variant="outline">
-                      Upload Documents
+                      {dict?.dashboard?.uploadDocuments || "Upload Documents"}
                     </Button>
                   </Link>
                 </CardContent>
@@ -145,16 +154,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Settings className="h-5 w-5 mr-2" />
-                    Admin Panel
+                    {dict?.dashboard?.adminPanel || "Admin Panel"}
                   </CardTitle>
                   <CardDescription>
-                    Manage users and system settings
+                    {dict?.dashboard?.adminPanelDescription || "Manage users and system settings"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/admin">
+                  <Link href={`/${locale}/admin`}>
                     <Button className="w-full" variant="outline">
-                      Manage System
+                      {dict?.dashboard?.manageSystem || "Manage System"}
                     </Button>
                   </Link>
                 </CardContent>
@@ -167,15 +176,15 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BarChart3 className="h-5 w-5 mr-2" />
-                    Analytics
+                    {dict?.dashboard?.analytics || "Analytics"}
                   </CardTitle>
                   <CardDescription>
-                    View learning analytics and insights
+                    {dict?.dashboard?.analyticsDescription || "View learning analytics and insights"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" variant="outline" disabled>
-                    Coming Soon
+                    {dict?.dashboard?.comingSoon || "Coming Soon"}
                   </Button>
                 </CardContent>
               </Card>
@@ -185,32 +194,32 @@ export default function Dashboard() {
           {/* User Info Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>Your profile and account details</CardDescription>
+              <CardTitle>{dict?.dashboard?.accountInformation || "Account Information"}</CardTitle>
+              <CardDescription>{dict?.dashboard?.accountDescription || "Your profile and account details"}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.email || "Email"}</label>
                   <p className="text-sm text-gray-900">{session.user?.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
-                  <p className="text-sm text-gray-900">{session.user?.name || "Not provided"}</p>
+                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.name || "Name"}</label>
+                  <p className="text-sm text-gray-900">{session.user?.name || (dict?.dashboard?.notProvided || "Not provided")}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.role || "Role"}</label>
                   <div className="flex items-center mt-1">
                     <Badge variant={getRoleColor(userRole)}>
                       {getRoleIcon(userRole)}
-                      <span className="ml-1">{userRole}</span>
+                      <span className="ml-1">{getRoleDisplay(userRole)}</span>
                     </Badge>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Member Since</label>
+                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.memberSince || "Member Since"}</label>
                   <p className="text-sm text-gray-900">
-                    Welcome!
+                    {dict?.dashboard?.welcomeMessage || "Welcome!"}
                   </p>
                 </div>
               </div>
