@@ -1,6 +1,6 @@
 # AI School — Status
 
-Last updated: 2025-08-26
+Last updated: 2025-08-27
 
 ---
 
@@ -17,8 +17,9 @@ Last updated: 2025-08-26
   - ✅ `/rag` UI controls (mode, alpha)
 - ✅ **Phase 7 COMPLETED**: Ops & Deployment (production-ready with security audit)
 - ✅ **Phase 8 COMPLETED**: Guardian Emails & Communication system
-- Web app running on http://localhost:3000
-- **NEXT**: Phase 9 - Stretch Goals (multi-tenant orgs, analytics, etc.)
+- ✅ **Phase 9 IN PROGRESS**: Stretch Goals (multi-tenant orgs, analytics, etc.)
+- Web app running on http://localhost:3004
+- **NEXT**: Continue Phase 9 - Multi-tenant organizations and analytics
 
 ## Completed (to date)
 - ✅ Next.js + TS + App Router scaffolded in `web/`
@@ -54,6 +55,15 @@ Last updated: 2025-08-26
   - ✅ Observability (logs/metrics), backups
   - ✅ Vercel deployment + managed Postgres/Redis
   - ✅ **COMPLETED**: Final security audit and production hardening review
+
+- 🔄 **Phase 9: Stretch Goals** (IN PROGRESS)
+  - ✅ Multi-tenant organizations (super-admin system)
+  - ✅ Organization analytics and reporting
+  - ✅ Organization branding and customization
+  - ✅ Reusable OrganizationDetails component
+  - 🔄 Advanced analytics and reporting features
+  - 🔄 Attendance/grades integrations
+  - 🔄 Classroom chat, lesson plans, assignment generation
 
 ## Blockers/Risks
 - None currently.
@@ -110,8 +120,17 @@ Last updated: 2025-08-26
   - ✅ Email preferences and unsubscribe functionality
   - ✅ Progress report generation and email sending
 
+9. 🔄 **Phase 9 — Stretch Goals** (IN PROGRESS)
+  - ✅ Multi-tenant organizations (super-admin system)
+  - ✅ Organization analytics and reporting dashboard
+  - ✅ Organization branding and customization
+  - ✅ Reusable OrganizationDetails component for better UX
+  - 🔄 Advanced analytics and reporting features
+  - 🔄 Attendance/grades integrations
+  - 🔄 Classroom chat, lesson plans, assignment generation
+
 ## Future Phases (Planning)
-- **Phase 9**: Stretch Goals (multi-tenant orgs, analytics, etc.) - **NEXT**
+- **Phase 10**: Advanced Features (AI-powered lesson planning, advanced analytics)
 
 ## Milestones
 - ✅ M1: Auth working (login/logout, protected `/dashboard`) — **COMPLETED**
@@ -122,6 +141,7 @@ Last updated: 2025-08-26
 - ✅ M6: Quality evaluation + hybrid search — **COMPLETED**
 - ✅ M7: Ops & Deployment — **COMPLETED**
 - ✅ M8: Guardian Emails & Communication — **COMPLETED**
+- 🔄 M9: Multi-tenant Organizations & Analytics — **IN PROGRESS**
 
 ## Notes
 - Postgres mapped to host `5433` (update envs in all services).
@@ -133,5 +153,8 @@ Last updated: 2025-08-26
 - Admin panel provides comprehensive user and document management.
 - Role-based access control enforced throughout the application.
 - See `README.md`, `RAG.md`, `RAG2.md`, and `EMAILS.md` for reference.
-- App running on port 3000 (port conflict resolved).
+- App running on port 3004 (port conflict resolved).
 - **Need OpenAI API key** in `web/.env` to test RAG functionality.
+- Multi-tenant organization system fully functional with super-admin capabilities.
+- Organization analytics and branding features implemented.
+- Reusable components created for better maintainability.
