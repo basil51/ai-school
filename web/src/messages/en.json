@@ -351,5 +351,25 @@
     "organizations": "Organizations",
     "logOut": "Log out",
     "user": "User"
+  },
+  "analytics": {
+    "predictiveAnalytics": "Predictive Analytics",
+    "loadingPredictions": "Loading predictions...",
+    "failedToLoad": "Failed to load predictive data",
+    "users": "Users",
+    "documents": "Documents",
+    "questions": "Questions",
+    "storage": "Storage",
+    "fromCurrent": "from current",
+    "current": "Current",
+    "usageTrendsPredictions": "Usage Trends & Predictions",
+    "shadedAreasPredicted": "* Shaded areas indicate predicted values",
+    "aiRecommendations": "AI Recommendations",
+    "recommendations": {
+      "storageUpgrade": "Consider upgrading storage plan due to {rate}% growth rate",
+      "teacherAccounts": "User growth suggests need for additional teacher accounts",
+      "learningEngagement": "High question volume indicates active learning engagement",
+      "documentManagement": "Document uploads increasing - consider document management features"
+    }
   }
 }

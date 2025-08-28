@@ -351,5 +351,25 @@
     "organizations": "المنظمات",
     "logOut": "تسجيل الخروج",
     "user": "المستخدم"
+  },
+  "analytics": {
+    "predictiveAnalytics": "التحليلات التنبؤية",
+    "loadingPredictions": "جاري تحميل التنبؤات...",
+    "failedToLoad": "فشل في تحميل البيانات التنبؤية",
+    "users": "المستخدمون",
+    "documents": "المستندات",
+    "questions": "الأسئلة",
+    "storage": "التخزين",
+    "fromCurrent": "من الحالي",
+    "current": "الحالي",
+    "usageTrendsPredictions": "اتجاهات الاستخدام والتنبؤات",
+    "shadedAreasPredicted": "* المناطق المظللة تشير إلى القيم المتوقعة",
+    "aiRecommendations": "توصيات الذكاء الاصطناعي",
+    "recommendations": {
+      "storageUpgrade": "فكر في ترقية خطة التخزين بسبب معدل النمو {rate}%",
+      "teacherAccounts": "نمو المستخدمين يشير إلى الحاجة لحسابات معلمين إضافية",
+      "learningEngagement": "حجم الأسئلة العالي يشير إلى مشاركة تعليمية نشطة",
+      "documentManagement": "زيادة رفع المستندات - فكر في ميزات إدارة المستندات"
+    }
   }
 }

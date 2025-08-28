@@ -13,6 +13,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { useTranslations } from '@/lib/useTranslations';
 
 interface PredictiveData {
   currentMonth: {
@@ -65,6 +66,7 @@ const getGrowthColor = (growthRate: number) => {
 };
 
 export default function PredictiveAnalytics({ organizationId, className = '' }: PredictiveAnalyticsProps) {
+  const { dict } = useTranslations();
   const [predictiveData, setPredictiveData] = useState<PredictiveData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -105,10 +107,10 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
               { month: 'Jun', users: 60, documents: 170, questions: 1220, storage: 3.8, predicted: true },
             ],
             recommendations: [
-              'Consider upgrading storage plan due to 24% growth rate',
-              'User growth suggests need for additional teacher accounts',
-              'High question volume indicates active learning engagement',
-              'Document uploads increasing - consider document management features',
+              (dict?.analytics?.recommendations?.storageUpgrade || 'Consider upgrading storage plan due to {rate}% growth rate').replace('{rate}', '24'),
+              dict?.analytics?.recommendations?.teacherAccounts || 'User growth suggests need for additional teacher accounts',
+              dict?.analytics?.recommendations?.learningEngagement || 'High question volume indicates active learning engagement',
+              dict?.analytics?.recommendations?.documentManagement || 'Document uploads increasing - consider document management features',
             ],
           };
           setPredictiveData(sampleData);
@@ -135,12 +137,12 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Predictive Analytics</CardTitle>
+          <CardTitle className="text-sm font-medium">{dict?.analytics?.predictiveAnalytics || "Predictive Analytics"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <TrendingUp className="h-6 w-6 animate-pulse mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Loading predictions...</p>
+            <p className="text-sm text-muted-foreground">{dict?.analytics?.loadingPredictions || "Loading predictions..."}</p>
           </div>
         </CardContent>
       </Card>
@@ -151,11 +153,11 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Predictive Analytics</CardTitle>
+          <CardTitle className="text-sm font-medium">{dict?.analytics?.predictiveAnalytics || "Predictive Analytics"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            Failed to load predictive data
+            {dict?.analytics?.failedToLoad || "Failed to load predictive data"}
           </div>
         </CardContent>
       </Card>
@@ -168,64 +170,64 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Users</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict?.analytics?.users || "Users"}</CardTitle>
             {getGrowthIcon(predictiveData.growthRate.users)}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{predictiveData.nextMonth.users}</div>
             <div className={`text-xs ${getGrowthColor(predictiveData.growthRate.users)}`}>
-              +{predictiveData.growthRate.users.toFixed(1)}% from current
+              +{predictiveData.growthRate.users.toFixed(1)}% {dict?.analytics?.fromCurrent || "from current"}
             </div>
             <div className="text-xs text-muted-foreground">
-              Current: {predictiveData.currentMonth.users}
+              {dict?.analytics?.current || "Current"}: {predictiveData.currentMonth.users}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Documents</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict?.analytics?.documents || "Documents"}</CardTitle>
             {getGrowthIcon(predictiveData.growthRate.documents)}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{predictiveData.nextMonth.documents}</div>
             <div className={`text-xs ${getGrowthColor(predictiveData.growthRate.documents)}`}>
-              +{predictiveData.growthRate.documents.toFixed(1)}% from current
+              +{predictiveData.growthRate.documents.toFixed(1)}% {dict?.analytics?.fromCurrent || "from current"}
             </div>
             <div className="text-xs text-muted-foreground">
-              Current: {predictiveData.currentMonth.documents}
+              {dict?.analytics?.current || "Current"}: {predictiveData.currentMonth.documents}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Questions</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict?.analytics?.questions || "Questions"}</CardTitle>
             {getGrowthIcon(predictiveData.growthRate.questions)}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{predictiveData.nextMonth.questions}</div>
             <div className={`text-xs ${getGrowthColor(predictiveData.growthRate.questions)}`}>
-              +{predictiveData.growthRate.questions.toFixed(1)}% from current
+              +{predictiveData.growthRate.questions.toFixed(1)}% {dict?.analytics?.fromCurrent || "from current"}
             </div>
             <div className="text-xs text-muted-foreground">
-              Current: {predictiveData.currentMonth.questions}
+              {dict?.analytics?.current || "Current"}: {predictiveData.currentMonth.questions}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Storage</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict?.analytics?.storage || "Storage"}</CardTitle>
             {getGrowthIcon(predictiveData.growthRate.storage)}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatBytes(predictiveData.nextMonth.storage)}</div>
             <div className={`text-xs ${getGrowthColor(predictiveData.growthRate.storage)}`}>
-              +{predictiveData.growthRate.storage.toFixed(1)}% from current
+              +{predictiveData.growthRate.storage.toFixed(1)}% {dict?.analytics?.fromCurrent || "from current"}
             </div>
             <div className="text-xs text-muted-foreground">
-              Current: {formatBytes(predictiveData.currentMonth.storage)}
+              {dict?.analytics?.current || "Current"}: {formatBytes(predictiveData.currentMonth.storage)}
             </div>
           </CardContent>
         </Card>
@@ -234,7 +236,7 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
       {/* Trend Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Usage Trends & Predictions</CardTitle>
+          <CardTitle className="text-sm font-medium">{dict?.analytics?.usageTrendsPredictions || "Usage Trends & Predictions"}</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -251,7 +253,7 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
                 stroke="#8884d8"
                 fill="#8884d8"
                 fillOpacity={0.6}
-                name="Users"
+                name={dict?.analytics?.users || "Users"}
               />
               <Area
                 type="monotone"
@@ -260,7 +262,7 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
                 stroke="#82ca9d"
                 fill="#82ca9d"
                 fillOpacity={0.6}
-                name="Documents"
+                name={dict?.analytics?.documents || "Documents"}
               />
               <Area
                 type="monotone"
@@ -269,12 +271,12 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
                 stroke="#ffc658"
                 fill="#ffc658"
                 fillOpacity={0.6}
-                name="Questions"
+                name={dict?.analytics?.questions || "Questions"}
               />
             </AreaChart>
           </ResponsiveContainer>
           <div className="mt-4 text-xs text-muted-foreground">
-            * Shaded areas indicate predicted values
+            {dict?.analytics?.shadedAreasPredicted || "* Shaded areas indicate predicted values"}
           </div>
         </CardContent>
       </Card>
@@ -282,7 +284,7 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
       {/* Recommendations */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">AI Recommendations</CardTitle>
+          <CardTitle className="text-sm font-medium">{dict?.analytics?.aiRecommendations || "AI Recommendations"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
