@@ -18,6 +18,7 @@ import {
 import RealTimeActivityFeed from './RealTimeActivityFeed';
 import PredictiveAnalytics from './PredictiveAnalytics';
 import AnalyticsFilters, { FilterState } from './AnalyticsFilters';
+import ScheduledReports from './ScheduledReports';
 import {
   ResponsiveContainer,
   PieChart,
@@ -372,11 +373,12 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
       <AnalyticsFilters onFiltersChange={setFilters} className="mb-6" />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="predictive">Predictive</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -541,6 +543,10 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
         <TabsContent value="activity" className="space-y-6">
           <RealTimeActivityFeed organizationId={organizationId} filters={filters} />
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-6">
+          <ScheduledReports organizationId={organizationId} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
