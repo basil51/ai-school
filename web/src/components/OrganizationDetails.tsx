@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
@@ -11,8 +12,26 @@ import {
   Users, 
   FileText, 
   MessageSquare, 
-  HardDrive
+  HardDrive,
+  Download
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  BarChart,
+  Bar
+} from 'recharts';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface OrganizationAnalytics {
   organization: {
@@ -124,6 +143,178 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
     });
   };
 
+  const exportToCSV = () => {
+    if (!analytics) return;
+
+    const csvData = [
+      ['Organization Analytics Report'],
+      ['Organization:', analytics.organization.name],
+      ['Generated:', new Date().toLocaleDateString()],
+      [],
+      ['Usage Statistics'],
+      ['Metric', 'Current', 'Limit', 'Percentage'],
+      ['Users', analytics.usage.current.users, analytics.usage.limits?.maxUsers || 'N/A', `${analytics.usage.percentages.users}%`],
+      ['Documents', analytics.usage.current.documents, analytics.usage.limits?.maxDocuments || 'N/A', `${analytics.usage.percentages.documents}%`],
+      ['Questions', analytics.usage.current.questions, analytics.usage.limits?.maxQuestionsPerMonth || 'N/A', `${analytics.usage.percentages.questions}%`],
+      ['Storage', formatBytes(analytics.usage.current.storage), analytics.usage.limits ? formatBytes(analytics.usage.limits.maxStorageBytes) : 'N/A', `${analytics.usage.percentages.storage}%`],
+      [],
+      ['User Distribution'],
+      ['Role', 'Count'],
+      ...analytics.userStats.map(stat => [stat.role, stat.count]),
+      [],
+      ['Document Status'],
+      ['Status', 'Count'],
+      ...analytics.documentStats.map(stat => [stat.status, stat.count]),
+      [],
+      ['Monthly Trends'],
+      ['Month', 'User Registrations', 'Document Uploads', 'Questions Asked', 'Admin Actions'],
+      ...analytics.trends.map(trend => [
+        trend.month,
+        trend.userRegistrations,
+        trend.documentUploads,
+        trend.questionsAsked,
+        trend.adminActions
+      ]),
+      [],
+      ['Storage Analytics'],
+      ['Metric', 'Value'],
+      ['Total Storage', formatBytes(analytics.storage.totalSize)],
+      ['Document Count', analytics.storage.documentCount],
+      ['Average Document Size', formatBytes(analytics.storage.averageSize)]
+    ];
+
+    const csvContent = csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${analytics.organization.name}_analytics_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToPDF = () => {
+    if (!analytics) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    let yPosition = 20;
+
+    // Title
+    doc.setFontSize(20);
+    doc.text('Organization Analytics Report', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // Organization Info
+    doc.setFontSize(12);
+    doc.text(`Organization: ${analytics.organization.name}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, yPosition);
+    yPosition += 15;
+
+    // Usage Statistics
+    doc.setFontSize(14);
+    doc.text('Usage Statistics', margin, yPosition);
+    yPosition += 10;
+
+    const usageData = [
+      ['Metric', 'Current', 'Limit', 'Percentage'],
+      ['Users', analytics.usage.current.users.toString(), analytics.usage.limits?.maxUsers.toString() || 'N/A', `${analytics.usage.percentages.users}%`],
+      ['Documents', analytics.usage.current.documents.toString(), analytics.usage.limits?.maxDocuments.toString() || 'N/A', `${analytics.usage.percentages.documents}%`],
+      ['Questions', analytics.usage.current.questions.toString(), analytics.usage.limits?.maxQuestionsPerMonth.toString() || 'N/A', `${analytics.usage.percentages.questions}%`],
+      ['Storage', formatBytes(analytics.usage.current.storage), analytics.usage.limits ? formatBytes(analytics.usage.limits.maxStorageBytes) : 'N/A', `${analytics.usage.percentages.storage}%`]
+    ];
+
+    autoTable(doc, {
+      head: [usageData[0]],
+      body: usageData.slice(1),
+      startY: yPosition,
+      margin: { left: margin },
+      styles: { fontSize: 10 }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+    // User Distribution
+    doc.setFontSize(14);
+    doc.text('User Distribution', margin, yPosition);
+    yPosition += 10;
+
+    const userData = analytics.userStats.map(stat => [stat.role, stat.count.toString()]);
+    autoTable(doc, {
+      head: [['Role', 'Count']],
+      body: userData,
+      startY: yPosition,
+      margin: { left: margin },
+      styles: { fontSize: 10 }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+    // Document Status
+    doc.setFontSize(14);
+    doc.text('Document Status', margin, yPosition);
+    yPosition += 10;
+
+    const docData = analytics.documentStats.map(stat => [stat.status, stat.count.toString()]);
+    autoTable(doc, {
+      head: [['Status', 'Count']],
+      body: docData,
+      startY: yPosition,
+      margin: { left: margin },
+      styles: { fontSize: 10 }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+    // Monthly Trends
+    doc.setFontSize(14);
+    doc.text('Monthly Trends', margin, yPosition);
+    yPosition += 10;
+
+    const trendsData = analytics.trends.map(trend => [
+      trend.month,
+      trend.userRegistrations.toString(),
+      trend.documentUploads.toString(),
+      trend.questionsAsked.toString(),
+      trend.adminActions.toString()
+    ]);
+
+    autoTable(doc, {
+      head: [['Month', 'User Registrations', 'Document Uploads', 'Questions Asked', 'Admin Actions']],
+      body: trendsData,
+      startY: yPosition,
+      margin: { left: margin },
+      styles: { fontSize: 8 }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+    // Storage Analytics
+    doc.setFontSize(14);
+    doc.text('Storage Analytics', margin, yPosition);
+    yPosition += 10;
+
+    const storageData = [
+      ['Total Storage', formatBytes(analytics.storage.totalSize)],
+      ['Document Count', analytics.storage.documentCount.toString()],
+      ['Average Document Size', formatBytes(analytics.storage.averageSize)]
+    ];
+
+    autoTable(doc, {
+      head: [['Metric', 'Value']],
+      body: storageData,
+      startY: yPosition,
+      margin: { left: margin },
+      styles: { fontSize: 10 }
+    });
+
+    doc.save(`${analytics.organization.name}_analytics_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   if (loading) {
     return (
       <div className={`text-center py-8 ${className}`}>
@@ -149,9 +340,21 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
             Created on {formatDate(analytics.organization.createdAt)}
           </p>
         </div>
-        <Badge variant={analytics.organization.isActive ? 'default' : 'secondary'}>
-          {analytics.organization.isActive ? 'Active' : 'Inactive'}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={analytics.organization.isActive ? 'default' : 'secondary'}>
+            {analytics.organization.isActive ? 'Active' : 'Inactive'}
+          </Badge>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={exportToCSV}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button size="sm" variant="outline" onClick={exportToPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -235,14 +438,24 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
                 <CardTitle className="text-sm font-medium">User Distribution</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {analytics.userStats.map((stat) => (
-                    <div key={stat.role} className="flex justify-between items-center">
-                      <span className="text-sm capitalize">{stat.role}</span>
-                      <span className="text-sm font-medium">{stat.count}</span>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={analytics.userStats}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      label
+                    >
+                      {analytics.userStats.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
+                      ))}
+                      <RechartsTooltip />
+                      <RechartsLegend />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
@@ -251,14 +464,16 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
                 <CardTitle className="text-sm font-medium">Document Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {analytics.documentStats.map((stat) => (
-                    <div key={stat.status} className="flex justify-between items-center">
-                      <span className="text-sm capitalize">{stat.status}</span>
-                      <span className="text-sm font-medium">{stat.count}</span>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={analytics.documentStats}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="status" />
+                    <YAxis />
+                    <Bar dataKey="count" fill="#8884d8" />
+                    <RechartsTooltip />
+                    <RechartsLegend />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
@@ -270,37 +485,19 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
               <CardTitle className="text-sm font-medium">Monthly Trends (Last 6 Months)</CardTitle>
             </CardHeader>
             <CardContent>
-              {analytics.trends.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">
-                  No trend data available
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {analytics.trends.map((trend) => (
-                    <div key={trend.month} className="border rounded-lg p-4">
-                      <div className="font-medium text-sm mb-3">{trend.month}</div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <div className="text-xs text-muted-foreground">User Registrations</div>
-                          <div className="font-medium">{trend.userRegistrations}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Document Uploads</div>
-                          <div className="font-medium">{trend.documentUploads}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Questions Asked</div>
-                          <div className="font-medium">{trend.questionsAsked}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Admin Actions</div>
-                          <div className="font-medium">{trend.adminActions}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={analytics.trends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Line type="monotone" dataKey="userRegistrations" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="documentUploads" stroke="#82ca9d" />
+                  <Line type="monotone" dataKey="questionsAsked" stroke="#ffc658" />
+                  <Line type="monotone" dataKey="adminActions" stroke="#ff8042" />
+                  <RechartsTooltip />
+                  <RechartsLegend />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
@@ -309,22 +506,16 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
               <CardTitle className="text-sm font-medium">Storage Analytics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{formatBytes(analytics.storage.totalSize)}</div>
-                    <div className="text-xs text-muted-foreground">Total Storage Used</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{analytics.storage.documentCount}</div>
-                    <div className="text-xs text-muted-foreground">Total Documents</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{formatBytes(analytics.storage.averageSize)}</div>
-                    <div className="text-xs text-muted-foreground">Average Document Size</div>
-                  </div>
-                </div>
-              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={[{ name: 'Total Storage', value: analytics.storage.totalSize }]}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Bar dataKey="value" fill="#8884d8" />
+                  <RechartsTooltip />
+                  <RechartsLegend />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
