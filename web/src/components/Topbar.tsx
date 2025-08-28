@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -13,21 +14,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, Users, Building2 } from "lucide-react";
+import { Settings, LogOut, Users, Building2, Globe } from "lucide-react";
+import { locales, Locale } from "@/lib/i18n";
+import { useTranslations } from "@/lib/useTranslations";
 
 export default function Topbar() {
   const { data: session } = useSession();
-  const homeHref = session ? "/dashboard" : "/";
+  const params = useParams();
+  const pathname = usePathname();
+  const currentLocale = params.locale as Locale;
+  const homeHref = session ? `/${currentLocale}/dashboard` : `/${currentLocale}`;
   const userRole = (session as any)?.role;
+  const { dict } = useTranslations();
 
   const getRoleDisplay = (role: string) => {
     switch (role) {
-      case 'super_admin': return { text: 'Super Admin', variant: 'destructive' as const };
-      case 'admin': return { text: 'Admin', variant: 'destructive' as const };
-      case 'teacher': return { text: 'Teacher', variant: 'default' as const };
-      case 'guardian': return { text: 'Guardian', variant: 'secondary' as const };
-      case 'student': return { text: 'Student', variant: 'outline' as const };
-      default: return { text: 'User', variant: 'outline' as const };
+      case 'super_admin': return { text: dict?.roles?.superAdmin || 'Super Admin', variant: 'destructive' as const };
+      case 'admin': return { text: dict?.roles?.admin || 'Admin', variant: 'destructive' as const };
+      case 'teacher': return { text: dict?.roles?.teacher || 'Teacher', variant: 'default' as const };
+      case 'guardian': return { text: dict?.roles?.guardian || 'Guardian', variant: 'secondary' as const };
+      case 'student': return { text: dict?.roles?.student || 'Student', variant: 'outline' as const };
+      default: return { text: dict?.roles?.user || 'User', variant: 'outline' as const };
     }
   };
 
@@ -35,9 +42,33 @@ export default function Topbar() {
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14 items-center">
-          <Link href={homeHref} className="text-lg font-semibold text-gray-900 hover:opacity-80">
-            AI School
-          </Link>
+                        <Link href={homeHref} className="text-lg font-semibold text-gray-900 hover:opacity-80">
+                {currentLocale === 'ar' ? 'أكاديمية اجواء العلم بالذكاء الصناعي' : 'EduVibe AI Academy'}
+              </Link>
+          
+          {/* Language Switcher */}
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Globe className="h-4 w-4 mr-2" />
+                  {currentLocale === 'ar' ? 'العربية' : 'English'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                {locales.map((locale) => {
+                  const newPathname = pathname.replace(`/${currentLocale}`, `/${locale}`);
+                  return (
+                    <DropdownMenuItem key={locale} asChild>
+                      <Link href={newPathname}>
+                        {locale === 'ar' ? 'العربية' : 'English'}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           
           {session && (
             <div className="flex items-center gap-4">
@@ -45,14 +76,14 @@ export default function Topbar() {
               {['admin', 'super_admin'].includes(userRole) && (
                 <div className="hidden md:flex items-center gap-2">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href="/admin">
+                    <Link href={`/${currentLocale}/admin`}>
                       <Users className="h-4 w-4 mr-2" />
                       Admin
                     </Link>
                   </Button>
                   {userRole === 'super_admin' && (
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href="/super-admin/organizations">
+                      <Link href={`/${currentLocale}/super-admin/organizations`}>
                         <Building2 className="h-4 w-4 mr-2" />
                         Organizations
                       </Link>
@@ -90,14 +121,14 @@ export default function Topbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard">
+                    <Link href={`/${currentLocale}/dashboard`}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
                   </DropdownMenuItem>
                   {['admin', 'super_admin'].includes(userRole) && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin">
+                      <Link href={`/${currentLocale}/admin`}>
                         <Users className="mr-2 h-4 w-4" />
                         <span>Admin Panel</span>
                       </Link>
@@ -105,7 +136,7 @@ export default function Topbar() {
                   )}
                   {userRole === 'super_admin' && (
                     <DropdownMenuItem asChild>
-                      <Link href="/super-admin/organizations">
+                      <Link href={`/${currentLocale}/super-admin/organizations`}>
                         <Building2 className="mr-2 h-4 w-4" />
                         <span>Organizations</span>
                       </Link>
