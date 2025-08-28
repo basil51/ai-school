@@ -509,5 +509,37 @@
       "csvData": "CSV Data",
       "htmlEmail": "HTML Email"
     }
+  },
+  "organizationDetails": {
+    "title": "Organization Details",
+    "loading": "Loading organization details...",
+    "failedToLoad": "Failed to load organization details",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "predictive": "Predictive",
+    "activity": "Activity",
+    "reports": "Reports",
+    "settings": "Settings",
+    "users": "Users",
+    "documents": "Documents",
+    "questions": "Questions",
+    "storage": "Storage",
+    "limit": "limit",
+    "userDistribution": "User Distribution",
+    "documentStatus": "Document Status",
+    "monthlyTrends": "Monthly Trends (Last 6 Months)",
+    "storageAnalytics": "Storage Analytics",
+    "organizationInfo": "Organization Info",
+    "branding": "Branding",
+    "name": "Name",
+    "slug": "Slug",
+    "tier": "Tier",
+    "created": "Created",
+    "primaryColor": "Primary Color",
+    "logoUrl": "Logo URL",
+    "viewLogo": "View Logo",
+    "noLogoSet": "No logo set",
+    "exportData": "Export Data",
+    "downloadPDF": "Download PDF Report"
   }
 }

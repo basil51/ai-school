@@ -509,5 +509,37 @@
       "csvData": "بيانات CSV",
       "htmlEmail": "بريد إلكتروني HTML"
     }
+  },
+  "organizationDetails": {
+    "title": "تفاصيل المنظمة",
+    "loading": "جاري تحميل تفاصيل المنظمة...",
+    "failedToLoad": "فشل في تحميل تفاصيل المنظمة",
+    "overview": "نظرة عامة",
+    "analytics": "التحليلات",
+    "predictive": "التنبؤية",
+    "activity": "النشاط",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "users": "المستخدمون",
+    "documents": "المستندات",
+    "questions": "الأسئلة",
+    "storage": "التخزين",
+    "limit": "الحد الأقصى",
+    "userDistribution": "توزيع المستخدمين",
+    "documentStatus": "حالة المستندات",
+    "monthlyTrends": "الاتجاهات الشهرية (آخر 6 أشهر)",
+    "storageAnalytics": "تحليلات التخزين",
+    "organizationInfo": "معلومات المنظمة",
+    "branding": "العلامة التجارية",
+    "name": "الاسم",
+    "slug": "المعرف",
+    "tier": "المستوى",
+    "created": "تاريخ الإنشاء",
+    "primaryColor": "اللون الأساسي",
+    "logoUrl": "رابط الشعار",
+    "viewLogo": "عرض الشعار",
+    "noLogoSet": "لم يتم تعيين شعار",
+    "exportData": "تصدير البيانات",
+    "downloadPDF": "تحميل تقرير PDF"
   }
 }

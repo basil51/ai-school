@@ -15,6 +15,7 @@ import {
   HardDrive,
   Download
 } from 'lucide-react';
+import { useTranslations } from '@/lib/useTranslations';
 import RealTimeActivityFeed from './RealTimeActivityFeed';
 import PredictiveAnalytics from './PredictiveAnalytics';
 import AnalyticsFilters, { FilterState } from './AnalyticsFilters';
@@ -106,6 +107,7 @@ interface OrganizationDetailsProps {
 }
 
 export default function OrganizationDetails({ organizationId, className = '' }: OrganizationDetailsProps) {
+  const { dict } = useTranslations();
   const [analytics, setAnalytics] = useState<OrganizationAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -126,11 +128,11 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
         const data = await response.json();
         setAnalytics(data);
       } else {
-        toast.error('Failed to fetch organization analytics');
+        toast.error(dict?.organizationDetails?.failedToLoad || 'Failed to fetch organization analytics');
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      toast.error('Failed to fetch organization analytics');
+      toast.error(dict?.organizationDetails?.failedToLoad || 'Failed to fetch organization analytics');
     } finally {
       setLoading(false);
     }
@@ -331,7 +333,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
   if (loading) {
     return (
       <div className={`text-center py-8 ${className}`}>
-        Loading organization details...
+        {dict?.organizationDetails?.loading || "Loading organization details..."}
       </div>
     );
   }
@@ -339,7 +341,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
   if (!analytics) {
     return (
       <div className={`text-center py-8 text-muted-foreground ${className}`}>
-        Failed to load organization details
+        {dict?.organizationDetails?.failedToLoad || "Failed to load organization details"}
       </div>
     );
   }
@@ -374,26 +376,26 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="predictive">Predictive</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="overview">{dict?.organizationDetails?.overview || "Overview"}</TabsTrigger>
+          <TabsTrigger value="analytics">{dict?.organizationDetails?.analytics || "Analytics"}</TabsTrigger>
+          <TabsTrigger value="predictive">{dict?.organizationDetails?.predictive || "Predictive"}</TabsTrigger>
+          <TabsTrigger value="activity">{dict?.organizationDetails?.activity || "Activity"}</TabsTrigger>
+          <TabsTrigger value="reports">{dict?.organizationDetails?.reports || "Reports"}</TabsTrigger>
+          <TabsTrigger value="settings">{dict?.organizationDetails?.settings || "Settings"}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Users</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.users || "Users"}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.usage.current.users}</div>
                 {analytics.usage.limits && (
                   <div className="text-xs text-muted-foreground">
-                    / {analytics.usage.limits.maxUsers} limit
+                    / {analytics.usage.limits.maxUsers} {dict?.organizationDetails?.limit || "limit"}
                   </div>
                 )}
                 <Progress value={analytics.usage.percentages.users} className="mt-2" />
@@ -402,14 +404,14 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Documents</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.documents || "Documents"}</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.usage.current.documents}</div>
                 {analytics.usage.limits && (
                   <div className="text-xs text-muted-foreground">
-                    / {analytics.usage.limits.maxDocuments} limit
+                    / {analytics.usage.limits.maxDocuments} {dict?.organizationDetails?.limit || "limit"}
                   </div>
                 )}
                 <Progress value={analytics.usage.percentages.documents} className="mt-2" />
@@ -418,14 +420,14 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Questions</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.questions || "Questions"}</CardTitle>
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.usage.current.questions}</div>
                 {analytics.usage.limits && (
                   <div className="text-xs text-muted-foreground">
-                    / {analytics.usage.limits.maxQuestionsPerMonth} limit
+                    / {analytics.usage.limits.maxQuestionsPerMonth} {dict?.organizationDetails?.limit || "limit"}
                   </div>
                 )}
                 <Progress value={analytics.usage.percentages.questions} className="mt-2" />
@@ -434,14 +436,14 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Storage</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.storage || "Storage"}</CardTitle>
                 <HardDrive className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatBytes(analytics.usage.current.storage)}</div>
                 {analytics.usage.limits && (
                   <div className="text-xs text-muted-foreground">
-                    / {formatBytes(analytics.usage.limits.maxStorageBytes)} limit
+                    / {formatBytes(analytics.usage.limits.maxStorageBytes)} {dict?.organizationDetails?.limit || "limit"}
                   </div>
                 )}
                 <Progress value={analytics.usage.percentages.storage} className="mt-2" />
@@ -452,7 +454,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">User Distribution</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.userDistribution || "User Distribution"}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -478,7 +480,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">Document Status</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.documentStatus || "Document Status"}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -499,7 +501,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
         <TabsContent value="analytics" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Monthly Trends (Last 6 Months)</CardTitle>
+              <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.monthlyTrends || "Monthly Trends (Last 6 Months)"}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -520,7 +522,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Storage Analytics</CardTitle>
+              <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.storageAnalytics || "Storage Analytics"}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -553,23 +555,23 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">Organization Info</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.organizationInfo || "Organization Info"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Name</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.name || "Name"}</Label>
                   <div className="font-medium">{analytics.organization.name}</div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Slug</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.slug || "Slug"}</Label>
                   <div className="font-medium">/{analytics.organization.slug}</div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Tier</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.tier || "Tier"}</Label>
                   <div className="font-medium capitalize">{analytics.organization.tier}</div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Created</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.created || "Created"}</Label>
                   <div className="font-medium">{formatDate(analytics.organization.createdAt)}</div>
                 </div>
               </CardContent>
@@ -577,11 +579,11 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">Branding</CardTitle>
+                <CardTitle className="text-sm font-medium">{dict?.organizationDetails?.branding || "Branding"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Primary Color</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.primaryColor || "Primary Color"}</Label>
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-4 h-4 rounded border"
@@ -591,14 +593,14 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Logo URL</Label>
+                  <Label className="text-xs text-muted-foreground">{dict?.organizationDetails?.logoUrl || "Logo URL"}</Label>
                   <div className="font-medium">
                     {analytics.organization.logoUrl ? (
                       <a href={analytics.organization.logoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        View Logo
+                        {dict?.organizationDetails?.viewLogo || "View Logo"}
                       </a>
                     ) : (
-                      'No logo set'
+                      dict?.organizationDetails?.noLogoSet || 'No logo set'
                     )}
                   </div>
                 </div>
