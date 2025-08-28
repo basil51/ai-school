@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -28,7 +28,6 @@ export default function Topbar() {
   const userRole = (session as any)?.role;
   const { dict } = useTranslations();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const getRoleDisplay = (role: string) => {
     switch (role) {
@@ -41,35 +40,7 @@ export default function Topbar() {
     }
   };
 
-  // Handle hover events for user dropdown
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
 
-    const handleMouseEnter = () => {
-      clearTimeout(timeoutId);
-      setIsUserDropdownOpen(true);
-    };
-
-    const handleMouseLeave = () => {
-      timeoutId = setTimeout(() => {
-        setIsUserDropdownOpen(false);
-      }, 100); // Small delay to prevent flickering
-    };
-
-    const element = userDropdownRef.current;
-    if (element) {
-      element.addEventListener('mouseenter', handleMouseEnter);
-      element.addEventListener('mouseleave', handleMouseLeave);
-    }
-
-    return () => {
-      clearTimeout(timeoutId);
-      if (element) {
-        element.removeEventListener('mouseenter', handleMouseEnter);
-        element.removeEventListener('mouseleave', handleMouseLeave);
-      }
-    };
-  }, []);
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -105,8 +76,11 @@ export default function Topbar() {
 
               {/* User Menu */}
               <div 
-                ref={userDropdownRef}
                 className="relative"
+                onMouseEnter={() => setIsUserDropdownOpen(true)}
+                onMouseLeave={() => {
+                  setTimeout(() => setIsUserDropdownOpen(false), 100);
+                }}
               >
                 <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors">
                   <User className="h-4 w-4 text-gray-600" />
