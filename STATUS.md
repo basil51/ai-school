@@ -18,8 +18,9 @@ Last updated: 2025-08-27
 - ✅ **Phase 7 COMPLETED**: Ops & Deployment (production-ready with security audit)
 - ✅ **Phase 8 COMPLETED**: Guardian Emails & Communication system
 - ✅ **Phase 9 IN PROGRESS**: Stretch Goals (multi-tenant orgs, analytics, etc.)
+- ✅ **Phase 10 COMPLETED**: Internationalization (i18n) - Arabic RTL support
 - Web app running on http://localhost:3004
-- **NEXT**: Continue Phase 9 - Multi-tenant organizations and analytics
+- **NEXT**: Translation Phase - Complete translation of all application pages
 
 ## Completed (to date)
 - ✅ Next.js + TS + App Router scaffolded in `web/`
@@ -55,6 +56,16 @@ Last updated: 2025-08-27
   - ✅ Observability (logs/metrics), backups
   - ✅ Vercel deployment + managed Postgres/Redis
   - ✅ **COMPLETED**: Final security audit and production hardening review
+
+- ✅ **Phase 10: Internationalization (i18n)** (COMPLETED)
+  - ✅ Vanilla Next.js App Router i18n implementation
+  - ✅ Arabic (RTL) and English (LTR) language support
+  - ✅ Locale-aware routing with middleware
+  - ✅ Dynamic dictionary loading and translation system
+  - ✅ Comprehensive RTL CSS support
+  - ✅ Language switcher and dynamic app branding
+  - ✅ Translated home page with beautiful UI
+  - 🔄 **Translation Phase**: Complete translation of all application pages
 
 - 🔄 **Phase 9: Stretch Goals** (IN PROGRESS)
   - ✅ Multi-tenant organizations (super-admin system)
@@ -120,7 +131,21 @@ Last updated: 2025-08-27
   - ✅ Email preferences and unsubscribe functionality
   - ✅ Progress report generation and email sending
 
-9. 🔄 **Phase 9 — Stretch Goals** (IN PROGRESS)
+9. ✅ **Phase 10 — Internationalization (i18n)** (COMPLETED)
+  - ✅ Vanilla Next.js App Router i18n implementation (no external libraries)
+  - ✅ Arabic (RTL) and English (LTR) language support
+  - ✅ Locale-aware routing with `[locale]` dynamic segments
+  - ✅ Middleware for automatic locale detection and redirection
+  - ✅ Dynamic dictionary loading with JSON message files
+  - ✅ Comprehensive RTL CSS support for Arabic layout
+  - ✅ Language switcher in Topbar with dynamic app branding
+  - ✅ Translated home page with beautiful UI improvements
+  - ✅ Client-side translation hook (`useTranslations`)
+  - ✅ Proper HTML `lang` and `dir` attributes
+  - ✅ Accept-Language header detection
+  - 🔄 **Translation Phase**: Complete translation of all application pages
+
+10. 🔄 **Phase 9 — Stretch Goals** (IN PROGRESS)
   - ✅ Multi-tenant organizations (super-admin system)
   - ✅ Organization analytics and reporting dashboard
   - ✅ Organization branding and customization
@@ -130,7 +155,8 @@ Last updated: 2025-08-27
   - 🔄 Classroom chat, lesson plans, assignment generation
 
 ## Future Phases (Planning)
-- **Phase 10**: Advanced Features (AI-powered lesson planning, advanced analytics)
+- **Phase 11**: Advanced Features (AI-powered lesson planning, advanced analytics)
+- **Translation Phase**: Complete translation of all application pages and components
 
 ## Milestones
 - ✅ M1: Auth working (login/logout, protected `/dashboard`) — **COMPLETED**
@@ -141,7 +167,9 @@ Last updated: 2025-08-27
 - ✅ M6: Quality evaluation + hybrid search — **COMPLETED**
 - ✅ M7: Ops & Deployment — **COMPLETED**
 - ✅ M8: Guardian Emails & Communication — **COMPLETED**
+- ✅ M10: Internationalization (i18n) — **COMPLETED**
 - 🔄 M9: Multi-tenant Organizations & Analytics — **IN PROGRESS**
+- 🔄 Translation Phase: Complete bilingual application — **NEXT**
 
 ## Notes
 - Postgres mapped to host `5433` (update envs in all services).
@@ -158,3 +186,8 @@ Last updated: 2025-08-27
 - Multi-tenant organization system fully functional with super-admin capabilities.
 - Organization analytics and branding features implemented.
 - Reusable components created for better maintainability.
+- **Internationalization (i18n) fully implemented** with Arabic RTL support.
+- Vanilla Next.js i18n approach (no external libraries) for stability.
+- Locale-aware routing with automatic language detection.
+- Comprehensive RTL CSS support for Arabic layout.
+- Translation system ready for complete application translation.
