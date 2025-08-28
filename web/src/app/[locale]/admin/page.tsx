@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import OrganizationSwitcher from "@/components/OrganizationSwitcher";
+import { useTranslations } from "@/lib/useTranslations";
 
 interface User {
   id: string;
@@ -54,6 +55,9 @@ interface Document {
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { dict, loading: dictLoading } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
   const [users, setUsers] = useState<User[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -65,9 +69,9 @@ export default function AdminPage() {
     if (status === "loading") return;
     const userRole = (session as any)?.role;
     if (!session || (!["admin", "super_admin"].includes(userRole))) {
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     }
-  }, [session, status, router]);
+  }, [session, status, router, locale]);
 
   useEffect(() => {
     const userRole = (session as any)?.role;
@@ -123,7 +127,7 @@ export default function AdminPage() {
   };
 
   const deleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm(dict?.admin?.confirmDeleteUser || "Are you sure you want to delete this user?")) return;
     
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -139,7 +143,7 @@ export default function AdminPage() {
   };
 
   const deleteDocument = async (docId: string) => {
-    if (!confirm("Are you sure you want to delete this document?")) return;
+    if (!confirm(dict?.admin?.confirmDeleteDocument || "Are you sure you want to delete this document?")) return;
     
     try {
       const response = await fetch(`/api/admin/documents/${docId}`, {
@@ -165,11 +169,15 @@ export default function AdminPage() {
     }
   };
 
-  if (status === "loading") {
+  const getRoleDisplay = (role: string) => {
+    return dict?.roles?.[role] || role;
+  };
+
+  if (status === "loading" || dictLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading...</div>
+          <div className="text-lg">{dict?.admin?.loading || "Loading..."}</div>
         </div>
       </div>
     );
@@ -180,7 +188,7 @@ export default function AdminPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Access denied. Redirecting...</div>
+          <div className="text-lg">{dict?.admin?.accessDenied || "Access denied. Redirecting..."}</div>
         </div>
       </div>
     );
@@ -190,7 +198,7 @@ export default function AdminPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading admin panel...</div>
+          <div className="text-lg">{dict?.admin?.loadingAdminPanel || "Loading admin panel..."}</div>
         </div>
       </div>
     );
@@ -210,32 +218,32 @@ export default function AdminPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
+          <h1 className="text-3xl font-bold">{dict?.admin?.title || "Admin Panel"}</h1>
           <div className="flex items-center gap-2 mt-1">
             {organization ? (
               <div className="text-muted-foreground">
                 <span className="font-medium text-foreground">{organization.name}</span>
                 <span className="mx-2">•</span>
-                <span className="text-sm">{organization.tier.charAt(0).toUpperCase() + organization.tier.slice(1)} tier</span>
+                <span className="text-sm">{organization.tier.charAt(0).toUpperCase() + organization.tier.slice(1)} {dict?.admin?.tier || "tier"}</span>
               </div>
             ) : (
               <p className="text-muted-foreground">
-                {userRole === 'super_admin' ? 'System-wide administration' : 'Manage users and documents'}
+                {userRole === 'super_admin' ? (dict?.admin?.systemWideAdministration || 'System-wide administration') : (dict?.admin?.manageUsersAndDocuments || 'Manage users and documents')}
               </p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline">
-            {userRole === 'super_admin' ? 'Super Admin' : 'Admin'}
+            {userRole === 'super_admin' ? (dict?.admin?.superAdmin || 'Super Admin') : (dict?.admin?.admin || 'Admin')}
           </Badge>
           {userRole === 'super_admin' && (
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => router.push('/super-admin/organizations')}
+              onClick={() => router.push(`/${locale}/super-admin/organizations`)}
             >
-              Manage Organizations
+              {dict?.admin?.manageOrganizations || "Manage Organizations"}
             </Button>
           )}
         </div>
@@ -245,27 +253,29 @@ export default function AdminPage() {
       {organization && organization.settings && (
         <Card>
           <CardHeader>
-            <CardTitle>Organization Usage</CardTitle>
-            <CardDescription>Current usage against your {organization.tier} tier limits</CardDescription>
+            <CardTitle>{dict?.admin?.organizationUsage || "Organization Usage"}</CardTitle>
+            <CardDescription>
+              {(dict?.admin?.organizationUsageDescription || "Current usage against your {tier} tier limits").replace('{tier}', organization.tier)}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{users.length}</div>
                 <div className="text-sm text-muted-foreground">
-                  / {organization.settings.maxUsers} Users
+                  / {organization.settings.maxUsers} {dict?.admin?.users || "Users"}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{documents.length}</div>
                 <div className="text-sm text-muted-foreground">
-                  / {organization.settings.maxDocuments} Documents
+                  / {organization.settings.maxDocuments} {dict?.admin?.documents || "Documents"}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{organization.monthlyQuestions || 0}</div>
                 <div className="text-sm text-muted-foreground">
-                  / {organization.settings.maxQuestionsPerMonth} Questions/Month
+                  / {organization.settings.maxQuestionsPerMonth} {dict?.admin?.questionsPerMonth || "Questions/Month"}
                 </div>
               </div>
             </div>
@@ -275,64 +285,64 @@ export default function AdminPage() {
 
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
-          <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
-          <TabsTrigger value="guardians">Guardians</TabsTrigger>
-          <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+          <TabsTrigger value="users">{dict?.admin?.users || "Users"} ({users.length})</TabsTrigger>
+          <TabsTrigger value="documents">{dict?.admin?.documents || "Documents"} ({documents.length})</TabsTrigger>
+          <TabsTrigger value="guardians">{dict?.admin?.guardians || "Guardians"}</TabsTrigger>
+          <TabsTrigger value="evaluations">{dict?.admin?.evaluations || "Evaluations"}</TabsTrigger>
+          <TabsTrigger value="maintenance">{dict?.admin?.indexes || "Maintenance"}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Create and manage user accounts</CardDescription>
+              <CardTitle>{dict?.admin?.userManagement || "User Management"}</CardTitle>
+              <CardDescription>{dict?.admin?.userManagementDescription || "Create and manage user accounts"}</CardDescription>
             </CardHeader>
             <CardContent>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button>Add New User</Button>
+                  <Button>{dict?.admin?.addUser || "Add New User"}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New User</DialogTitle>
-                    <DialogDescription>Add a new user to the system</DialogDescription>
+                    <DialogTitle>{dict?.admin?.createNewUser || "Create New User"}</DialogTitle>
+                    <DialogDescription>{dict?.admin?.createNewUserDescription || "Add a new user to the system"}</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">{dict?.admin?.email || "Email"}</Label>
                       <Input
                         id="email"
                         type="email"
                         value={newUser.email}
                         onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                        placeholder="user@example.com"
+                        placeholder={dict?.admin?.emailPlaceholder || "user@example.com"}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="name">Name</Label>
+                      <Label htmlFor="name">{dict?.admin?.name || "Name"}</Label>
                       <Input
                         id="name"
                         value={newUser.name}
                         onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                        placeholder="Full Name"
+                        placeholder={dict?.admin?.fullName || "Full Name"}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="role">Role</Label>
+                      <Label htmlFor="role">{dict?.admin?.userRole || "Role"}</Label>
                       <Select value={newUser.role} onValueChange={(value: any) => setNewUser({ ...newUser, role: value })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="student">Student</SelectItem>
-                          <SelectItem value="teacher">Teacher</SelectItem>
-                          <SelectItem value="guardian">Guardian</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="student">{dict?.roles?.student || "Student"}</SelectItem>
+                          <SelectItem value="teacher">{dict?.roles?.teacher || "Teacher"}</SelectItem>
+                          <SelectItem value="guardian">{dict?.roles?.guardian || "Guardian"}</SelectItem>
+                          <SelectItem value="admin">{dict?.roles?.admin || "Admin"}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button onClick={createUser} className="w-full">Create User</Button>
+                    <Button onClick={createUser} className="w-full">{dict?.admin?.createUser || "Create User"}</Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -340,12 +350,12 @@ export default function AdminPage() {
               <Table className="mt-6">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    {userRole === 'super_admin' && <TableHead>Organization</TableHead>}
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{dict?.admin?.users || "User"}</TableHead>
+                    <TableHead>{dict?.admin?.email || "Email"}</TableHead>
+                    <TableHead>{dict?.admin?.userRole || "Role"}</TableHead>
+                    {userRole === 'super_admin' && <TableHead>{dict?.admin?.organization || "Organization"}</TableHead>}
+                    <TableHead>{dict?.admin?.createdAt || "Created"}</TableHead>
+                    <TableHead>{dict?.admin?.actions || "Actions"}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -356,12 +366,12 @@ export default function AdminPage() {
                           <Avatar>
                             <AvatarFallback>{user.name?.charAt(0) || user.email.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span>{user.name || "No name"}</span>
+                          <span>{user.name || (dict?.admin?.noName || "No name")}</span>
                         </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Badge variant={getRoleColor(user.role)}>{user.role}</Badge>
+                        <Badge variant={getRoleColor(user.role)}>{getRoleDisplay(user.role)}</Badge>
                       </TableCell>
                       {userRole === 'super_admin' && (
                         <TableCell>
@@ -371,7 +381,7 @@ export default function AdminPage() {
                               <div className="text-muted-foreground">/{user.organization.slug}</div>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-sm">No organization</span>
+                            <span className="text-muted-foreground text-sm">{dict?.admin?.noOrganization || "No organization"}</span>
                           )}
                         </TableCell>
                       )}
@@ -382,7 +392,7 @@ export default function AdminPage() {
                           size="sm"
                           onClick={() => deleteUser(user.id)}
                         >
-                          Delete
+                          {dict?.admin?.delete || "Delete"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -396,41 +406,41 @@ export default function AdminPage() {
         <TabsContent value="documents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Document Management</CardTitle>
-              <CardDescription>View and manage uploaded documents</CardDescription>
+              <CardTitle>{dict?.admin?.documentManagement || "Document Management"}</CardTitle>
+              <CardDescription>{dict?.admin?.documentManagementDescription || "View and manage uploaded documents"}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Chunks</TableHead>
-                    <TableHead>Uploaded</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{dict?.admin?.title || "Title"}</TableHead>
+                    <TableHead>{dict?.admin?.size || "Size"}</TableHead>
+                    <TableHead>{dict?.admin?.chunks || "Chunks"}</TableHead>
+                    <TableHead>{dict?.admin?.uploaded || "Uploaded"}</TableHead>
+                    <TableHead>{dict?.admin?.actions || "Actions"}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {documents.map((doc) => (
                     <TableRow key={doc.id}>
                       <TableCell className="font-medium">{doc.title}</TableCell>
-                      <TableCell>{doc.length.toLocaleString()} chars</TableCell>
-                      <TableCell>{doc.chunks.length} chunks</TableCell>
+                      <TableCell>{doc.length.toLocaleString()} {dict?.admin?.chars || "chars"}</TableCell>
+                      <TableCell>{doc.chunks.length} {dict?.admin?.chunks || "chunks"}</TableCell>
                       <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => router.push(`/admin/documents/${doc.id}`)}
+                            onClick={() => router.push(`/${locale}/admin/documents/${doc.id}`)}
                           >
-                            Manage Chunks
+                            {dict?.admin?.manageChunks || "Manage Chunks"}
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => deleteDocument(doc.id)}
                           >
-                            Delete
+                            {dict?.admin?.delete || "Delete"}
                           </Button>
                         </div>
                       </TableCell>
@@ -445,16 +455,16 @@ export default function AdminPage() {
         <TabsContent value="guardians" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Guardian Relationships</CardTitle>
-              <CardDescription>Manage guardian-student relationships and email communications</CardDescription>
+              <CardTitle>{dict?.admin?.guardianRelationships || "Guardian Relationships"}</CardTitle>
+              <CardDescription>{dict?.admin?.guardianRelationshipsDescription || "Manage guardian-student relationships and email communications"}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
-                  Create and manage guardian-student relationships, send progress reports
+                  {dict?.admin?.createAndManage || "Create and manage guardian-student relationships, send progress reports"}
                 </p>
-                <Button onClick={() => router.push('/admin/guardians')}>
-                  Manage Guardian Relationships
+                <Button onClick={() => router.push(`/${locale}/admin/guardians`)}>
+                  {dict?.admin?.manageGuardianRelationships || "Manage Guardian Relationships"}
                 </Button>
               </div>
             </CardContent>
@@ -464,16 +474,16 @@ export default function AdminPage() {
         <TabsContent value="evaluations" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>RAGAS Evaluations</CardTitle>
-              <CardDescription>Quality metrics for the RAG system</CardDescription>
+              <CardTitle>{dict?.admin?.ragasEvaluations || "RAGAS Evaluations"}</CardTitle>
+              <CardDescription>{dict?.admin?.ragasEvaluationsDescription || "Quality metrics for the RAG system"}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
-                  View detailed evaluation results and metrics
+                  {dict?.admin?.viewDetailedResults || "View detailed evaluation results and metrics"}
                 </p>
-                <Button onClick={() => window.open('/admin/evaluations', '_blank')}>
-                  Open Evaluation Dashboard
+                <Button onClick={() => window.open(`/${locale}/admin/evaluations`, '_blank')}>
+                  {dict?.admin?.openEvaluationDashboard || "Open Evaluation Dashboard"}
                 </Button>
               </div>
             </CardContent>
@@ -483,8 +493,8 @@ export default function AdminPage() {
         <TabsContent value="maintenance" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Indexes</CardTitle>
-              <CardDescription>Check status and rebuild vector/text indexes</CardDescription>
+              <CardTitle>{dict?.admin?.indexes || "Indexes"}</CardTitle>
+              <CardDescription>{dict?.admin?.indexesDescription || "Check status and rebuild vector/text indexes"}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -494,14 +504,14 @@ export default function AdminPage() {
                     const data = await res.json();
                     alert(`Chunks: ${data.count}\nIndexes:\n${(data.indexes||[]).map((i:any)=>i.indexname).join('\n')}`);
                   } catch (e) { console.error(e); }
-                }}>Status</Button>
+                }}>{dict?.admin?.status || "Status"}</Button>
                 <Button onClick={async () => {
                   try {
                     const res = await fetch('/api/admin/maintenance/indexes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'ivfflat', reindexGin: true }) });
                     const data = await res.json();
                     alert(`Rebuilt IVFFLAT (lists=${data.lists}) on ${data.count} chunks`);
                   } catch (e) { console.error(e); }
-                }}>Rebuild IVFFLAT</Button>
+                }}>{dict?.admin?.rebuildIvfflat || "Rebuild IVFFLAT"}</Button>
                 <Button variant="outline" onClick={async () => {
                   try {
                     const res = await fetch('/api/admin/maintenance/indexes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'hnsw', m: 16, ef_construction: 64, reindexGin: true }) });
@@ -509,7 +519,7 @@ export default function AdminPage() {
                     if (!res.ok) throw new Error(data.error || 'Failed');
                     alert('Rebuilt HNSW indexes');
                   } catch (e:any) { alert(e.message || 'HNSW not supported'); }
-                }}>Rebuild HNSW</Button>
+                }}>{dict?.admin?.rebuildHnsw || "Rebuild HNSW"}</Button>
               </div>
             </CardContent>
           </Card>
