@@ -260,12 +260,12 @@ export default function ScheduledReports({ organizationId, className = '' }: Sch
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Scheduled Reports</CardTitle>
+          <CardTitle className="text-sm font-medium">{dict?.scheduledReports?.title || "Scheduled Reports"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Clock className="h-6 w-6 animate-pulse mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Loading reports...</p>
+            <p className="text-sm text-muted-foreground">{dict?.scheduledReports?.loadingReports || "Loading reports..."}</p>
           </div>
         </CardContent>
       </Card>
@@ -277,21 +277,21 @@ export default function ScheduledReports({ organizationId, className = '' }: Sch
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Scheduled Reports</h2>
+          <h2 className="text-lg font-semibold">{dict?.scheduledReports?.title || "Scheduled Reports"}</h2>
           <p className="text-sm text-muted-foreground">
-            Configure automated email reports for analytics data
+            {dict?.scheduledReports?.description || "Configure automated email reports for analytics data"}
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Create Report
+              {dict?.scheduledReports?.createReport || "Create Report"}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create Scheduled Report</DialogTitle>
+              <DialogTitle>{dict?.scheduledReports?.createReport || "Create Scheduled Report"}</DialogTitle>
             </DialogHeader>
             <Tabs defaultValue="basic" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
