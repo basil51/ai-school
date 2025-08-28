@@ -2,8 +2,13 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/lib/useTranslations";
+import { useParams } from "next/navigation";
 
 export default function SignIn() {
+  const { dict } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,10 +27,10 @@ export default function SignIn() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(dict?.auth?.invalidCredentials || "Invalid email or password");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     }
   };
 
@@ -34,14 +39,14 @@ export default function SignIn() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to AI School
+            {dict?.auth?.signInTo || "Sign in to AI School"}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+                {dict?.auth?.emailAddress || "Email address"}
               </label>
               <input
                 id="email"
@@ -50,14 +55,14 @@ export default function SignIn() {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder={dict?.auth?.emailAddress || "Email address"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                {dict?.auth?.password || "Password"}
               </label>
               <input
                 id="password"
@@ -66,7 +71,7 @@ export default function SignIn() {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder={dict?.auth?.password || "Password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -83,26 +88,26 @@ export default function SignIn() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? (dict?.auth?.signingIn || "Signing in...") : (dict?.auth?.signIn || "Sign in")}
             </button>
           </div>
         </form>
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Demo accounts:
+            {dict?.auth?.demoAccounts || "Demo accounts:"}
           </p>
           <div className="text-xs text-gray-500 mt-2 space-y-2">
-            <div className="font-semibold text-red-600">Super Admin (All Organizations):</div>
+            <div className="font-semibold text-red-600">{dict?.auth?.superAdmin || "Super Admin (All Organizations):"}</div>
             <div>superadmin@example.com / super123</div>
             
-            <div className="font-semibold text-blue-600 mt-3">Demo School Organization:</div>
+            <div className="font-semibold text-blue-600 mt-3">{dict?.auth?.demoSchool || "Demo School Organization:"}</div>
             <div>admin@example.com / admin123</div>
             <div>teacher@example.com / teach123</div>
             <div>student@example.com / study123</div>
             <div>guardian@example.com / guard123</div>
             
-            <div className="font-semibold text-green-600 mt-3">Tech Academy Organization:</div>
+            <div className="font-semibold text-green-600 mt-3">{dict?.auth?.techAcademy || "Tech Academy Organization:"}</div>
             <div>admin2@example.com / admin123</div>
             <div>teacher2@example.com / teach123</div>
             <div>student3@example.com / study123</div>

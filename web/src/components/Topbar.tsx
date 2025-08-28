@@ -78,14 +78,14 @@ export default function Topbar() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={`/${currentLocale}/admin`}>
                       <Users className="h-4 w-4 mr-2" />
-                      Admin
+                      {dict?.userMenu?.adminPanel || "Admin"}
                     </Link>
                   </Button>
                   {userRole === 'super_admin' && (
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/${currentLocale}/super-admin/organizations`}>
                         <Building2 className="h-4 w-4 mr-2" />
-                        Organizations
+                        {dict?.userMenu?.organizations || "Organizations"}
                       </Link>
                     </Button>
                   )}
@@ -107,7 +107,7 @@ export default function Topbar() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {session.user?.name || 'User'}
+                        {session.user?.name || (dict?.userMenu?.user || 'User')}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {session.user?.email}
@@ -123,14 +123,14 @@ export default function Topbar() {
                   <DropdownMenuItem asChild>
                     <Link href={`/${currentLocale}/dashboard`}>
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
+                      <span>{dict?.userMenu?.dashboard || "Dashboard"}</span>
                     </Link>
                   </DropdownMenuItem>
                   {['admin', 'super_admin'].includes(userRole) && (
                     <DropdownMenuItem asChild>
                       <Link href={`/${currentLocale}/admin`}>
                         <Users className="mr-2 h-4 w-4" />
-                        <span>Admin Panel</span>
+                        <span>{dict?.userMenu?.adminPanel || "Admin Panel"}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -138,14 +138,14 @@ export default function Topbar() {
                     <DropdownMenuItem asChild>
                       <Link href={`/${currentLocale}/super-admin/organizations`}>
                         <Building2 className="mr-2 h-4 w-4" />
-                        <span>Organizations</span>
+                        <span>{dict?.userMenu?.organizations || "Organizations"}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>{dict?.userMenu?.logOut || "Log out"}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
