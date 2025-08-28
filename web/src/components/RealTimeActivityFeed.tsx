@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Activity, RefreshCw, Users, FileText, MessageSquare, Settings } from 'lucide-react';
+import { useTranslations } from '@/lib/useTranslations';
 
 interface ActivityItem {
   id: string;
@@ -71,6 +72,7 @@ const getActionColor = (action: string) => {
 };
 
 export default function RealTimeActivityFeed({ organizationId, className = '', filters }: RealTimeActivityFeedProps) {
+  const { dict } = useTranslations();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(true);
@@ -129,14 +131,25 @@ export default function RealTimeActivityFeed({ organizationId, className = '', f
     const date = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 60) return dict?.activityFeed?.justNow || 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}${dict?.activityFeed?.minutesAgo || 'm ago'}`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}${dict?.activityFeed?.hoursAgo || 'h ago'}`;
+    return `${Math.floor(diffInSeconds / 86400)}${dict?.activityFeed?.daysAgo || 'd ago'}`;
   };
 
   const formatAction = (action: string) => {
-    return action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const actionMap: { [key: string]: string } = {
+      'user_login': dict?.activityFeed?.actions?.userLogin || 'User Login',
+      'user_created': dict?.activityFeed?.actions?.userCreated || 'User Created',
+      'document_uploaded': dict?.activityFeed?.actions?.documentUploaded || 'Document Uploaded',
+      'document_processed': dict?.activityFeed?.actions?.documentProcessed || 'Document Processed',
+      'question_asked': dict?.activityFeed?.actions?.questionAsked || 'Question Asked',
+      'chat_message': dict?.activityFeed?.actions?.chatMessage || 'Chat Message',
+      'settings_updated': dict?.activityFeed?.actions?.settingsUpdated || 'Settings Updated',
+      'organization_updated': dict?.activityFeed?.actions?.organizationUpdated || 'Organization Updated',
+    };
+    
+    return actionMap[action.toLowerCase()] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   return (
@@ -144,11 +157,11 @@ export default function RealTimeActivityFeed({ organizationId, className = '', f
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Activity className="h-4 w-4" />
-          Real-time Activity Feed
+          {dict?.activityFeed?.title || "Real-time Activity Feed"}
         </CardTitle>
         <div className="flex items-center gap-2">
           <Badge variant={isLive ? 'default' : 'secondary'} className="text-xs">
-            {isLive ? 'Live' : 'Paused'}
+            {isLive ? (dict?.activityFeed?.live || 'Live') : (dict?.activityFeed?.paused || 'Paused')}
           </Badge>
           <Button
             size="sm"
@@ -156,7 +169,7 @@ export default function RealTimeActivityFeed({ organizationId, className = '', f
             onClick={() => setIsLive(!isLive)}
             className="h-6 px-2"
           >
-            {isLive ? 'Pause' : 'Resume'}
+            {isLive ? (dict?.activityFeed?.pause || 'Pause') : (dict?.activityFeed?.resume || 'Resume')}
           </Button>
           <Button
             size="sm"
@@ -171,18 +184,18 @@ export default function RealTimeActivityFeed({ organizationId, className = '', f
       </CardHeader>
       <CardContent>
         <div className="text-xs text-muted-foreground mb-4">
-          Last updated: {lastUpdate.toLocaleTimeString()}
+          {dict?.activityFeed?.lastUpdated || "Last updated:"} {lastUpdate.toLocaleTimeString()}
         </div>
         
         {loading ? (
           <div className="text-center py-8">
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Loading activities...</p>
+            <p className="text-sm text-muted-foreground">{dict?.activityFeed?.loadingActivities || "Loading activities..."}</p>
           </div>
         ) : activities.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No recent activity</p>
+            <p className="text-sm text-muted-foreground">{dict?.activityFeed?.noRecentActivity || "No recent activity"}</p>
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -206,7 +219,7 @@ export default function RealTimeActivityFeed({ organizationId, className = '', f
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">
-                        by {activity.user.name || activity.user.email}
+                        {dict?.activityFeed?.by || "by"} {activity.user.name || activity.user.email}
                       </span>
                       <Badge variant="outline" className="text-xs">
                         {activity.user.role}
