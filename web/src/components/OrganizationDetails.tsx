@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import RealTimeActivityFeed from './RealTimeActivityFeed';
 import PredictiveAnalytics from './PredictiveAnalytics';
+import AnalyticsFilters, { FilterState } from './AnalyticsFilters';
 import {
   ResponsiveContainer,
   PieChart,
@@ -107,6 +108,15 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
   const [analytics, setAnalytics] = useState<OrganizationAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [filters, setFilters] = useState<FilterState>({
+    dateRange: undefined,
+    metrics: ['users', 'documents', 'questions', 'storage'],
+    userRoles: ['student', 'teacher', 'admin', 'guardian'],
+    activityTypes: ['user_login', 'document_uploaded', 'question_asked', 'settings_updated'],
+    searchQuery: '',
+    sortBy: 'date',
+    sortOrder: 'desc',
+  });
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -359,6 +369,8 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
         </div>
       </div>
 
+      <AnalyticsFilters onFiltersChange={setFilters} className="mb-6" />
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -528,7 +540,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
-          <RealTimeActivityFeed organizationId={organizationId} />
+          <RealTimeActivityFeed organizationId={organizationId} filters={filters} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

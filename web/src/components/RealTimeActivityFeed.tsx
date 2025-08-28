@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,14 @@ interface ActivityItem {
 interface RealTimeActivityFeedProps {
   organizationId: string;
   className?: string;
+  filters?: {
+    dateRange?: { from?: Date; to?: Date };
+    searchQuery?: string;
+    userRoles?: string[];
+    activityTypes?: string[];
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  };
 }
 
 const getActionIcon = (action: string) => {
@@ -62,15 +70,39 @@ const getActionColor = (action: string) => {
   }
 };
 
-export default function RealTimeActivityFeed({ organizationId, className = '' }: RealTimeActivityFeedProps) {
+export default function RealTimeActivityFeed({ organizationId, className = '', filters }: RealTimeActivityFeedProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
-      const response = await fetch(`/api/super-admin/organizations/${organizationId}/activity`);
+      // Build query parameters from filters
+      const params = new URLSearchParams();
+      if (filters?.dateRange?.from) {
+        params.append('from', filters.dateRange.from.toISOString());
+      }
+      if (filters?.dateRange?.to) {
+        params.append('to', filters.dateRange.to.toISOString());
+      }
+      if (filters?.searchQuery) {
+        params.append('search', filters.searchQuery);
+      }
+      if (filters?.userRoles?.length) {
+        params.append('roles', filters.userRoles.join(','));
+      }
+      if (filters?.activityTypes?.length) {
+        params.append('types', filters.activityTypes.join(','));
+      }
+      if (filters?.sortBy) {
+        params.append('sortBy', filters.sortBy);
+      }
+      if (filters?.sortOrder) {
+        params.append('sortOrder', filters.sortOrder);
+      }
+
+      const response = await fetch(`/api/super-admin/organizations/${organizationId}/activity?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setActivities(data.activities || []);
@@ -81,7 +113,7 @@ export default function RealTimeActivityFeed({ organizationId, className = '' }:
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, filters]);
 
   useEffect(() => {
     fetchActivities();
@@ -90,7 +122,7 @@ export default function RealTimeActivityFeed({ organizationId, className = '' }:
       const interval = setInterval(fetchActivities, 10000); // Poll every 10 seconds
       return () => clearInterval(interval);
     }
-  }, [organizationId, isLive, fetchActivities]);
+  }, [organizationId, isLive, fetchActivities, filters]);
 
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();

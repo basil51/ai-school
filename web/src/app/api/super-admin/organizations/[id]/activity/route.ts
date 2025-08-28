@@ -21,14 +21,84 @@ export async function GET(
 
     const { id: organizationId } = await params;
 
-    // Get recent audit logs for the organization
-    const recentActivity = await prisma.auditLog.findMany({
-      where: {
-        organizationId,
-        createdAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+    // Parse query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const fromDate = searchParams.get('from');
+    const toDate = searchParams.get('to');
+    const searchQuery = searchParams.get('search');
+    const userRoles = searchParams.get('roles')?.split(',') || [];
+    const activityTypes = searchParams.get('types')?.split(',') || [];
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+
+    // Build where clause for filtering
+    const whereClause: any = {
+      organizationId,
+    };
+
+    // Date range filter
+    if (fromDate || toDate) {
+      whereClause.createdAt = {};
+      if (fromDate) {
+        whereClause.createdAt.gte = new Date(fromDate);
+      }
+      if (toDate) {
+        whereClause.createdAt.lte = new Date(toDate);
+      }
+    } else {
+      // Default to last 24 hours if no date range specified
+      whereClause.createdAt = {
+        gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      };
+    }
+
+    // User role filter
+    if (userRoles.length > 0) {
+      whereClause.user = {
+        role: {
+          in: userRoles,
         },
-      },
+      };
+    }
+
+    // Activity type filter
+    if (activityTypes.length > 0) {
+      whereClause.action = {
+        in: activityTypes,
+      };
+    }
+
+    // Search query filter
+    if (searchQuery) {
+      whereClause.OR = [
+        {
+          action: {
+            contains: searchQuery,
+            mode: 'insensitive',
+          },
+        },
+        {
+          user: {
+            name: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          user: {
+            email: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+      ];
+    }
+
+    // Get filtered audit logs
+    const recentActivity = await prisma.auditLog.findMany({
+      where: whereClause,
       include: {
         user: {
           select: {
@@ -39,7 +109,7 @@ export async function GET(
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        [sortBy]: sortOrder,
       },
       take: 50, // Limit to 50 most recent activities
     });
