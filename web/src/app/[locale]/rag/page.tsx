@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,14 @@ import { FileText, Upload, Search, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslations } from "@/lib/useTranslations";
 
 export default function RagPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { dict } = useTranslations();
+  const params = useParams();
+  const locale = params.locale as string;
   const [file, setFile] = useState<File | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -29,15 +33,15 @@ export default function RagPage() {
   useEffect(() => {
     if (status === "loading") return;
     if (!session || ((session as any).role !== "teacher" && (session as any).role !== "admin")) {
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     }
-  }, [session, status, router]);
+  }, [session, status, router, locale]);
 
   async function handleUpload() {
     if (!file) return;
     
     setUploadLoading(true);
-    setUploadStatus("Uploading...");
+    setUploadStatus(dict?.rag?.uploading || "Uploading...");
     const fd = new FormData();
     fd.append("file", file);
     fd.append("title", file.name);
@@ -47,7 +51,10 @@ export default function RagPage() {
       const data = await res.json();
       
       if (res.ok) {
-        setUploadStatus(`Uploaded docId=${data.docId}, chars=${data.chars}`);
+        const uploadedText = (dict?.rag?.uploadedDocId || "Uploaded docId={docId}, chars={chars}")
+          .replace('{docId}', data.docId)
+          .replace('{chars}', data.chars);
+        setUploadStatus(uploadedText);
         
         // For demo, read the file content and ingest it
         const content = await file.text();
@@ -58,16 +65,18 @@ export default function RagPage() {
         });
         
         if (ingestRes.ok) {
-          setUploadStatus("Document uploaded and ingested successfully!");
+          setUploadStatus(dict?.rag?.documentUploadedIngested || "Document uploaded and ingested successfully!");
           setFile(null);
         } else {
-          setUploadStatus("Uploaded but ingestion failed");
+          setUploadStatus(dict?.rag?.uploadedButIngestionFailed || "Uploaded but ingestion failed");
         }
       } else {
-        setUploadStatus(`Upload failed: ${data.error}`);
+        const errorText = (dict?.rag?.uploadFailedError || "Upload failed: {error}")
+          .replace('{error}', data.error);
+        setUploadStatus(errorText);
       }
     } catch (error) {
-      setUploadStatus("Upload failed");
+      setUploadStatus(dict?.rag?.uploadError || "Upload failed");
       console.error("Upload failed:", error);
     } finally {
       setUploadLoading(false);
@@ -92,10 +101,10 @@ export default function RagPage() {
       if (res.ok) {
         setAnswer(JSON.stringify(data.snippets, null, 2));
       } else {
-        setAnswer(`Error: ${data.error}`);
+        setAnswer(`${dict?.rag?.error || "Error"}: ${data.error}`);
       }
     } catch (error) {
-      setAnswer("Failed to process query");
+      setAnswer(dict?.rag?.failedToProcessQuery || "Failed to process query");
       console.error("Query failed:", error);
     } finally {
       setLoading(false);
@@ -107,7 +116,7 @@ export default function RagPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Loading...</div>
+            <div className="text-lg">{dict?.rag?.loading || "Loading..."}</div>
           </div>
         </div>
       </div>
@@ -119,7 +128,7 @@ export default function RagPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Access denied. Redirecting...</div>
+            <div className="text-lg">{dict?.rag?.accessDenied || "Access denied. Redirecting..."}</div>
           </div>
         </div>
       </div>
@@ -131,12 +140,12 @@ export default function RagPage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Content Management</h1>
-            <p className="text-gray-600 mt-2">Upload and manage educational materials for the AI tutor</p>
+            <h1 className="text-3xl font-bold text-gray-900">{dict?.rag?.contentManagement || "Content Management"}</h1>
+            <p className="text-gray-600 mt-2">{dict?.rag?.contentManagementDescription || "Upload and manage educational materials for the AI tutor"}</p>
           </div>
           <Badge variant="outline" className="flex items-center gap-1">
             <FileText className="h-4 w-4" />
-            {(session as any).role}
+            {dict?.roles?.[(session as any).role] || (session as any).role}
           </Badge>
         </div>
         
@@ -146,15 +155,15 @@ export default function RagPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5" />
-                Upload Document
+                {dict?.rag?.uploadDocument || "Upload Document"}
               </CardTitle>
               <CardDescription>
-                Upload educational materials (.txt files) to be processed by the AI tutor
+                {dict?.rag?.uploadDocumentDescription || "Upload educational materials (.txt files) to be processed by the AI tutor"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="file">Select File</Label>
+                <Label htmlFor="file">{dict?.rag?.selectFile || "Select File"}</Label>
                 <Input
                   id="file"
                   type="file"
@@ -163,7 +172,7 @@ export default function RagPage() {
                   className="mt-1"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Currently supports .txt files only
+                  {dict?.rag?.currentlySupportsTxt || "Currently supports .txt files only"}
                 </p>
               </div>
               
@@ -175,12 +184,12 @@ export default function RagPage() {
                 {uploadLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Uploading...
+                    {dict?.rag?.uploading || "Uploading..."}
                   </>
                 ) : (
                   <>
                     <Upload className="h-4 w-4 mr-2" />
-                    Upload & Process
+                    {dict?.rag?.uploadAndProcess || "Upload & Process"}
                   </>
                 )}
               </Button>
@@ -199,39 +208,39 @@ export default function RagPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5" />
-                Test Document Search
+                {dict?.rag?.testDocumentSearch || "Test Document Search"}
               </CardTitle>
               <CardDescription>
-                Test the RAG system by asking questions about uploaded documents
+                {dict?.rag?.testDocumentSearchDescription || "Test the RAG system by asking questions about uploaded documents"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="question">Question</Label>
+                <Label htmlFor="question">{dict?.rag?.question || "Question"}</Label>
                 <Textarea
                   id="question"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Ask a question about your uploaded documents..."
+                  placeholder={dict?.rag?.questionPlaceholder || "Ask a question about your uploaded documents..."}
                   className="mt-1 min-h-[100px]"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Mode</Label>
+                  <Label>{dict?.rag?.mode || "Mode"}</Label>
                   <Select value={mode} onValueChange={(v) => setMode(v as any)}>
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select mode" />
+                      <SelectValue placeholder={dict?.rag?.selectMode || "Select mode"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hybrid">Hybrid (lexical + vector)</SelectItem>
-                      <SelectItem value="vector">Vector only</SelectItem>
+                      <SelectItem value="hybrid">{dict?.rag?.hybridLexicalVector || "Hybrid (lexical + vector)"}</SelectItem>
+                      <SelectItem value="vector">{dict?.rag?.vectorOnly || "Vector only"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Alpha (vector weight): {alpha.toFixed(2)}</Label>
+                  <Label>{dict?.rag?.alphaVectorWeight || "Alpha (vector weight)"}: {alpha.toFixed(2)}</Label>
                   <div className="mt-3">
                     <Slider
                       value={[alpha]}
@@ -252,19 +261,19 @@ export default function RagPage() {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Searching...
+                    {dict?.rag?.searching || "Searching..."}
                   </>
                 ) : (
                   <>
                     <Search className="h-4 w-4 mr-2" />
-                    Search Documents
+                    {dict?.rag?.searchDocumentsButton || "Search Documents"}
                   </>
                 )}
               </Button>
               
               {answer && (
                 <div className="mt-4">
-                  <Label>Search Results</Label>
+                  <Label>{dict?.rag?.searchResults || "Search Results"}</Label>
                   <div className="mt-2 bg-gray-50 p-4 rounded-md border">
                     <pre className="text-sm overflow-auto max-h-96 whitespace-pre-wrap">
                       {answer}
