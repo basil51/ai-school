@@ -227,33 +227,66 @@
 
 /* RTL Table Support */
 [dir="rtl"] table {
-  direction: rtl;
+  direction: rtl !important;
 }
 
 [dir="rtl"] th,
 [dir="rtl"] td {
-  text-align: right;
+  text-align: right !important;
 }
 
 [dir="rtl"] .table-header {
-  direction: rtl;
+  direction: rtl !important;
 }
 
 [dir="rtl"] .table-body {
-  direction: rtl;
+  direction: rtl !important;
+}
+
+/* Override shadcn/ui Table component direction */
+[dir="rtl"] [role="table"] {
+  direction: rtl !important;
+}
+
+[dir="rtl"] [role="row"] {
+  direction: rtl !important;
+}
+
+[dir="rtl"] [role="cell"],
+[dir="rtl"] [role="columnheader"] {
+  text-align: right !important;
 }
 
 /* RTL Tabs Support */
 [dir="rtl"] .tabs-list {
-  direction: rtl;
+  direction: rtl !important;
 }
 
 [dir="rtl"] .tabs-trigger {
-  direction: rtl;
+  direction: rtl !important;
 }
 
 [dir="rtl"] .tabs-content {
-  direction: rtl;
+  direction: rtl !important;
+}
+
+/* Override shadcn/ui Tabs component direction */
+[dir="rtl"] [data-orientation="horizontal"] {
+  direction: rtl !important;
+}
+
+[dir="rtl"] [data-slot="tabs"] {
+  direction: rtl !important;
+}
+
+/* Force RTL on all tabs-related elements */
+[dir="rtl"] [class*="tabs"] {
+  direction: rtl !important;
+}
+
+/* Override any explicit ltr direction in RTL context */
+[dir="rtl"] [dir="ltr"] {
+  direction: rtl !important;
 }
 
 /* RTL Card Support */
@@ -350,6 +383,20 @@
 [dir="rtl"] h4,
 [dir="rtl"] h5,
 [dir="rtl"] h6 {
-  direction: rtl;
-  text-align: right;
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+/* Global RTL override - force RTL on all elements in RTL context */
+[dir="rtl"] * {
+  direction: rtl !important;
+}
+
+/* Exception for specific elements that should remain LTR */
+[dir="rtl"] code,
+[dir="rtl"] pre,
+[dir="rtl"] .mono,
+[dir="rtl"] .font-mono {
+  direction: ltr !important;
+  text-align: left !important;
 }
