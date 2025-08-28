@@ -43,8 +43,18 @@ export default function Topbar() {
 
   // Handle hover events for user dropdown
   useEffect(() => {
-    const handleMouseEnter = () => setIsUserDropdownOpen(true);
-    const handleMouseLeave = () => setIsUserDropdownOpen(false);
+    let timeoutId: NodeJS.Timeout;
+
+    const handleMouseEnter = () => {
+      clearTimeout(timeoutId);
+      setIsUserDropdownOpen(true);
+    };
+
+    const handleMouseLeave = () => {
+      timeoutId = setTimeout(() => {
+        setIsUserDropdownOpen(false);
+      }, 100); // Small delay to prevent flickering
+    };
 
     const element = userDropdownRef.current;
     if (element) {
@@ -53,6 +63,7 @@ export default function Topbar() {
     }
 
     return () => {
+      clearTimeout(timeoutId);
       if (element) {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
@@ -95,12 +106,14 @@ export default function Topbar() {
               {/* User Menu */}
               <div 
                 ref={userDropdownRef}
-                className="relative flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors"
+                className="relative"
               >
-                <User className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-600">
-                  {dict?.userMenu?.hi || "Hi,"} {session.user?.name || session.user?.email}
-                </span>
+                <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors">
+                  <User className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-600">
+                    {dict?.userMenu?.hi || "Hi,"} {session.user?.name || session.user?.email}
+                  </span>
+                </div>
                 
                 {/* Custom Dropdown */}
                 {isUserDropdownOpen && (
