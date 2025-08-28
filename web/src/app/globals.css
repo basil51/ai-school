@@ -224,3 +224,132 @@
 [dir="rtl"] .-translate-x-full {
   transform: translateX(100%);
 }
+
+/* RTL Table Support */
+[dir="rtl"] table {
+  direction: rtl;
+}
+
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: right;
+}
+
+[dir="rtl"] .table-header {
+  direction: rtl;
+}
+
+[dir="rtl"] .table-body {
+  direction: rtl;
+}
+
+/* RTL Tabs Support */
+[dir="rtl"] .tabs-list {
+  direction: rtl;
+}
+
+[dir="rtl"] .tabs-trigger {
+  direction: rtl;
+}
+
+[dir="rtl"] .tabs-content {
+  direction: rtl;
+}
+
+/* RTL Card Support */
+[dir="rtl"] .card-header {
+  direction: rtl;
+}
+
+[dir="rtl"] .card-content {
+  direction: rtl;
+}
+
+/* RTL Grid Support */
+[dir="rtl"] .grid {
+  direction: rtl;
+}
+
+/* RTL Flex Support */
+[dir="rtl"] .flex {
+  direction: rtl;
+}
+
+/* RTL Dialog Support */
+[dir="rtl"] .dialog-content {
+  direction: rtl;
+}
+
+/* RTL Select Support */
+[dir="rtl"] .select-trigger {
+  direction: rtl;
+}
+
+[dir="rtl"] .select-content {
+  direction: rtl;
+}
+
+/* RTL Input Support */
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+  direction: rtl;
+  text-align: right;
+}
+
+/* RTL Button Support */
+[dir="rtl"] button {
+  direction: rtl;
+}
+
+/* RTL Badge Support */
+[dir="rtl"] .badge {
+  direction: rtl;
+}
+
+/* RTL Alert Support */
+[dir="rtl"] .alert {
+  direction: rtl;
+}
+
+/* RTL Avatar Support */
+[dir="rtl"] .avatar {
+  direction: rtl;
+}
+
+/* RTL Slider Support */
+[dir="rtl"] .slider {
+  direction: rtl;
+}
+
+/* RTL Label Support */
+[dir="rtl"] label {
+  direction: rtl;
+  text-align: right;
+}
+
+/* RTL Div Support */
+[dir="rtl"] div {
+  direction: rtl;
+}
+
+/* RTL Span Support */
+[dir="rtl"] span {
+  direction: rtl;
+}
+
+/* RTL P Support */
+[dir="rtl"] p {
+  direction: rtl;
+  text-align: right;
+}
+
+/* RTL H1, H2, H3, H4, H5, H6 Support */
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  direction: rtl;
+  text-align: right;
+}
