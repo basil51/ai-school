@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { embedQuery } from "@/lib/rag/embed";
 import { searchHybrid } from "@/lib/rag/query";
-import { processResults, adaptiveThresholding } from "@/lib/rag/threshold";
+import { adaptiveThresholding } from "@/lib/rag/threshold";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

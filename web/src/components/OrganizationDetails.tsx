@@ -136,7 +136,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
     } finally {
       setLoading(false);
     }
-  }, [organizationId]);
+  }, [organizationId, dict]);
 
   useEffect(() => {
     fetchAnalytics();

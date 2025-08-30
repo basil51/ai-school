@@ -123,7 +123,7 @@ export default function PredictiveAnalytics({ organizationId, className = '' }: 
     };
 
     fetchPredictiveData();
-  }, [organizationId]);
+  }, [organizationId, dict]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';

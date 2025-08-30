@@ -10,11 +10,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+  //DropdownMenuLabel,
+  //DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+//import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Settings, LogOut, Users, Building2, Globe, User } from "lucide-react";
 import { locales, Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";

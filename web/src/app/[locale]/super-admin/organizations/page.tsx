@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import { Trash2, Users, FileText, Settings, BarChart3, ChevronDown, ChevronRight
 import OrganizationAnalyticsDashboard from '@/components/OrganizationAnalyticsDashboard';
 import OrganizationDetails from '@/components/OrganizationDetails';
 import { useTranslations } from '@/lib/useTranslations';
-import { useParams } from 'next/navigation';
+//import { useParams } from 'next/navigation';
 
 interface Organization {
   id: string;
@@ -42,8 +42,8 @@ interface Organization {
 
 export default function SuperAdminOrganizationsPage() {
   const { dict } = useTranslations();
-  const params = useParams();
-  const locale = params.locale as string;
+  //const params = useParams();
+  //const locale = params.locale as string;
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -58,11 +58,7 @@ export default function SuperAdminOrganizationsPage() {
     tier: 'free' as const,
   });
 
-  useEffect(() => {
-    fetchOrganizations();
-  }, []);
-
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       const response = await fetch('/api/super-admin/organizations');
       if (response.ok) {
@@ -77,7 +73,11 @@ export default function SuperAdminOrganizationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dict]);
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, [fetchOrganizations]);
 
   const toggleRowExpansion = (organizationId: string) => {
     const newExpandedRows = new Set(expandedRows);

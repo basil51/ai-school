@@ -18,12 +18,12 @@ import {
   Loader2
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
-import { useParams } from "next/navigation";
+//import { useParams } from "next/navigation";
 
 export default function TutorPage() {
   const { dict } = useTranslations();
-  const params = useParams();
-  const locale = params.locale as string;
+  //const params = useParams();
+  //const locale = params.locale as string;
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);

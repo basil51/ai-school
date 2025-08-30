@@ -1,14 +1,9 @@
 "use client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";
 
-export default function Home({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function Home({}: { params: Promise<{ locale: string }>;}) {
   const { data: session, status } = useSession();
   const { dict, loading: dictLoading, locale } = useTranslations();
 
@@ -124,11 +119,11 @@ export default function Home({
               ) : (
                 <div className="space-y-6">
                   <p className="text-justify">
-                    EduVibe AI Academy isn't just another learning app—it's a revolution in education. Imagine every student having their own personal AI teacher, ready to guide them step by step.
+                    EduVibe AI Academy isn&apos;t just another learning app—it&apos;s a revolution in education. Imagine every student having their own personal AI teacher, ready to guide them step by step.
                   </p>
                   
-                  <p className="text-justify">
-                    Whether it's math, science, English, history, or any subject, the AI crafts a dynamic, interactive curriculum tailored to each learner's pace and style. Lessons adapt in real time, with quizzes, tests, and homework that measure understanding and provide instant feedback.
+                  <p className="text-justify"> 
+                    Whether it&apos;s math, science, English, history, or any subject, the AI crafts a dynamic, interactive curriculum tailored to each learner&apos;s pace and style. Lessons adapt in real time, with quizzes, tests, and homework that measure understanding and provide instant feedback.
                   </p>
                   
                   <p className="text-justify">
@@ -136,7 +131,7 @@ export default function Home({
                   </p>
                   
                   <p className="text-justify font-semibold text-gray-800">
-                    This isn't just tutoring—it's a complete, adaptable, and personalized school in a single system.
+                    This isn&apos;t just tutoring—it&apos;s a complete, adaptable, and personalized school in a single system.
                   </p>
                 </div>
               )}

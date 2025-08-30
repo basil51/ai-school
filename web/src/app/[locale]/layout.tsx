@@ -4,8 +4,8 @@ import "../globals.css";
 import Providers from "../providers";
 import Topbar from "@/components/Topbar";
 import { Toaster } from "@/components/ui/sonner";
-import { getDictionary } from "@/lib/i18n";
-import { Locale } from "@/lib/i18n";
+//import { getDictionary } from "@/lib/i18n";
+//import { Locale } from "@/lib/i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +34,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }>) {
   const { locale } = await params;
-  const dict = await getDictionary(locale as Locale);
+  //const dict = await getDictionary(locale as Locale);
   
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
