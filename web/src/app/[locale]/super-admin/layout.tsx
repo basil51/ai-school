@@ -3,7 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import OrganizationSwitcher from '@/components/OrganizationSwitcher';
 
 export default function SuperAdminLayout({
   children,
@@ -45,14 +44,7 @@ export default function SuperAdminLayout({
 
   return (
     <div className="container mx-auto p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1">
-          <OrganizationSwitcher />
-        </div>
-        <div className="lg:col-span-3">
-          {children}
-        </div>
-      </div>
+      {children}
     </div>
   );
 }

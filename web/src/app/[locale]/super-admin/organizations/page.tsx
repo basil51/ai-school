@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useRouter } from 'next/navigation';
 
 import { toast } from 'sonner';
-import { Trash2, Users, FileText, Settings, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, Users, FileText, ExternalLink, BarChart3 } from 'lucide-react';
 import OrganizationAnalyticsDashboard from '@/components/OrganizationAnalyticsDashboard';
 import OrganizationDetails from '@/components/OrganizationDetails';
 import { useTranslations } from '@/lib/useTranslations';
@@ -42,6 +43,7 @@ interface Organization {
 
 export default function SuperAdminOrganizationsPage() {
   const { dict } = useTranslations();
+  const router = useRouter();
   //const params = useParams();
   //const locale = params.locale as string;
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -87,6 +89,10 @@ export default function SuperAdminOrganizationsPage() {
       newExpandedRows.add(organizationId);
     }
     setExpandedRows(newExpandedRows);
+  };
+
+  const redirectToAdmin = (organizationId: string) => {
+    router.push(`/admin?org=${organizationId}`);
   };
 
   const createOrganization = async () => {
@@ -262,7 +268,6 @@ export default function SuperAdminOrganizationsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead></TableHead>
                   <TableHead>{dict?.superAdmin?.organization || "Organization"}</TableHead>
                   <TableHead>{dict?.superAdmin?.tier || "Tier"}</TableHead>
                   <TableHead>{dict?.superAdmin?.users || "Users"}</TableHead>
@@ -275,20 +280,10 @@ export default function SuperAdminOrganizationsPage() {
               <TableBody>
                 {organizations.map((org) => (
                   <React.Fragment key={org.id}>
-                    <TableRow>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => toggleRowExpansion(org.id)}
-                        >
-                          {expandedRows.has(org.id) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TableCell>
+                    <TableRow 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => toggleRowExpansion(org.id)}
+                    >
                       <TableCell>
                         <div>
                           <div className="font-medium">{org.name}</div>
@@ -340,15 +335,21 @@ export default function SuperAdminOrganizationsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => toggleRowExpansion(org.id)}
-                            title={dict?.superAdmin?.settings || "Settings"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              redirectToAdmin(org.id);
+                            }}
+                            title={dict?.superAdmin?.goToAdmin || "Go to Admin"}
                           >
-                            <Settings className="h-4 w-4" />
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => deleteOrganization(org.id, org.name)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteOrganization(org.id, org.name);
+                            }}
                             title={dict?.superAdmin?.delete || "Delete"}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -358,7 +359,7 @@ export default function SuperAdminOrganizationsPage() {
                     </TableRow>
                     {expandedRows.has(org.id) && (
                       <TableRow key={`${org.id}-expanded`}>
-                        <TableCell colSpan={8} className="p-0">
+                        <TableCell colSpan={7} className="p-0">
                           <div className="p-6 bg-muted/30">
                             <OrganizationDetails organizationId={org.id} />
                           </div>
