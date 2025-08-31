@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hash } from "argon2";
 import { getOrganizationContext, withOrganizationFilter, logAuditActivity, checkOrganizationLimits } from "@/lib/organization";
+import { toSerializable } from "@/lib/utils";
 
 export async function GET(_req: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(_req: NextRequest) {
       },
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json(toSerializable(users));
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
       req
     );
 
-    return NextResponse.json(user);
+    return NextResponse.json(toSerializable(user));
   } catch (error) {
     console.error("Error creating user:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

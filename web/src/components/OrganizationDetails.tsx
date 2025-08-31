@@ -20,6 +20,8 @@ import RealTimeActivityFeed from './RealTimeActivityFeed';
 import PredictiveAnalytics from './PredictiveAnalytics';
 import AnalyticsFilters, { FilterState } from './AnalyticsFilters';
 import ScheduledReports from './ScheduledReports';
+import AdvancedAnalyticsDashboard from './AdvancedAnalyticsDashboard';
+import CustomReportBuilder from './CustomReportBuilder';
 import {
   ResponsiveContainer,
   PieChart,
@@ -381,6 +383,7 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
           <TabsTrigger value="predictive">{dict?.organizationDetails?.predictive || "Predictive"}</TabsTrigger>
           <TabsTrigger value="activity">{dict?.organizationDetails?.activity || "Activity"}</TabsTrigger>
           <TabsTrigger value="reports">{dict?.organizationDetails?.reports || "Reports"}</TabsTrigger>
+          <TabsTrigger value="advanced">{dict?.organizationDetails?.advanced || "Advanced"}</TabsTrigger>
           <TabsTrigger value="settings">{dict?.organizationDetails?.settings || "Settings"}</TabsTrigger>
         </TabsList>
 
@@ -548,7 +551,15 @@ export default function OrganizationDetails({ organizationId, className = '' }: 
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Reports & Analytics</h3>
+            <CustomReportBuilder organizationId={organizationId} />
+          </div>
           <ScheduledReports organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="advanced" className="space-y-6">
+          <AdvancedAnalyticsDashboard organizationId={organizationId} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

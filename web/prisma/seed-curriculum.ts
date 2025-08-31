@@ -3,10 +3,15 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('🌱 Curriculum seeding disabled - will be enabled in Phase 12');
+  return;
+  
+  /*
+  // TODO: Enable curriculum seeding in Phase 12
   console.log('🌱 Seeding curriculum data...');
 
   // Get the first organization (or create one if none exists)
-  let organization = await prisma.organization.findFirst();
+  let organization: any = await prisma.organization.findFirst();
   
   if (!organization) {
     console.log('No organization found, creating one...');
@@ -356,6 +361,7 @@ Practice: What role did the Nile River play in the development of Egyptian civil
   console.log(`📖 Created ${await prisma.topic.count()} topics`);
   console.log(`📝 Created ${await prisma.lesson.count()} lessons`);
   console.log(`📋 Created ${await prisma.assessment.count()} assessments`);
+  */
 }
 
 main()

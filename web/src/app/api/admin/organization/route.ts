@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getOrganizationContext } from '@/lib/organization';
 import { prisma } from '@/lib/prisma';
+import { toSerializable } from '@/lib/utils';
 
 export async function GET() {
   try {
@@ -30,7 +31,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
-    return NextResponse.json(organization);
+    return NextResponse.json(toSerializable(organization));
   } catch (error) {
     console.error('Error fetching organization:', error);
     return NextResponse.json(

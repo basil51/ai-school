@@ -65,6 +65,14 @@ model User {
   
   // Scheduled reports created by user
   scheduledReports ScheduledReport[]
+  
+  // Attendance & Grades relationships
+  studentAttendance Attendance[] @relation("StudentAttendance")
+  teacherAttendance Attendance[] @relation("TeacherAttendance")
+  teacherAssignments Assignment[] @relation("TeacherAssignment")
+  studentGrades Grade[] @relation("StudentGrade")
+  teacherGrades Grade[] @relation("TeacherGrade")
+  studentPerformance StudentPerformance[]
 }
 
 model Account {
@@ -124,6 +132,13 @@ model Organization {
   monthlyQuestions  Int @default(0)
   monthlyDocuments  Int @default(0)
   storageUsed      BigInt @default(0) // in bytes
+  
+  // Attendance & Grades relationships
+  attendance Attendance[]
+  gradeCategories GradeCategory[]
+  assignments Assignment[]
+  grades Grade[]
+  studentPerformance StudentPerformance[]
 }
 
 model OrganizationSettings {
@@ -319,4 +334,148 @@ enum ReportFormat {
   pdf
   csv
   html
+}
+
+// --- Attendance & Grades System ---
+
+// Attendance tracking
+model Attendance {
+  id             String   @id @default(cuid())
+  organizationId String
+  studentId      String
+  date           DateTime @db.Date
+  status         AttendanceStatus @default(present)
+  checkInTime    DateTime?
+  checkOutTime   DateTime?
+  notes          String?
+  recordedBy     String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        User         @relation("StudentAttendance", fields: [studentId], references: [id], onDelete: Cascade)
+  recordedByUser User         @relation("TeacherAttendance", fields: [recordedBy], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, date])
+  @@index([organizationId, date])
+  @@index([studentId, date])
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  excused
+  sick
+}
+
+// Grade categories (e.g., Homework, Tests, Projects)
+model GradeCategory {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String   // e.g., "Homework", "Tests", "Projects"
+  description    String?
+  weight         Float    @default(1.0) // Weight in final grade calculation
+  color          String?  @default("#3b82f6") // Color for UI display
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments    Assignment[]
+  
+  @@unique([organizationId, name])
+}
+
+// Assignments (e.g., Math Quiz, Science Project)
+model Assignment {
+  id             String   @id @default(cuid())
+  organizationId String
+  categoryId     String
+  title          String
+  description    String?  @db.Text
+  dueDate        DateTime?
+  totalPoints    Float    @default(100.0)
+  isActive       Boolean  @default(true)
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category       GradeCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdByUser  User         @relation("TeacherAssignment", fields: [createdBy], references: [id], onDelete: Cascade)
+  grades         Grade[]
+  
+  @@index([organizationId, dueDate])
+}
+
+// Individual student grades
+model Grade {
+  id           String   @id @default(cuid())
+  organizationId String
+  studentId    String
+  assignmentId String
+  score        Float
+  maxScore     Float
+  percentage   Float    // Calculated percentage (score/maxScore * 100)
+  letterGrade  String?  // e.g., "A", "B+", "C-"
+  feedback     String?  @db.Text
+  gradedBy     String
+  gradedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student      User         @relation("StudentGrade", fields: [studentId], references: [id], onDelete: Cascade)
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  gradedByUser User         @relation("TeacherGrade", fields: [gradedBy], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, assignmentId])
+  @@index([organizationId, studentId])
+  @@index([assignmentId])
+}
+
+// Student performance summaries
+model StudentPerformance {
+  id             String   @id @default(cuid())
+  organizationId String
+  studentId      String
+  period         PerformancePeriod
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
+  
+  // Attendance metrics
+  totalDays      Int      @default(0)
+  presentDays    Int      @default(0)
+  absentDays     Int      @default(0)
+  lateDays       Int      @default(0)
+  attendanceRate Float    @default(0.0) // Percentage
+  
+  // Grade metrics
+  totalAssignments Int    @default(0)
+  completedAssignments Int @default(0)
+  averageGrade    Float   @default(0.0)
+  highestGrade    Float   @default(0.0)
+  lowestGrade     Float   @default(0.0)
+  
+  // Calculated fields
+  gpa            Float    @default(0.0) // Grade Point Average
+  rank           Int?     // Class rank (if applicable)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([organizationId, studentId, period, startDate])
+  @@index([organizationId, period, startDate])
+}
+
+enum PerformancePeriod {
+  daily
+  weekly
+  monthly
+  semester
+  yearly
 }
