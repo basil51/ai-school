@@ -151,7 +151,9 @@ export default function ChatPage() {
         setMessages(prev => [...prev, message]);
         setNewMessage("");
       } else {
-        toast.error(dict?.chat?.errorSendingMessage || "Error sending message");
+        const errorData = await response.json();
+        console.error('Send message error:', errorData);
+        toast.error(errorData.error || dict?.chat?.errorSendingMessage || "Error sending message");
       }
     } catch (error) {
       console.error("Error sending message:", error);

@@ -40,5 +40,16 @@ export const authOptions: AuthOptions = {
       (session as any).role = token.role;
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Handle signin redirects to our custom signin page
+      if (url.startsWith('/api/auth/signin')) {
+        return `${baseUrl}/en/signin`;
+      }
+      // Allow relative URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allow URLs from the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
 };

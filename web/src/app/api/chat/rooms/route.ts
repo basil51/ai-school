@@ -102,6 +102,19 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         description: description?.trim() || null,
       },
+    });
+
+    // Add the room creator as a participant
+    await prisma.chatParticipant.create({
+      data: {
+        roomId: room.id,
+        userId: context.userId,
+      },
+    });
+
+    // Fetch the room with participants
+    const roomWithParticipants = await prisma.chatRoom.findUnique({
+      where: { id: room.id },
       include: {
         _count: {
           select: {
@@ -124,7 +137,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(toSerializable(room), { status: 201 });
+    return NextResponse.json(toSerializable(roomWithParticipants), { status: 201 });
   } catch (error) {
     console.error('Error creating chat room:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
