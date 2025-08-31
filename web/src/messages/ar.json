@@ -611,6 +611,7 @@
     "participantsAdded": "تم إضافة المشاركين بنجاح",
     "errorAddingParticipants": "خطأ في إضافة المشاركين",
     "participantRemoved": "تم إزالة المشارك بنجاح",
-    "errorRemovingParticipant": "خطأ في إزالة المشارك"
+    "errorRemovingParticipant": "خطأ في إزالة المشارك",
+    "deleteRoom": "حذف الغرفة"
   }
 }

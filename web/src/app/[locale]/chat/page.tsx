@@ -16,6 +16,7 @@ import { useTranslations } from "@/lib/useTranslations";
 import { toast } from "sonner";
 import { Trash2, Users } from "lucide-react";
 
+
 interface ChatRoom {
   id: string;
   name: string;
@@ -390,9 +391,10 @@ export default function ChatPage() {
                               e.stopPropagation();
                               deleteRoom(room.id);
                             }}
-                            className="h-6 w-6 p-0"
+                            className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground text-muted-foreground hover:text-destructive-foreground"
+                            title={dict?.chat?.deleteRoom || "Delete Room"}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

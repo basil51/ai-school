@@ -611,6 +611,7 @@
     "participantsAdded": "Participants added successfully",
     "errorAddingParticipants": "Error adding participants",
     "participantRemoved": "Participant removed successfully",
-    "errorRemovingParticipant": "Error removing participant"
+    "errorRemovingParticipant": "Error removing participant",
+    "deleteRoom": "Delete Room"
   }
 }
