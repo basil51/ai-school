@@ -577,5 +577,28 @@
     "export": "تصدير",
     "loadingAdvancedAnalytics": "جاري تحميل التحليلات المتقدمة...",
     "failedToLoadAdvancedAnalytics": "فشل في تحميل التحليلات المتقدمة"
+  },
+  "chat": {
+    "title": "دردشة الفصل الدراسي",
+    "rooms": "غرف الدردشة",
+    "createRoom": "إنشاء غرفة",
+    "createNewRoom": "إنشاء غرفة جديدة",
+    "roomName": "اسم الغرفة",
+    "roomNamePlaceholder": "أدخل اسم الغرفة",
+    "description": "الوصف",
+    "descriptionPlaceholder": "أدخل وصف الغرفة",
+    "generalChat": "غرفة دردشة عامة",
+    "participants": "مشاركين",
+    "typeMessage": "اكتب رسالتك...",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "selectRoom": "اختر غرفة دردشة",
+    "selectRoomDescription": "اختر غرفة من الشريط الجانبي لبدء الدردشة",
+    "loading": "جاري التحميل...",
+    "roomCreated": "تم إنشاء غرفة الدردشة بنجاح",
+    "errorFetchingRooms": "خطأ في جلب غرف الدردشة",
+    "errorFetchingMessages": "خطأ في جلب الرسائل",
+    "errorSendingMessage": "خطأ في إرسال الرسالة",
+    "errorCreatingRoom": "خطأ في إنشاء الغرفة"
   }
 }

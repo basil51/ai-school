@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +53,7 @@ interface Document {
   chunks: { id: string }[];
 }
 
-export default function AdminPage() {
+function AdminPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { dict, loading: dictLoading } = useTranslations();
@@ -605,5 +605,13 @@ export default function AdminPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminPageContent />
+    </Suspense>
   );
 }

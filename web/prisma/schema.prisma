@@ -73,6 +73,10 @@ model User {
   studentGrades Grade[] @relation("StudentGrade")
   teacherGrades Grade[] @relation("TeacherGrade")
   studentPerformance StudentPerformance[]
+  
+  // Chat relationships
+  sentMessages ChatMessage[]
+  chatParticipants ChatParticipant[]
 }
 
 model Account {
@@ -139,6 +143,9 @@ model Organization {
   assignments Assignment[]
   grades Grade[]
   studentPerformance StudentPerformance[]
+  
+  // Chat relationships
+  chatRooms ChatRoom[]
 }
 
 model OrganizationSettings {
@@ -478,4 +485,65 @@ enum PerformancePeriod {
   monthly
   semester
   yearly
+}
+
+// --- Chat System Models ---
+
+// Chat rooms for each organization
+model ChatRoom {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String   @default("General")
+  description    String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  messages       ChatMessage[]
+  participants   ChatParticipant[]
+  
+  @@unique([organizationId, name])
+  @@index([organizationId, isActive])
+}
+
+// Chat messages
+model ChatMessage {
+  id         String   @id @default(cuid())
+  roomId     String
+  senderId   String
+  content    String   @db.Text
+  messageType MessageType @default(text)
+  isEdited   Boolean  @default(false)
+  editedAt   DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  @@index([roomId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+// Chat participants (users in each room)
+model ChatParticipant {
+  id         String   @id @default(cuid())
+  roomId     String
+  userId     String
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime?
+  isActive   Boolean  @default(true)
+  
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([roomId, userId])
+  @@index([userId, isActive])
+}
+
+enum MessageType {
+  text
+  system
+  notification
 }

@@ -577,5 +577,28 @@
     "export": "Export",
     "loadingAdvancedAnalytics": "Loading advanced analytics...",
     "failedToLoadAdvancedAnalytics": "Failed to load advanced analytics"
+  },
+  "chat": {
+    "title": "Classroom Chat",
+    "rooms": "Chat Rooms",
+    "createRoom": "Create Room",
+    "createNewRoom": "Create New Room",
+    "roomName": "Room Name",
+    "roomNamePlaceholder": "Enter room name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter room description",
+    "generalChat": "General chat room",
+    "participants": "participants",
+    "typeMessage": "Type your message...",
+    "send": "Send",
+    "sending": "Sending...",
+    "selectRoom": "Select a Chat Room",
+    "selectRoomDescription": "Choose a room from the sidebar to start chatting",
+    "loading": "Loading...",
+    "roomCreated": "Chat room created successfully",
+    "errorFetchingRooms": "Error fetching chat rooms",
+    "errorFetchingMessages": "Error fetching messages",
+    "errorSendingMessage": "Error sending message",
+    "errorCreatingRoom": "Error creating room"
   }
 }

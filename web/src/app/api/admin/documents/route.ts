@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const queryOrgId = searchParams.get('organizationId');
     
     // Determine which organization to filter by
-    let targetOrgId = context.organizationId;
+    let targetOrgId = context?.organizationId;
     if (queryOrgId && userRole === 'super_admin') {
       // Super admin is viewing a specific organization
       targetOrgId = queryOrgId;
