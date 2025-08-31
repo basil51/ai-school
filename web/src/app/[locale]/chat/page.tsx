@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useTranslations } from "@/lib/useTranslations";
 import { toast } from "sonner";
-import { Trash2, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 
 interface ChatRoom {
@@ -391,10 +391,10 @@ export default function ChatPage() {
                               e.stopPropagation();
                               deleteRoom(room.id);
                             }}
-                            className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground text-muted-foreground hover:text-destructive-foreground"
+                            className="h-8 w-8 p-0 bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-full text-lg font-bold"
                             title={dict?.chat?.deleteRoom || "Delete Room"}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            ×
                           </Button>
                         </div>
                       </div>
