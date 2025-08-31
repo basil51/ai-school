@@ -599,6 +599,18 @@
     "errorFetchingRooms": "Error fetching chat rooms",
     "errorFetchingMessages": "Error fetching messages",
     "errorSendingMessage": "Error sending message",
-    "errorCreatingRoom": "Error creating room"
+    "errorCreatingRoom": "Error creating room",
+    "confirmDeleteRoom": "Are you sure you want to delete this room?",
+    "roomDeleted": "Room deleted successfully",
+    "errorDeletingRoom": "Error deleting room",
+    "manageParticipants": "Manage Participants",
+    "currentParticipants": "Current Participants",
+    "addParticipants": "Add Participants",
+    "addSelected": "Add Selected",
+    "remove": "Remove",
+    "participantsAdded": "Participants added successfully",
+    "errorAddingParticipants": "Error adding participants",
+    "participantRemoved": "Participant removed successfully",
+    "errorRemovingParticipant": "Error removing participant"
   }
 }

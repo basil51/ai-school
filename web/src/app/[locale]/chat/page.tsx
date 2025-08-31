@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useTranslations } from "@/lib/useTranslations";
 import { toast } from "sonner";
+import { Trash2, Users } from "lucide-react";
 
 interface ChatRoom {
   id: string;
@@ -66,8 +68,12 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomDescription, setNewRoomDescription] = useState("");
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [currentParticipants, setCurrentParticipants] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -201,6 +207,95 @@ export default function ChatPage() {
     }
   };
 
+  const deleteRoom = async (roomId: string) => {
+    if (!confirm(dict?.chat?.confirmDeleteRoom || "Are you sure you want to delete this room?")) return;
+
+    try {
+      const response = await fetch(`/api/chat/rooms/${roomId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setRooms(prev => prev.filter(room => room.id !== roomId));
+        if (selectedRoom?.id === roomId) {
+          setSelectedRoom(null);
+        }
+        toast.success(dict?.chat?.roomDeleted || "Room deleted successfully");
+      } else {
+        const error = await response.json();
+        toast.error(error.error || dict?.chat?.errorDeletingRoom || "Error deleting room");
+      }
+    } catch (error) {
+      console.error("Error deleting room:", error);
+      toast.error(dict?.chat?.errorDeletingRoom || "Error deleting room");
+    }
+  };
+
+  const fetchAvailableUsers = async (roomId?: string) => {
+    try {
+      const url = roomId ? `/api/chat/users?roomId=${roomId}` : "/api/chat/users";
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableUsers(data.users);
+        setCurrentParticipants(data.currentParticipants || []);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const addParticipants = async () => {
+    if (selectedUsers.length === 0) return;
+
+    try {
+      const promises = selectedUsers.map(userId =>
+        fetch("/api/chat/participants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roomId: selectedRoom!.id,
+            userId,
+          }),
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const successCount = results.filter(r => r.ok).length;
+
+      if (successCount > 0) {
+        toast.success(dict?.chat?.participantsAdded || `${successCount} participant(s) added successfully`);
+        setSelectedUsers([]);
+        setShowParticipants(false);
+        fetchParticipants(selectedRoom!.id);
+        fetchRooms(); // Refresh room list to update participant count
+      }
+    } catch (error) {
+      console.error("Error adding participants:", error);
+      toast.error(dict?.chat?.errorAddingParticipants || "Error adding participants");
+    }
+  };
+
+  const removeParticipant = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/chat/participants?roomId=${selectedRoom!.id}&userId=${userId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success(dict?.chat?.participantRemoved || "Participant removed successfully");
+        fetchParticipants(selectedRoom!.id);
+        fetchRooms(); // Refresh room list to update participant count
+      } else {
+        const error = await response.json();
+        toast.error(error.error || dict?.chat?.errorRemovingParticipant || "Error removing participant");
+      }
+    } catch (error) {
+      console.error("Error removing participant:", error);
+      toast.error(dict?.chat?.errorRemovingParticipant || "Error removing participant");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -268,23 +363,38 @@ export default function ChatPage() {
                   {rooms.map((room) => (
                     <div
                       key={room.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      className={`p-3 rounded-lg transition-colors ${
                         selectedRoom?.id === room.id
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
-                      onClick={() => setSelectedRoom(room)}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => setSelectedRoom(room)}
+                        >
                           <h4 className="font-medium">{room.name}</h4>
                           {room.description && (
                             <p className="text-sm opacity-80 truncate">{room.description}</p>
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {room._count.participants}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {room._count.participants}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteRoom(room.id);
+                            }}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -312,6 +422,17 @@ export default function ChatPage() {
                       <Badge variant="outline">
                         {participants.length} {dict?.chat?.participants || "participants"}
                       </Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setShowParticipants(true);
+                          fetchAvailableUsers(selectedRoom.id);
+                        }}
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        {dict?.chat?.manageParticipants || "Manage Participants"}
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -378,6 +499,75 @@ export default function ChatPage() {
           </Card>
         </div>
       </div>
+
+      {/* Participant Management Dialog */}
+      <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{dict?.chat?.manageParticipants || "Manage Participants"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-2">{dict?.chat?.currentParticipants || "Current Participants"}</h4>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {participants.map((participant) => (
+                  <div key={participant.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                    <div>
+                      <p className="text-sm font-medium">{participant.user.name}</p>
+                      <p className="text-xs text-muted-foreground">{participant.user.role}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => removeParticipant(participant.user.id)}
+                    >
+                      {dict?.chat?.remove || "Remove"}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">{dict?.chat?.addParticipants || "Add Participants"}</h4>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {availableUsers
+                  .filter(user => !currentParticipants.includes(user.id))
+                  .map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={user.id}
+                        checked={selectedUsers.includes(user.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedUsers(prev => [...prev, user.id]);
+                          } else {
+                            setSelectedUsers(prev => prev.filter(id => id !== user.id));
+                          }
+                        }}
+                      />
+                      <label htmlFor={user.id} className="text-sm cursor-pointer">
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.role}</p>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowParticipants(false)}>
+                {dict?.common?.cancel || "Cancel"}
+              </Button>
+              <Button onClick={addParticipants} disabled={selectedUsers.length === 0}>
+                {dict?.chat?.addSelected || "Add Selected"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

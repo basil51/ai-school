@@ -599,6 +599,18 @@
     "errorFetchingRooms": "خطأ في جلب غرف الدردشة",
     "errorFetchingMessages": "خطأ في جلب الرسائل",
     "errorSendingMessage": "خطأ في إرسال الرسالة",
-    "errorCreatingRoom": "خطأ في إنشاء الغرفة"
+    "errorCreatingRoom": "خطأ في إنشاء الغرفة",
+    "confirmDeleteRoom": "هل أنت متأكد من حذف هذه الغرفة؟",
+    "roomDeleted": "تم حذف الغرفة بنجاح",
+    "errorDeletingRoom": "خطأ في حذف الغرفة",
+    "manageParticipants": "إدارة المشاركين",
+    "currentParticipants": "المشاركون الحاليون",
+    "addParticipants": "إضافة مشاركين",
+    "addSelected": "إضافة المحددين",
+    "remove": "إزالة",
+    "participantsAdded": "تم إضافة المشاركين بنجاح",
+    "errorAddingParticipants": "خطأ في إضافة المشاركين",
+    "participantRemoved": "تم إزالة المشارك بنجاح",
+    "errorRemovingParticipant": "خطأ في إزالة المشارك"
   }
 }
