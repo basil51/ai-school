@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import OrganizationSwitcher from "@/components/OrganizationSwitcher";
 import AttendanceManagement from "@/components/AttendanceManagement";
+import { LessonPlanViewer } from "@/components/LessonPlanViewer";
+import { AssignmentCreator } from "@/components/AssignmentCreator";
 import { useTranslations } from "@/lib/useTranslations";
 
 interface User {
@@ -326,6 +328,8 @@ function AdminPageContent() {
           <TabsTrigger value="grades">{dict?.admin?.grades || "Grades"}</TabsTrigger>
           <TabsTrigger value="guardians">{dict?.admin?.guardians || "Guardians"}</TabsTrigger>
           <TabsTrigger value="evaluations">{dict?.admin?.evaluations || "Evaluations"}</TabsTrigger>
+          <TabsTrigger value="lesson-plans">Lesson Plans</TabsTrigger>
+          <TabsTrigger value="assignments">Assignments</TabsTrigger>
           <TabsTrigger value="maintenance">{dict?.admin?.indexes || "Maintenance"}</TabsTrigger>
         </TabsList>
 
@@ -565,6 +569,103 @@ function AdminPageContent() {
                   {dict?.admin?.openEvaluationDashboard || "Open Evaluation Dashboard"}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="lesson-plans" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lesson Plans</CardTitle>
+              <CardDescription>View and manage lesson plans with AI assistance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Sample Lesson Plan</h3>
+                  <LessonPlanViewer 
+                    lessonPlan={{
+                      id: "sample-1",
+                      title: "Introduction to Algebra",
+                      subject: "Mathematics",
+                      gradeLevel: "Grade 8",
+                      duration: 45,
+                      objectives: [
+                        "Understand basic algebraic expressions",
+                        "Solve simple linear equations",
+                        "Apply algebraic concepts to real-world problems"
+                      ],
+                      content: "This lesson introduces students to the fundamental concepts of algebra. We'll start with basic expressions and gradually move to solving simple equations. Students will learn how to translate word problems into mathematical expressions and solve them step by step.",
+                      activities: [
+                        "Warm-up: Review of arithmetic operations",
+                        "Introduction to variables and expressions",
+                        "Guided practice with simple equations",
+                        "Group work on word problems",
+                        "Individual assessment"
+                      ],
+                      assessment: "Students will complete a worksheet with 10 problems covering expressions and simple equations. They will also solve 2 word problems to demonstrate understanding.",
+                      prerequisites: ["Basic arithmetic", "Understanding of variables"],
+                      status: "ai_generated",
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                      createdBy: {
+                        id: "ai-teacher",
+                        name: "AI Teacher",
+                        role: "teacher"
+                      },
+                      aiGenerated: true,
+                      aiSuggestions: [
+                        "Consider adding visual aids for visual learners",
+                        "Include more real-world examples",
+                        "Add peer tutoring opportunities"
+                      ]
+                    }}
+                    onEdit={(lessonPlan) => {
+                      console.log("Edit lesson plan:", lessonPlan);
+                      alert("Edit functionality coming soon!");
+                    }}
+                    onApprove={(lessonPlanId) => {
+                      console.log("Approve lesson plan:", lessonPlanId);
+                      alert("Lesson plan approved!");
+                    }}
+                    onReject={(lessonPlanId) => {
+                      console.log("Reject lesson plan:", lessonPlanId);
+                      alert("Lesson plan rejected!");
+                    }}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Create New Lesson Plan</h3>
+                  <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                    <p className="text-muted-foreground mb-4">
+                      Lesson plan creation interface coming soon
+                    </p>
+                    <Button disabled>
+                      Coming Soon
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="assignments" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assignments</CardTitle>
+              <CardDescription>Create and manage assignments with AI assistance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AssignmentCreator 
+                onSave={(assignment) => {
+                  console.log("Save assignment:", assignment);
+                  alert("Assignment saved successfully!");
+                }}
+                onCancel={() => {
+                  console.log("Cancel assignment creation");
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
