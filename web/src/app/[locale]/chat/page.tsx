@@ -311,9 +311,9 @@ export default function ChatPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-120px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-120px)]">
         {/* Sidebar - Chat Rooms */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -380,7 +380,7 @@ export default function ChatPage() {
                             <p className="text-sm opacity-80 truncate">{room.description}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-fit">
                           <Badge variant="secondary" className="text-xs">
                             {room._count.participants}
                           </Badge>
@@ -391,7 +391,7 @@ export default function ChatPage() {
                               e.stopPropagation();
                               deleteRoom(room.id);
                             }}
-                            className="h-8 w-8 p-0 bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-full text-lg font-bold"
+                            className="h-8 w-12 px-3 bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-md text-lg font-bold"
                             title={dict?.chat?.deleteRoom || "Delete Room"}
                           >
                             ×
