@@ -6,7 +6,7 @@ import { hash } from "argon2";
 import { getOrganizationContext, withOrganizationFilter, logAuditActivity, checkOrganizationLimits } from "@/lib/organization";
 import { toSerializable } from "@/lib/utils";
 
-export async function GET(_req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const context = await getOrganizationContext();
     
@@ -14,7 +14,18 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const organizationFilter = withOrganizationFilter(context.organizationId, context.isSuperAdmin);
+    // Check if organizationId is provided in query params (for super admin organization switching)
+    const { searchParams } = new URL(request.url);
+    const queryOrgId = searchParams.get('organizationId');
+    
+    let organizationFilter;
+    if (queryOrgId && context.isSuperAdmin) {
+      // Super admin is viewing a specific organization
+      organizationFilter = { organizationId: queryOrgId };
+    } else {
+      // Use normal organization context
+      organizationFilter = withOrganizationFilter(context.organizationId, context.isSuperAdmin);
+    }
 
     const users = await prisma.user.findMany({
       where: organizationFilter,

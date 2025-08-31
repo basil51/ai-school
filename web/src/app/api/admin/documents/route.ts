@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationContext } from "@/lib/organization";
 
-export async function GET(_req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session as any)?.role;
@@ -14,6 +14,17 @@ export async function GET(_req: NextRequest) {
     }
 
     const context = await getOrganizationContext();
+    
+    // Check if organizationId is provided in query params (for super admin organization switching)
+    const { searchParams } = new URL(request.url);
+    const queryOrgId = searchParams.get('organizationId');
+    
+    // Determine which organization to filter by
+    let targetOrgId = context.organizationId;
+    if (queryOrgId && userRole === 'super_admin') {
+      // Super admin is viewing a specific organization
+      targetOrgId = queryOrgId;
+    }
 
     // Use raw SQL to get documents with chunk counts
     const documents = await prisma.$queryRaw`
@@ -25,7 +36,7 @@ export async function GET(_req: NextRequest) {
         COUNT(c.id)::int as chunk_count
       FROM "RagDocument" d
       LEFT JOIN "RagChunk" c ON d.id = c."docId"
-      ${context && !context.isSuperAdmin && context.organizationId ? Prisma.sql`WHERE d."organizationId" = ${context.organizationId}` : Prisma.empty}
+      ${targetOrgId ? Prisma.sql`WHERE d."organizationId" = ${targetOrgId}` : Prisma.empty}
       GROUP BY d.id, d.title, d.length, d."createdAt"
       ORDER BY d."createdAt" DESC
     `;
