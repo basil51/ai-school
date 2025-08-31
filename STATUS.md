@@ -25,13 +25,13 @@ Last updated: 2025-01-27
 - ✅ **Phase 10 COMPLETED**: Internationalization (i18n) - Arabic RTL support
 - ✅ **Phase 11 COMPLETED**: UI/UX Enhancements - Modern interface improvements
 - 🚀 **NEW DIRECTION**: AI Teacher Transformation (Phases 12-16)
-  - 🔄 **Phase 12 NEXT**: Curriculum Engine - Structured learning paths (Ready to begin)
-  - 📋 **Phase 13 PLANNED**: Assessment System - Mastery verification
+  - ✅ **Phase 12 COMPLETED**: Curriculum Engine - Structured learning paths
+  - 🔄 **Phase 13 NEXT**: Assessment System - Mastery verification
   - 🧠 **Phase 14 PLANNED**: Adaptive Teaching Engine - Personalized instruction
   - 🎨 **Phase 15 PLANNED**: Multi-Modal Teaching - Visual, audio, interactive
   - 🧩 **Phase 16 PLANNED**: Personalization Engine - Long-term learning memory
 - Web app running on http://localhost:3004
-- **NEXT**: Begin Phase 12 - Curriculum Engine implementation (AI Teacher Transformation)
+- **NEXT**: Begin Phase 13 - Assessment System implementation (Mastery verification and progress tracking)
 
 ## Completed (to date)
 - ✅ Next.js + TS + App Router scaffolded in `web/`
@@ -59,6 +59,18 @@ Last updated: 2025-01-27
 - ✅ Admin panel for user and document management
 - ✅ Teacher-only upload functionality
 - ✅ Enhanced dashboard with role-specific features
+
+## Completed (to date)
+- ✅ **Phase 12: Curriculum Engine** - AI Teacher Transformation Foundation
+  - ✅ Database models for structured curriculum (Subject, Topic, Lesson, StudentEnrollment, StudentProgress)
+  - ✅ AI curriculum generation with OpenAI integration
+  - ✅ Student enrollment and progress tracking system
+  - ✅ Adaptive lesson delivery with prerequisites
+  - ✅ Teacher curriculum management interface (`/teacher/curriculum`)
+  - ✅ Student AI Teacher interface (`/ai-teacher`)
+  - ✅ Role-based access control for curriculum management
+  - ✅ Seeded curriculum data (Mathematics, Physics with topics and lessons)
+  - ✅ Navigation integration (Topbar updated with AI Teacher and Curriculum links)
 
 ## In Progress
 - ✅ **Phase 7: Ops & Deployment** (COMPLETED)
