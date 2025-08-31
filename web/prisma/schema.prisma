@@ -77,6 +77,17 @@ model User {
   // Chat relationships
   sentMessages ChatMessage[]
   chatParticipants ChatParticipant[]
+
+  // Curriculum relationships
+  studentEnrollments StudentEnrollment[]
+  studentProgress StudentProgress[]
+  studentProfile StudentProfile?
+  studentAdaptations LessonAdaptation[]
+  assessmentAttempts AssessmentAttempt[]
+  failureAnalyses FailureAnalysis[]
+  learningAnalytics LearningAnalytics[]
+  personalizationData PersonalizationData?
+  successMetrics SuccessMetrics[]
 }
 
 model Account {
@@ -146,6 +157,9 @@ model Organization {
   
   // Chat relationships
   chatRooms ChatRoom[]
+
+  // Curriculum relationships
+  subjects Subject[]
 }
 
 model OrganizationSettings {
@@ -546,4 +560,396 @@ enum MessageType {
   text
   system
   notification
+}
+
+// --- AI Teacher Curriculum Engine Models ---
+
+enum SubjectLevel {
+  elementary
+  middle
+  high
+  college
+  university
+}
+
+enum DifficultyLevel {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum AssessmentType {
+  quiz
+  test
+  assignment
+  project
+  homework
+}
+
+enum QuestionType {
+  multiple_choice
+  short_answer
+  essay
+  coding
+  true_false
+  fill_in_blank
+}
+
+enum FailureType {
+  concept_gap
+  prerequisite_missing
+  learning_style_mismatch
+  attention_deficit
+  motivation_issue
+}
+
+enum PaceLevel {
+  slow
+  moderate
+  fast
+  adaptive
+}
+
+// Subject (e.g., Mathematics, Physics, History)
+model Subject {
+  id          String   @id @default(cuid())
+  name        String   // "Mathematics", "Physics", "History"
+  description String?
+  level       SubjectLevel
+  isActive    Boolean  @default(true)
+  organizationId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  topics      Topic[]
+  enrollments StudentEnrollment[]
+  successMetrics SuccessMetrics[]
+  
+  @@unique([organizationId, name])
+  @@index([organizationId, isActive])
+}
+
+// Topic within a subject (e.g., Algebra, Geometry, Calculus)
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  name        String   // "Algebra", "Geometry", "Calculus"
+  description String?
+  order       Int      // Sequence within subject
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  
+  @@unique([subjectId, name])
+  @@index([subjectId, order])
+}
+
+// Individual lesson within a topic
+model Lesson {
+  id            String   @id @default(cuid())
+  topicId       String
+  title         String
+  content       String   @db.Text
+  objectives    String[] // Learning objectives
+  difficulty    DifficultyLevel
+  estimatedTime Int      // Minutes
+  order         Int      // Sequence within topic
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  prerequisites LessonPrerequisite[]
+  prerequisiteFor LessonPrerequisite[] @relation("Prerequisite")
+  assessments   Assessment[]
+  progress      StudentProgress[]
+  adaptations   LessonAdaptation[]
+  
+  @@unique([topicId, title])
+  @@index([topicId, order])
+}
+
+// Prerequisites between lessons
+model LessonPrerequisite {
+  id            String   @id @default(cuid())
+  lessonId      String
+  prerequisiteId String
+  createdAt     DateTime @default(now())
+  
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  prerequisite  Lesson   @relation("Prerequisite", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+  
+  @@unique([lessonId, prerequisiteId])
+}
+
+// Student enrollment in subjects
+model StudentEnrollment {
+  id          String   @id @default(cuid())
+  studentId   String
+  subjectId   String
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, subjectId])
+  @@index([studentId, isActive])
+}
+
+// Student progress tracking for lessons
+model StudentProgress {
+  id          String   @id @default(cuid())
+  studentId   String
+  lessonId    String
+  status      ProgressStatus @default(not_started)
+  startedAt   DateTime?
+  completedAt DateTime?
+  timeSpent   Int      @default(0) // Minutes
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  
+  @@unique([studentId, lessonId])
+  @@index([studentId, status])
+}
+
+enum ProgressStatus {
+  not_started
+  in_progress
+  completed
+  failed
+  retry_needed
+}
+
+// Student learning profile for personalization
+model StudentProfile {
+  id              String      @id @default(cuid())
+  studentId       String      @unique
+  learningStyle   Json        // LearningStyle object
+  preferredPace   PaceLevel   @default(moderate)
+  strengthAreas   String[]    // Topics student excels in
+  weaknessAreas   String[]    // Topics needing improvement
+  motivationLevel Float       @default(0.5)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  student         User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId])
+}
+
+// Lesson adaptations for individual students
+model LessonAdaptation {
+  id                String        @id @default(cuid())
+  studentId         String
+  lessonId          String
+  originalContent   String        @db.Text
+  adaptedContent    String        @db.Text
+  adaptationReason  String
+  effectiveness     Float?        // Measured after assessment
+  createdAt         DateTime      @default(now())
+  
+  student           User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson            Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, lessonId])
+}
+
+// Assessment system
+model Assessment {
+  id          String   @id @default(cuid())
+  lessonId    String
+  type        AssessmentType
+  title       String
+  instructions String  @db.Text
+  timeLimit   Int?     // Minutes
+  passingScore Float   @default(0.7)
+  maxAttempts Int      @default(3)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  attempts    AssessmentAttempt[]
+  failureAnalysis FailureAnalysis[]
+  
+  @@index([lessonId, type])
+}
+
+// Questions within assessments
+model Question {
+  id            String      @id @default(cuid())
+  assessmentId  String
+  type          QuestionType
+  content       String      @db.Text
+  points        Float       @default(1.0)
+  correctAnswer String?     @db.Text
+  explanation   String?     @db.Text
+  order         Int
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  assessment    Assessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  responses     StudentResponse[]
+  
+  @@index([assessmentId, order])
+}
+
+// Multiple choice options
+model QuestionOption {
+  id          String   @id @default(cuid())
+  questionId  String
+  content     String   @db.Text
+  isCorrect   Boolean  @default(false)
+  order       Int
+  createdAt   DateTime @default(now())
+  
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@index([questionId, order])
+}
+
+// Student assessment attempts
+model AssessmentAttempt {
+  id           String    @id @default(cuid())
+  studentId    String
+  assessmentId String
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  score        Float?
+  feedback     String?   @db.Text
+  passed       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  student      User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  responses    StudentResponse[]
+  
+  @@index([studentId, assessmentId])
+  @@index([studentId, passed])
+}
+
+// Individual student responses to questions
+model StudentResponse {
+  id              String   @id @default(cuid())
+  attemptId       String
+  questionId      String
+  answer          String   @db.Text
+  isCorrect       Boolean?
+  pointsEarned    Float    @default(0.0)
+  feedback        String?  @db.Text
+  timeSpent       Int      @default(0) // Seconds
+  createdAt       DateTime @default(now())
+  
+  attempt         AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  
+  @@unique([attemptId, questionId])
+}
+
+// Failure analysis for adaptive teaching
+model FailureAnalysis {
+  id              String    @id @default(cuid())
+  studentId       String
+  assessmentId    String
+  failureType     FailureType
+  diagnosis       String    @db.Text
+  remediation     String    @db.Text
+  resolved        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessment      Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, resolved])
+}
+
+// Learning analytics for personalization
+model LearningAnalytics {
+  id                String    @id @default(cuid())
+  studentId         String
+  dateRange         DateTime  @db.Date
+  conceptsMastered  Int       @default(0)
+  timeSpent         Int       // Minutes
+  assessmentScores  Float[]
+  strugglingTopics  String[]
+  improvingTopics   String[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, dateRange])
+  @@index([studentId, dateRange])
+}
+
+// Personalization data for adaptive teaching
+model PersonalizationData {
+  id                    String    @id @default(cuid())
+  studentId             String    @unique
+  effectiveStrategies   Json      // TeachingStrategy[]
+  ineffectiveStrategies Json      // TeachingStrategy[]
+  optimalDifficulty     Json      // Per-topic difficulty preferences
+  contentPreferences    Json      // Preferred content types
+  studyPatterns         Json      // Optimal times, duration, etc.
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  student               User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// Success metrics tracking
+model SuccessMetrics {
+  id              String    @id @default(cuid())
+  studentId       String
+  subjectId       String
+  period          PerformancePeriod
+  startDate       DateTime  @db.Date
+  endDate         DateTime  @db.Date
+  
+  // Completion metrics
+  totalLessons    Int       @default(0)
+  completedLessons Int      @default(0)
+  completionRate  Float     @default(0.0) // % of lessons completed
+  
+  // Mastery metrics
+  totalAssessments Int      @default(0)
+  passedAssessments Int     @default(0)
+  masteryRate     Float     @default(0.0) // % of assessments passed
+  
+  // Engagement metrics
+  timeSpent       Int       @default(0) // Minutes
+  engagementScore Float     @default(0.0) // Participation and interaction metrics
+  
+  // Retention metrics
+  retentionRate   Float     @default(0.0) // % of concepts retained over time
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject         Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  
+  @@unique([studentId, subjectId, period, startDate])
+  @@index([studentId, period, startDate])
 }

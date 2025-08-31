@@ -33,11 +33,19 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = (user as any).role;
+      if (user) {
+        token.role = (user as any).role;
+        token.sub = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
       (session as any).role = token.role;
+      (session as any).user = {
+        ...session.user,
+        id: token.sub,
+        role: token.role
+      };
       return session;
     },
     async redirect({ url, baseUrl }) {
