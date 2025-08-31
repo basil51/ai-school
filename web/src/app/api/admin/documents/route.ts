@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
     if (queryOrgId && userRole === 'super_admin') {
       // Super admin is viewing a specific organization
       targetOrgId = queryOrgId;
+    } else if (userRole === 'super_admin' && !queryOrgId) {
+      // Super admin viewing all organizations (no filter)
+      targetOrgId = null;
     }
 
     // Use raw SQL to get documents with chunk counts

@@ -22,8 +22,11 @@ export async function GET(request: NextRequest) {
     if (queryOrgId && context.isSuperAdmin) {
       // Super admin is viewing a specific organization
       organizationFilter = { organizationId: queryOrgId };
+    } else if (context.isSuperAdmin && !queryOrgId) {
+      // Super admin viewing all organizations (no filter)
+      organizationFilter = {};
     } else {
-      // Use normal organization context
+      // Use normal organization context for regular admins
       organizationFilter = withOrganizationFilter(context.organizationId, context.isSuperAdmin);
     }
 
