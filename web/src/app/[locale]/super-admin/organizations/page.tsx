@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 import { toast } from 'sonner';
 import { Trash2, Users, FileText, ExternalLink, BarChart3 } from 'lucide-react';
@@ -44,8 +44,8 @@ interface Organization {
 export default function SuperAdminOrganizationsPage() {
   const { dict } = useTranslations();
   const router = useRouter();
-  //const params = useParams();
-  //const locale = params.locale as string;
+  const params = useParams();
+  const locale = params.locale as string;
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -92,7 +92,7 @@ export default function SuperAdminOrganizationsPage() {
   };
 
   const redirectToAdmin = (organizationId: string) => {
-    router.push(`/admin?org=${organizationId}`);
+    router.push(`/${locale}/admin?org=${organizationId}`);
   };
 
   const createOrganization = async () => {
