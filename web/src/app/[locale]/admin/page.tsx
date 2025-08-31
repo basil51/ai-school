@@ -87,22 +87,25 @@ export default function AdminPage() {
     if (session && ["admin", "super_admin"].includes(userRole)) {
       fetchData();
     }
-  }, [session, selectedOrgId]);
+  }, [session, searchParams]);
 
   const fetchData = async () => {
     try {
       const userRole = (session as any)?.role;
       const isSuperAdmin = userRole === 'super_admin';
       
+      // Get organization ID directly from URL parameters
+      const orgId = searchParams.get('org');
+      
       // Build API URLs with organization context
-      const usersUrl = selectedOrgId && isSuperAdmin 
-        ? `/api/admin/users?organizationId=${selectedOrgId}`
+      const usersUrl = orgId && isSuperAdmin 
+        ? `/api/admin/users?organizationId=${orgId}`
         : "/api/admin/users";
-      const docsUrl = selectedOrgId && isSuperAdmin 
-        ? `/api/admin/documents?organizationId=${selectedOrgId}`
+      const docsUrl = orgId && isSuperAdmin 
+        ? `/api/admin/documents?organizationId=${orgId}`
         : "/api/admin/documents";
-      const orgUrl = selectedOrgId && isSuperAdmin 
-        ? `/api/super-admin/organizations/${selectedOrgId}`
+      const orgUrl = orgId && isSuperAdmin 
+        ? `/api/super-admin/organizations/${orgId}`
         : "/api/admin/organization";
 
       const [usersRes, docsRes, orgRes] = await Promise.all([
@@ -239,13 +242,13 @@ export default function AdminPage() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Super Admin Organization Switcher */}
       {userRole === 'super_admin' && (
-        <div className="mb-6">
-          <OrganizationSwitcher 
-            currentOrgId={selectedOrgId || organization?.id || null}
-            onOrganizationChange={handleOrganizationChange}
-            compact={true}
-          />
-        </div>
+                          <div className="mb-6">
+                    <OrganizationSwitcher 
+                      currentOrgId={searchParams.get('org') || organization?.id || null}
+                      onOrganizationChange={handleOrganizationChange}
+                      compact={true}
+                    />
+                  </div>
       )}
 
       <div className="flex items-center justify-between">
@@ -489,7 +492,7 @@ export default function AdminPage() {
         <TabsContent value="attendance" className="space-y-4">
           {organization ? (
             <AttendanceManagement 
-              organizationId={organization.id} 
+              organizationId={searchParams.get('org') || organization.id} 
               className="space-y-6"
             />
           ) : (
