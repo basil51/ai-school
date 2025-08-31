@@ -130,6 +130,13 @@
     "uploaded": "مرفوع",
     "chars": "أحرف",
     "questionsPerMonth": "أسئلة/شهر",
+    "attendance": "الحضور",
+    "grades": "الدرجات",
+    "attendanceDescription": "تتبع وإدارة حضور الطلاب",
+    "gradesDescription": "إدارة الواجبات والدرجات وأداء الطلاب",
+    "selectOrganization": "يرجى اختيار مؤسسة لإدارة الحضور",
+    "gradesComingSoon": "نظام إدارة الدرجات قريباً",
+    "comingSoon": "قريباً",
     "createUser": "إنشاء مستخدم",
     "fullName": "الاسم الكامل",
     "emailPlaceholder": "user@example.com"

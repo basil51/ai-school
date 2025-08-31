@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import OrganizationSwitcher from "@/components/OrganizationSwitcher";
+import AttendanceManagement from "@/components/AttendanceManagement";
 import { useTranslations } from "@/lib/useTranslations";
 
 interface User {
@@ -57,12 +58,14 @@ export default function AdminPage() {
   const router = useRouter();
   const { dict, loading: dictLoading } = useTranslations();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = params.locale as string;
   const [users, setUsers] = useState<User[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: "", name: "", role: "student" as const });
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   // Check if user is admin or super_admin
   useEffect(() => {
@@ -73,19 +76,39 @@ export default function AdminPage() {
     }
   }, [session, status, router, locale]);
 
+  // Handle organization context from URL parameters
+  useEffect(() => {
+    const orgId = searchParams.get('org');
+    setSelectedOrgId(orgId);
+  }, [searchParams]);
+
   useEffect(() => {
     const userRole = (session as any)?.role;
     if (session && ["admin", "super_admin"].includes(userRole)) {
       fetchData();
     }
-  }, [session]);
+  }, [session, selectedOrgId]);
 
   const fetchData = async () => {
     try {
+      const userRole = (session as any)?.role;
+      const isSuperAdmin = userRole === 'super_admin';
+      
+      // Build API URLs with organization context
+      const usersUrl = selectedOrgId && isSuperAdmin 
+        ? `/api/admin/users?organizationId=${selectedOrgId}`
+        : "/api/admin/users";
+      const docsUrl = selectedOrgId && isSuperAdmin 
+        ? `/api/admin/documents?organizationId=${selectedOrgId}`
+        : "/api/admin/documents";
+      const orgUrl = selectedOrgId && isSuperAdmin 
+        ? `/api/super-admin/organizations/${selectedOrgId}`
+        : "/api/admin/organization";
+
       const [usersRes, docsRes, orgRes] = await Promise.all([
-        fetch("/api/admin/users"),
-        fetch("/api/admin/documents"),
-        fetch("/api/admin/organization")
+        fetch(usersUrl),
+        fetch(docsUrl),
+        fetch(orgUrl)
       ]);
       
       if (usersRes.ok) {
@@ -173,6 +196,14 @@ export default function AdminPage() {
     return dict?.roles?.[role] || role;
   };
 
+  const handleOrganizationChange = (orgId: string | null) => {
+    if (orgId) {
+      router.push(`/${locale}/admin?org=${orgId}`);
+    } else {
+      router.push(`/${locale}/admin`);
+    }
+  };
+
   if (status === "loading" || dictLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -210,7 +241,8 @@ export default function AdminPage() {
       {userRole === 'super_admin' && (
         <div className="mb-6">
           <OrganizationSwitcher 
-            currentOrgId={organization?.id || null}
+            currentOrgId={selectedOrgId || organization?.id || null}
+            onOrganizationChange={handleOrganizationChange}
             compact={true}
           />
         </div>
@@ -287,6 +319,8 @@ export default function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">{dict?.admin?.users || "Users"} ({users.length})</TabsTrigger>
           <TabsTrigger value="documents">{dict?.admin?.documents || "Documents"} ({documents.length})</TabsTrigger>
+          <TabsTrigger value="attendance">{dict?.admin?.attendance || "Attendance"}</TabsTrigger>
+          <TabsTrigger value="grades">{dict?.admin?.grades || "Grades"}</TabsTrigger>
           <TabsTrigger value="guardians">{dict?.admin?.guardians || "Guardians"}</TabsTrigger>
           <TabsTrigger value="evaluations">{dict?.admin?.evaluations || "Evaluations"}</TabsTrigger>
           <TabsTrigger value="maintenance">{dict?.admin?.indexes || "Maintenance"}</TabsTrigger>
@@ -448,6 +482,48 @@ export default function AdminPage() {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="attendance" className="space-y-4">
+          {organization ? (
+            <AttendanceManagement 
+              organizationId={organization.id} 
+              className="space-y-6"
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>{dict?.admin?.attendance || "Attendance Management"}</CardTitle>
+                <CardDescription>{dict?.admin?.attendanceDescription || "Track and manage student attendance"}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">
+                    {dict?.admin?.selectOrganization || "Please select an organization to manage attendance"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="grades" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{dict?.admin?.grades || "Grades Management"}</CardTitle>
+              <CardDescription>{dict?.admin?.gradesDescription || "Manage assignments, grades, and student performance"}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  {dict?.admin?.gradesComingSoon || "Grades management system coming soon"}
+                </p>
+                <Button disabled>
+                  {dict?.admin?.comingSoon || "Coming Soon"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

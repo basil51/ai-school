@@ -71,15 +71,15 @@ export default function OrganizationSwitcher({
     
     if (onOrganizationChange) {
       onOrganizationChange(orgId);
-    }
-
-    // Update URL to reflect organization context
-    if (orgId) {
-      // Navigate to organization-specific admin
-      router.push(`/admin?org=${orgId}`);
     } else {
-      // Navigate to system-wide admin
-      router.push('/super-admin/organizations');
+      // Default navigation behavior
+      if (orgId) {
+        // Navigate to organization-specific admin
+        router.push(`/admin?org=${orgId}`);
+      } else {
+        // Navigate to system-wide admin
+        router.push('/super-admin/organizations');
+      }
     }
   };
 

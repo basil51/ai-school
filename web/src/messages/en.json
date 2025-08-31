@@ -130,6 +130,13 @@
     "uploaded": "Uploaded",
     "chars": "chars",
     "questionsPerMonth": "Questions/Month",
+    "attendance": "Attendance",
+    "grades": "Grades",
+    "attendanceDescription": "Track and manage student attendance",
+    "gradesDescription": "Manage assignments, grades, and student performance",
+    "selectOrganization": "Please select an organization to manage attendance",
+    "gradesComingSoon": "Grades management system coming soon",
+    "comingSoon": "Coming Soon",
     "createUser": "Create User",
     "fullName": "Full Name",
     "emailPlaceholder": "user@example.com"
