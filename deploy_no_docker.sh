@@ -63,10 +63,10 @@ fi
 
 # Step 1: Install PostgreSQL if not already installed
 if [[ "$POSTGRES_INSTALLED" == false ]]; then
-    print_status "Installing PostgreSQL 15 with pgvector..."
+    print_status "Installing PostgreSQL 16 with pgvector..."
     
     sudo apt update
-    sudo apt install -y postgresql-15 postgresql-15-postgis-3 postgresql-15-pgvector
+    sudo apt install -y postgresql-16 postgresql-16-postgis-3 postgresql-16-pgvector
     
     print_success "PostgreSQL installed successfully"
 else
@@ -74,7 +74,7 @@ else
     
     # Check if pgvector extension is available
     if ! sudo -u postgres psql -c "SELECT * FROM pg_available_extensions WHERE name = 'vector';" | grep -q vector; then
-        print_error "pgvector extension not available. Please install postgresql-15-pgvector"
+        print_error "pgvector extension not available. Please install postgresql-16-pgvector"
         exit 1
     fi
 fi
@@ -136,11 +136,11 @@ REDIS_URL="redis://:ai_school_redis_2024@localhost:6379"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="ai_school_nextauth_secret_2024_minimum_32_characters_long"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3006"
 
 # Application Configuration
 NODE_ENV="production"
-PORT=3000
+PORT=3006
 EOF
 
 print_success "Environment file created"
@@ -149,7 +149,7 @@ print_success "Environment file created"
 print_status "Testing database connections..."
 
 # Test PostgreSQL
-if psql -h localhost -U ai_school_user -d ai_school -c "SELECT 1;" > /dev/null 2>&1; then
+if PGPASSWORD=ai_school_secure_2024 psql -h localhost -U ai_school_user -d ai_school -c "SELECT 1;" > /dev/null 2>&1; then
     print_success "PostgreSQL connection successful"
 else
     print_error "PostgreSQL connection failed"
@@ -219,8 +219,8 @@ fi
 
 # Check if application responds
 sleep 5
-if curl -s http://localhost:3000 > /dev/null; then
-    print_success "Application is responding on port 3000"
+if curl -s http://localhost:3006 > /dev/null; then
+    print_success "Application is responding on port 3006"
 else
     print_warning "Application not responding yet, may need more time to start"
 fi
@@ -231,7 +231,7 @@ echo ""
 echo "📋 Summary of changes:"
 echo "  • PostgreSQL running on port 5432 (native)"
 echo "  • Redis running on port 6379 (native)"
-echo "  • Web application running on port 3000"
+echo "  • Web application running on port 3006"
 echo "  • Systemd service: ai-school-web"
 echo ""
 echo "🔑 Default credentials (CHANGE THESE IN PRODUCTION!):"

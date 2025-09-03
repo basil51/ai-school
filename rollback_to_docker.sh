@@ -72,11 +72,11 @@ REDIS_URL="redis://localhost:6380"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="ai_school_nextauth_secret_2024_minimum_32_characters_long"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3006"
 
 # Application Configuration
 NODE_ENV="development"
-PORT=3000
+PORT=3006
 EOF
 
 print_success "Environment file restored to Docker configuration"

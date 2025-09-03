@@ -18,11 +18,11 @@ This document outlines the migration from Docker-based PostgreSQL and Redis to n
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install PostgreSQL 15
-sudo apt install -y postgresql-15 postgresql-15-postgis-3
+# Install PostgreSQL 16
+sudo apt install -y postgresql-16 postgresql-16-postgis-3
 
 # Install pgvector extension dependencies
-sudo apt install -y postgresql-15-pgvector
+sudo apt install -y postgresql-16-pgvector
 
 # Start and enable PostgreSQL
 sudo systemctl start postgresql
@@ -87,7 +87,7 @@ REDIS_URL="redis://:your_redis_password@localhost:6379"
 
 # Other variables...
 NEXTAUTH_SECRET="your_secret_here"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3006"
 ```
 
 ### 6. Test Connections

@@ -9,8 +9,9 @@ User=www-data
 Group=www-data
 WorkingDirectory=/home/basel/Projects/AI-school/web
 Environment=NODE_ENV=production
-Environment=PORT=3000
-ExecStart=/usr/bin/node /home/basel/Projects/AI-school/web/.next/standalone/server.js
+Environment=PORT=3006
+EnvironmentFile=/home/basel/Projects/AI-school/web/.env
+ExecStart=/home/basel/.nvm/versions/node/v22.16.0/bin/pnpm start
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
 RestartSec=10
