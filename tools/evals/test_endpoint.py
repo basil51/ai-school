@@ -11,7 +11,7 @@ def test_evaluation_endpoint():
     """Test the evaluation endpoint with a simple question."""
     
     # Configuration
-    app_url = os.environ.get("APP_URL", "http://localhost:3000")
+    app_url = os.environ.get("APP_URL", "http://localhost:3006")
     
     # Test question
     test_data = {
@@ -41,7 +41,7 @@ def test_evaluation_endpoint():
             print(f"Response: {response.text}")
             
     except requests.exceptions.ConnectionError:
-        print("\n❌ Connection error: Make sure the web app is running on localhost:3000")
+        print("\n❌ Connection error: Make sure the web app is running on localhost:3006")
     except Exception as e:
         print(f"\n❌ Error: {e}")
 

@@ -24,7 +24,7 @@ pip install -r requirements.txt
 2. Set environment variables:
 ```bash
 export OPENAI_API_KEY=sk-...
-export APP_URL=http://localhost:3000  # or your deployed URL
+export APP_URL=http://localhost:3006  # or your deployed URL
 export MODEL_NAME=gpt-4o-mini
 ```
 

@@ -48,7 +48,7 @@ cd web
 pnpm dev
 ```
 
-Verify [http://localhost:3000](http://localhost:3000) works.
+Verify [http://localhost:3006](http://localhost:3006) works.
 
 ### Add TailwindCSS
 
@@ -306,7 +306,7 @@ pnpm add next-auth @auth/prisma-adapter argon2 zod
 Create/update `.env`:
 
 ```env
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3006
 NEXTAUTH_SECRET="change-me-32+chars"
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_school?schema=public"
 ```

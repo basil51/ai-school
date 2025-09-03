@@ -118,7 +118,7 @@ pm2 save
 pm2 ls
 ```
 
-This starts the app on port 3000 (configured in `ecosystem.config.js`).
+This starts the app on port 3006 (configured in `ecosystem.config.js`).
 
 ---
 
@@ -131,7 +131,7 @@ server {
   server_name YOUR_DOMAIN;
 
   location / {
-    proxy_pass http://127.0.0.1:3000;
+    proxy_pass http://127.0.0.1:3006;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
@@ -201,12 +201,11 @@ newgrp docker
 ```
 - Redis/Postgres not reachable: confirm ports 6380/5433 are listening (`ss -tulpn | grep -E ":6380|:5433"`).
 - OpenAI key missing: set `OPENAI_API_KEY` in `.env.production`.
-- 502/Bad Gateway: ensure PM2 app is running and Nginx proxy points to 127.0.0.1:3000.
+- 502/Bad Gateway: ensure PM2 app is running and Nginx proxy points to 127.0.0.1:3006.
 
 ---
 
 ## 11) Paths and Ports (recap)
-- App: PM2 → port 3000
 - Nginx: 80/443 → proxy to app
 - Postgres: 5433 (host) → 5432 (container)
 - Redis: 6380 (host) → 6379 (container)

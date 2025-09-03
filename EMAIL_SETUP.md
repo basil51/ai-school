@@ -122,7 +122,7 @@ Guardians can unsubscribe via:
 
 ### Test Cron Job
 ```bash
-curl -X POST http://localhost:3000/api/cron/weekly-emails \
+curl -X POST http://localhost:3006/api/cron/weekly-emails \
   -H "Authorization: Bearer your_cron_secret_here"
 ```
 

@@ -32,7 +32,7 @@ The AI School application has undergone a comprehensive security audit and is re
 
 ### Required Environment Variables
 ```env
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3006
 NEXTAUTH_SECRET=your-32-character-secret-here
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_school?schema=public"
 OPENAI_API_KEY=sk-your-openai-api-key-here

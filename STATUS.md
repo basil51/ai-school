@@ -30,7 +30,7 @@ Last updated: 2025-01-27
   - 🧠 **Phase 14 PLANNED**: Adaptive Teaching Engine - Personalized instruction
   - 🎨 **Phase 15 PLANNED**: Multi-Modal Teaching - Visual, audio, interactive
   - 🧩 **Phase 16 PLANNED**: Personalization Engine - Long-term learning memory
-- Web app running on http://localhost:3004
+- Web app running on http://localhost:3006
 - **NEXT**: Begin Phase 13 - Assessment System implementation (Mastery verification and progress tracking)
 
 ## Completed (to date)
@@ -215,7 +215,7 @@ Last updated: 2025-01-27
 - Admin panel provides comprehensive user and document management.
 - Role-based access control enforced throughout the application.
 - See `README.md`, `RAG.md`, `RAG2.md`, and `EMAILS.md` for reference.
-- App running on port 3004 (port conflict resolved).
+- App running on port 3006 (port conflict resolved).
 - **Need OpenAI API key** in `web/.env` to test RAG functionality.
 - Multi-tenant organization system fully functional with super-admin capabilities.
 - Organization analytics and branding features implemented.

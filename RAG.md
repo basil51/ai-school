@@ -1025,7 +1025,7 @@ Set env (locally and in CI Secrets):
 
 ```bash
 export OPENAI_API_KEY=sk-...
-export APP_URL=http://localhost:3000 # or your deployed URL
+export APP_URL=http://localhost:3006 # or your deployed URL
 export MODEL_NAME=gpt-4o-mini        # judge & embed model used by ragas
 ```
 
@@ -1043,7 +1043,7 @@ from datasets import Dataset
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy, context_precision, context_recall
 
-APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
+APP_URL = os.environ.get("APP_URL", "http://localhost:3006")
 MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
@@ -1180,7 +1180,7 @@ jobs:
 ## 7) Local run
 
 ```bash
-export APP_URL=http://localhost:3000
+export APP_URL=http://localhost:3006
 export OPENAI_API_KEY=sk-...
 python tools/evals/ragas_eval.py
 open tools/evals/out/summary.txt
