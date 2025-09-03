@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { ProgressStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: token.sub }
     });
 
     if (!user || user.role !== 'student') {
@@ -148,6 +148,13 @@ export async function GET(req: NextRequest) {
     const lessonContent = adaptation ? adaptation.adaptedContent : nextLesson.content;
 
     // Get related lessons for context
+    if (!currentTopic) {
+      return NextResponse.json(
+        { error: "Topic not found" },
+        { status: 404 }
+      );
+    }
+
     const relatedLessons = await prisma.lesson.findMany({
       where: {
         topicId: currentTopic.id,
@@ -178,7 +185,7 @@ export async function GET(req: NextRequest) {
           description: currentTopic.description
         },
         progress: nextLesson.progress[0] || {
-          status: 'not_started',
+          status: ProgressStatus.not_started,
           timeSpent: 0,
           attempts: 0
         },
@@ -188,7 +195,7 @@ export async function GET(req: NextRequest) {
       relatedLessons: relatedLessons.map(lesson => ({
         id: lesson.id,
         title: lesson.title,
-        status: lesson.progress[0]?.status || 'not_started'
+        status: lesson.progress[0]?.status || ProgressStatus.not_started
       })),
       studentProfile: studentProfile ? {
         learningStyle: studentProfile.learningStyle,
@@ -214,8 +221,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -229,7 +236,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: token.sub }
     });
 
     if (!user || user.role !== 'student') {
@@ -252,7 +259,7 @@ export async function POST(req: NextRequest) {
         data: {
           studentId: user.id,
           lessonId: lessonId,
-          status: 'not_started'
+          status: ProgressStatus.not_started
         }
       });
     }
@@ -264,12 +271,12 @@ export async function POST(req: NextRequest) {
 
     switch (action) {
       case 'start':
-        updateData.status = 'in_progress';
+        updateData.status = ProgressStatus.in_progress;
         updateData.startedAt = new Date();
         break;
       
       case 'complete':
-        updateData.status = 'completed';
+        updateData.status = ProgressStatus.completed;
         updateData.completedAt = new Date();
         if (timeSpent) {
           updateData.timeSpent = (progress.timeSpent || 0) + timeSpent;
@@ -277,14 +284,14 @@ export async function POST(req: NextRequest) {
         break;
       
       case 'fail':
-        updateData.status = 'failed';
+        updateData.status = ProgressStatus.failed;
         if (timeSpent) {
           updateData.timeSpent = (progress.timeSpent || 0) + timeSpent;
         }
         break;
       
       case 'retry':
-        updateData.status = 'retry_needed';
+        updateData.status = ProgressStatus.retry_needed;
         if (timeSpent) {
           updateData.timeSpent = (progress.timeSpent || 0) + timeSpent;
         }

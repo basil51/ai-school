@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, DifficultyLevel, SubjectLevel, OrganizationTier } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ async function main() {
       name: 'Demo School',
       slug: 'demo-school',
       description: 'A demonstration school for testing the AI Teacher system',
-      tier: 'premium',
+      tier: OrganizationTier.premium,
       isActive: true
     }
   });
@@ -30,7 +30,7 @@ async function main() {
     create: {
       name: 'Mathematics',
       description: 'A comprehensive course covering fundamental mathematical concepts and problem-solving skills',
-      level: 'high',
+      level: SubjectLevel.high,
       organizationId: organization.id,
       isActive: true
     }
@@ -78,7 +78,7 @@ Practice: If x + 3 = 8, what is the value of x?`,
         'Identify variables in mathematical expressions',
         'Solve simple equations with variables'
       ],
-      difficulty: 'beginner',
+      difficulty: DifficultyLevel.beginner,
       estimatedTime: 30,
       order: 1
     },
@@ -110,7 +110,7 @@ Therefore, x = 4 is the solution.`,
         'Solve linear equations step by step',
         'Apply the rules of equation solving'
       ],
-      difficulty: 'intermediate',
+      difficulty: DifficultyLevel.intermediate,
       estimatedTime: 45,
       order: 2
     },
@@ -148,7 +148,7 @@ The solution is x = 2, y = 3.`,
         'Solve systems using substitution',
         'Verify solutions by checking both equations'
       ],
-      difficulty: 'advanced',
+      difficulty: DifficultyLevel.advanced,
       estimatedTime: 60,
       order: 3
     }
@@ -213,7 +213,7 @@ Properties to remember:
         'Understand properties of different shapes',
         'Recognize regular and irregular polygons'
       ],
-      difficulty: 'beginner',
+      difficulty: DifficultyLevel.beginner,
       estimatedTime: 25,
       order: 1
     },
@@ -238,7 +238,7 @@ Area = 6 × 4 = 24 square units`,
         'Calculate area of basic shapes',
         'Apply formulas correctly'
       ],
-      difficulty: 'intermediate',
+      difficulty: DifficultyLevel.intermediate,
       estimatedTime: 40,
       order: 2
     }
@@ -273,7 +273,7 @@ Area = 6 × 4 = 24 square units`,
     create: {
       name: 'Physics',
       description: 'Study of matter, energy, and their interactions in the universe',
-      level: 'high',
+      level: SubjectLevel.high,
       organizationId: organization.id,
       isActive: true
     }
@@ -323,7 +323,7 @@ Speed = Distance ÷ Time = 100 km ÷ 2 hours = 50 km/h`,
         'Distinguish between distance and displacement',
         'Calculate average speed'
       ],
-      difficulty: 'beginner',
+      difficulty: DifficultyLevel.beginner,
       estimatedTime: 35,
       order: 1
     }

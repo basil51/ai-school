@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getToken } from "next-auth/jwt";
+import { ProgressStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     // Verify user is a student
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: token.sub }
     });
 
     if (!user || user.role !== 'student') {
@@ -108,7 +110,7 @@ export async function POST(req: NextRequest) {
         progressRecords.push({
           studentId: user.id,
           lessonId: lesson.id,
-          status: 'not_started'
+          status: ProgressStatus.not_started
         });
       }
     }
@@ -161,13 +163,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: token.sub }
     });
 
     if (!user) {

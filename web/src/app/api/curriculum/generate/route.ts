@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
@@ -9,8 +8,8 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user has permission to create subjects
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: token.sub },
       include: { organization: true }
     });
 
@@ -194,8 +193,8 @@ Make the content engaging, comprehensive, and pedagogically sound. Include pract
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const token = await getToken({ req });
+    if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -203,7 +202,7 @@ export async function GET(req: NextRequest) {
     const organizationId = searchParams.get('organizationId');
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: token.sub },
       include: { organization: true }
     });
 

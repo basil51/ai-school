@@ -132,9 +132,9 @@ return <h1>{dict.newSection.title}</h1>;
 ### Browser Testing
 
 Visit these URLs to test:
-- **English**: http://localhost:3004/en
-- **Arabic**: http://localhost:3004/ar
-- **Auto-redirect**: http://localhost:3004 (redirects based on browser language)
+- **English**: http://localhost:3006/en
+- **Arabic**: http://localhost:3006/ar
+- **Auto-redirect**: http://localhost:3006 (redirects based on browser language)
 
 ### Key Benefits
 
