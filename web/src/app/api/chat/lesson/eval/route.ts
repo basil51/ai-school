@@ -4,7 +4,7 @@ import { searchHybrid } from "@/lib/rag/query";
 import { adaptiveThresholding } from "@/lib/rag/threshold";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 export const runtime = "nodejs";
 
@@ -39,6 +39,21 @@ export async function POST(req: NextRequest) {
 
 Context:
 ${contextBlock}`;
+
+    if (!openai) {
+      return new Response(
+        JSON.stringify({ 
+          answer: "OpenAI API not configured", 
+          contexts: [],
+          citations: [],
+          strategy: "mock"
+        }), 
+        { 
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",

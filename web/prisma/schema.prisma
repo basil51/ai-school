@@ -88,6 +88,14 @@ model User {
   learningAnalytics LearningAnalytics[]
   personalizationData PersonalizationData?
   successMetrics SuccessMetrics[]
+  
+  // Revolutionary Adaptive Teaching Engine relationships
+  neuralPathways NeuralPathway[]
+  learningDimensions LearningDimensions?
+  learningInterventions LearningIntervention[]
+  crossDomainConnections CrossDomainConnection[]
+  emotionalStates EmotionalState[]
+  predictiveAnalytics PredictiveAnalytics[]
 }
 
 model Account {
@@ -952,4 +960,163 @@ model SuccessMetrics {
   
   @@unique([studentId, subjectId, period, startDate])
   @@index([studentId, period, startDate])
+}
+
+// --- Revolutionary Adaptive Teaching Engine Models ---
+
+// Neural pathway types for cognitive processing patterns
+enum PathwayType {
+  sequential
+  parallel
+  hierarchical
+  network
+  hybrid
+}
+
+// Learning intervention types
+enum InterventionType {
+  predictive
+  remedial
+  accelerative
+  creative
+  emotional
+}
+
+// Neural pathways representing how each student's brain processes information
+model NeuralPathway {
+  id                String      @id @default(cuid())
+  studentId         String
+  pathwayType       PathwayType
+  strength          Float       @default(0.5) // 0-1, how well this pathway works
+  activationPattern Json        // Neural activation sequence
+  learningVelocity  Float       @default(0.5) // Speed of learning through this pathway
+  retentionRate     Float       @default(0.5) // How well they retain information
+  emotionalResonance Float      @default(0.5) // Emotional engagement level
+  crossDomainTransfer Float     @default(0.5) // Ability to transfer across domains
+  lastUpdated       DateTime    @default(now()) @updatedAt
+  
+  student           User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  interventions     LearningIntervention[]
+  
+  @@unique([studentId, pathwayType])
+  @@index([studentId, strength])
+}
+
+// Learning dimensions analysis
+model LearningDimensions {
+  id                String      @id @default(cuid())
+  studentId         String      @unique
+  cognitive         Json        // { processingSpeed, workingMemory, attentionSpan, patternRecognition }
+  emotional         Json        // { motivation, confidence, frustration, curiosity }
+  social            Json        // { collaboration, competition, mentorship, independence }
+  creative          Json        // { imagination, innovation, artistic, analytical }
+  lastAnalyzed      DateTime    @default(now()) @updatedAt
+  
+  student           User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId])
+}
+
+// Revolutionary learning interventions
+model LearningIntervention {
+  id                      String          @id @default(cuid())
+  studentId               String
+  pathwayId               String?
+  interventionType        InterventionType
+  trigger                 String          // What caused this intervention
+  approach                String          // The teaching approach to use
+  expectedOutcome         String
+  confidence              Float           @default(0.5) // AI confidence (0-1)
+  personalizedContent     String          @db.Text // AI-generated personalized content
+  crossDomainConnections  String[]        // Connections to other subjects
+  emotionalSupport        String          @db.Text // Emotional guidance
+  successMetrics          String[]        // How to measure success
+  isActive                Boolean         @default(true)
+  appliedAt               DateTime?
+  completedAt             DateTime?
+  effectiveness           Float?          // Measured effectiveness after completion
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @default(now()) @updatedAt
+  
+  student                 User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  pathway                 NeuralPathway?  @relation(fields: [pathwayId], references: [id])
+  feedback                InterventionFeedback[]
+  
+  @@index([studentId, interventionType])
+  @@index([studentId, isActive])
+}
+
+// Feedback on intervention effectiveness
+model InterventionFeedback {
+  id                String    @id @default(cuid())
+  interventionId    String
+  feedbackType      String    // 'success', 'failure', 'partial', 'emotional'
+  rating            Float     // 0-1 effectiveness rating
+  comments          String?   @db.Text
+  metrics           Json      // Specific metrics data
+  createdAt         DateTime  @default(now())
+  
+  intervention      LearningIntervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  
+  @@index([interventionId, feedbackType])
+}
+
+// Cross-domain learning connections
+model CrossDomainConnection {
+  id                String    @id @default(cuid())
+  studentId         String
+  sourceDomain      String    // Original subject/topic
+  targetDomain      String    // Connected subject/topic
+  connectionType    String    // 'analogy', 'metaphor', 'application', 'creative'
+  strength          Float     @default(0.5) // How strong this connection is
+  usageCount        Int       @default(0) // How often this connection is used
+  effectiveness     Float     @default(0.5) // How effective this connection is
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, sourceDomain, targetDomain, connectionType])
+  @@index([studentId, strength])
+}
+
+// Emotional state tracking
+model EmotionalState {
+  id                String    @id @default(cuid())
+  studentId         String
+  sessionId         String?   // Link to specific learning session
+  confidence        Float     @default(0.5) // 0-1 confidence level
+  stress            Float     @default(0.3) // 0-1 stress level
+  engagement        Float     @default(0.7) // 0-1 engagement level
+  motivation        Float     @default(0.6) // 0-1 motivation level
+  curiosity         Float     @default(0.5) // 0-1 curiosity level
+  frustration       Float     @default(0.2) // 0-1 frustration level
+  joy               Float     @default(0.4) // 0-1 joy level
+  context           String?   // What was happening when this state was recorded
+  detectedAt        DateTime  @default(now())
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, detectedAt])
+  @@index([studentId, stress])
+}
+
+// Predictive learning analytics
+model PredictiveAnalytics {
+  id                String    @id @default(cuid())
+  studentId         String
+  predictionType    String    // 'success', 'struggle', 'engagement', 'retention'
+  confidence        Float     @default(0.5) // AI confidence in prediction
+  predictedValue    Float     // Predicted metric value
+  actualValue       Float?    // Actual value when measured
+  accuracy          Float?    // How accurate the prediction was
+  factors           Json      // Factors that influenced the prediction
+  interventionSuggested Boolean @default(false) // Whether intervention was suggested
+  predictedAt       DateTime  @default(now())
+  measuredAt        DateTime?
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, predictionType])
+  @@index([studentId, predictedAt])
 }

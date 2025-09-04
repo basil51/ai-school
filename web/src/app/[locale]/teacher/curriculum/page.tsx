@@ -21,9 +21,11 @@ import {
   Edit,
   Trash2,
   Eye,
-  BarChart3
+  BarChart3,
+  Target
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
+import { AssessmentManager } from "@/components/AssessmentManager";
 
 interface Subject {
   id: string;
@@ -63,6 +65,8 @@ export default function TeacherCurriculumPage() {
   const [creating, setCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [showAssessmentManager, setShowAssessmentManager] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -423,12 +427,26 @@ export default function TeacherCurriculumPage() {
                                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                     <span className="text-sm font-medium">{lesson.title}</span>
                                   </div>
-                                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{lesson.estimatedTime} {dict?.teacher?.min || "min"}</span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {lesson.difficulty}
-                                    </Badge>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                      <Clock className="h-3 w-3" />
+                                      <span>{lesson.estimatedTime} {dict?.teacher?.min || "min"}</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {lesson.difficulty}
+                                      </Badge>
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedLesson(lesson);
+                                        setShowAssessmentManager(true);
+                                      }}
+                                      className="ml-2"
+                                    >
+                                      <Target className="h-3 w-3 mr-1" />
+                                      Assessments
+                                    </Button>
                                   </div>
                                 </div>
                               ))}
@@ -444,6 +462,37 @@ export default function TeacherCurriculumPage() {
           )}
         </div>
       </div>
+
+      {/* Assessment Manager Modal */}
+      {showAssessmentManager && selectedLesson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold">Assessment Manager</h2>
+                  <p className="text-gray-600">Manage assessments for: {selectedLesson.title}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAssessmentManager(false);
+                    setSelectedLesson(null);
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+              <AssessmentManager
+                lessonId={selectedLesson.id}
+                onAssessmentCreated={() => {
+                  // Refresh data if needed
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

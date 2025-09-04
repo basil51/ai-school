@@ -2,8 +2,7 @@ import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 import { EmailTemplate, User, ProgressReport } from '@prisma/client';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 export interface EmailData {
   to: string;
   subject: string;
@@ -25,6 +24,13 @@ export class EmailService {
    */
   static async sendEmail(data: EmailData) {
     try {
+      if (!resend) {
+        console.warn('Resend API key not configured, skipping email send');
+        // Log the email as if it was sent for development purposes
+        await this.logEmail(data.to, data.templateId, data.subject, data.html);
+        return { id: 'mock-email-id', from: data.to, to: data.to, subject: data.subject };
+      }
+
       const result = await resend.emails.send({
         from: process.env.FROM_EMAIL || 'noreply@eduvibe.vip',
         to: data.to,

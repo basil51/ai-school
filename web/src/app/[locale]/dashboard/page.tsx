@@ -12,7 +12,10 @@ import {
   Settings, 
   GraduationCap, 
   FileText,
-  BarChart3
+  BarChart3,
+  Brain,
+  Target,
+  Sparkles
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
 import { useParams } from "next/navigation";
@@ -153,6 +156,98 @@ export default function Dashboard() {
                   <Button className="w-full" variant="outline" disabled>
                     {dict?.dashboard?.comingSoon || "Coming Soon"}
                   </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* AI Teacher Card - Student only */}
+            {userRole === "student" && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Brain className="h-5 w-5 mr-2" />
+                    {dict?.dashboard?.aiTeacher || "AI Teacher"}
+                  </CardTitle>
+                  <CardDescription>
+                    {dict?.dashboard?.aiTeacherDescription || "Personalized learning with AI teacher"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href={`/${locale}/ai-teacher`}>
+                    <Button className="w-full">
+                      {dict?.dashboard?.startLearning || "Start Learning"}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Assessments Card - Student only */}
+            {userRole === "student" && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Target className="h-5 w-5 mr-2" />
+                    {dict?.dashboard?.assessments || "Assessments"}
+                  </CardTitle>
+                  <CardDescription>
+                    {dict?.dashboard?.assessmentsDescription || "Take assessments to test your knowledge"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href={`/${locale}/assessments`}>
+                    <Button className="w-full" variant="outline">
+                      {dict?.dashboard?.takeAssessments || "Take Assessments"}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Revolutionary Adaptive Teaching Card - All users */}
+            <Card className="hover:shadow-md transition-shadow border-2 border-gradient-to-r from-purple-500 to-pink-500">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Sparkles className="h-5 w-5 mr-2 text-purple-600" />
+                  <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Revolutionary Adaptive Teaching
+                  </span>
+                  <Badge className="ml-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800">
+                    NEW
+                  </Badge>
+                </CardTitle>
+                <CardDescription>
+                  AI-powered neural pathway analysis and personalized learning interventions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href={`/${locale}/adaptive-teaching`}>
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Explore Revolutionary AI
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Assessment Management Card - Teacher/Admin only */}
+            {(userRole === "teacher" || userRole === "admin") && (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Target className="h-5 w-5 mr-2" />
+                    {dict?.dashboard?.assessments || "Assessments"}
+                  </CardTitle>
+                  <CardDescription>
+                    {dict?.dashboard?.assessmentsManagementDescription || "Create and manage assessments"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href={`/${locale}/admin/evaluations`}>
+                    <Button className="w-full" variant="outline">
+                      {dict?.dashboard?.manageAssessments || "Manage Assessments"}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}

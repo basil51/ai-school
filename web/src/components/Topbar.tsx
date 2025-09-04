@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 //import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, Users, Building2, Globe, User, MessageCircle, Brain, BookOpen } from "lucide-react";
+import { Settings, LogOut, Users, Building2, Globe, User, MessageCircle, Brain, BookOpen, FileText, BarChart3, Sparkles } from "lucide-react";
 import { locales, Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";
 
@@ -128,25 +128,65 @@ export default function Topbar() {
                       </Link>
                       
                       {userRole === 'student' && (
-                        <Link 
-                          href={`/${currentLocale}/ai-teacher`}
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <Brain className="mr-2 h-4 w-4" />
-                          {dict?.userMenu?.aiTeacher || "AI Teacher"}
-                        </Link>
+                        <>
+                          <Link 
+                            href={`/${currentLocale}/ai-teacher`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Brain className="mr-2 h-4 w-4" />
+                            {dict?.userMenu?.aiTeacher || "AI Teacher"}
+                          </Link>
+                          
+                          <Link 
+                            href={`/${currentLocale}/assessments`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            {dict?.userMenu?.assessments || "Assessments"}
+                          </Link>
+                          
+                          <Link 
+                            href={`/${currentLocale}/adaptive-teaching`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Adaptive Teaching
+                          </Link>
+                        </>
                       )}
                       
                       {['teacher', 'admin', 'super_admin'].includes(userRole) && (
-                        <Link 
-                          href={`/${currentLocale}/teacher/curriculum`}
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          {dict?.userMenu?.curriculum || "Curriculum"}
-                        </Link>
+                        <>
+                          <Link 
+                            href={`/${currentLocale}/teacher/curriculum`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            {dict?.userMenu?.curriculum || "Curriculum"}
+                          </Link>
+                          
+                          <Link 
+                            href={`/${currentLocale}/admin/evaluations`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            {dict?.userMenu?.assessments || "Assessments"}
+                          </Link>
+                          
+                          <Link 
+                            href={`/${currentLocale}/adaptive-teaching`}
+                            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Adaptive Teaching
+                          </Link>
+                        </>
                       )}
                       
                       <Link 
