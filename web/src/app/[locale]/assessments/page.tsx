@@ -75,7 +75,7 @@ export default function AssessmentsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push(`/${locale}/signin`);
+      router.push(`/${locale}/login`);
     }
   }, [status, router, locale]);
 

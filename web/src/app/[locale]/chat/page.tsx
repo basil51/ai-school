@@ -100,7 +100,7 @@ export default function ChatPage() {
     if (status === "loading") return;
     
     if (status === "unauthenticated") {
-      router.push(`/${locale}/signin`);
+      router.push(`/${locale}/login`);
       return;
     }
 
@@ -310,7 +310,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="min-h-screen bg-gray-50">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-120px)]">
         {/* Sidebar - Chat Rooms */}
         <div className="lg:col-span-2">
@@ -423,7 +423,7 @@ export default function ChatPage() {
                     <div className="flex items-center space-x-2">
                       <Badge variant="outline">
                         {participants.length} {dict?.chat?.participants || "participants"}
-                      </Badge>
+                      </Badge> 
                       <Button
                         size="sm"
                         variant="outline"

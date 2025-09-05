@@ -1,0 +1,196 @@
+"use client";
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  Home, BookOpen, Brain, Trophy, MessageSquare, 
+  BarChart3, Users, Settings, School, 
+  Sparkles, Target, Zap, BookMarked, ClipboardCheck,
+  Video, Headphones, Eye, PenTool
+} from 'lucide-react';
+
+interface AsideProps {
+  sidebarOpen: boolean;
+  sidebarHovered: boolean;
+  currentUser: {
+    name: string;
+    role: string;
+    avatar: string;
+    organization: string;
+  };
+  onSidebarHover: (hovered: boolean) => void;
+}
+
+
+
+export default function Aside({
+  sidebarOpen,
+  sidebarHovered,
+  currentUser,
+  onSidebarHover
+}: AsideProps) {
+  const pathname = usePathname();
+  // Role-based navigation items
+  const getNavigationItems = (role: string) => {
+    const commonItems = [
+      { icon: Home, label: 'Dashboard', path: '/dashboard', gradient: 'from-blue-500 to-cyan-500' },
+    ];
+
+    const roleSpecificItems = {
+      'super_admin': [
+        { icon: School, label: 'Organizations', path: '/super-admin/organizations', gradient: 'from-purple-500 to-pink-500' },
+        { icon: Users, label: 'All Users', path: '/users', gradient: 'from-green-500 to-emerald-500' },
+        { icon: BarChart3, label: 'Global Analytics', path: '/analytics', gradient: 'from-orange-500 to-red-500' },
+        { icon: Settings, label: 'System Settings', path: '/settings', gradient: 'from-gray-500 to-gray-700' },
+      ],
+      'admin': [
+        { icon: Users, label: 'Manage Users', path: '/users', gradient: 'from-green-500 to-emerald-500' },
+        { icon: BookOpen, label: 'Curriculum', path: '/curriculum', gradient: 'from-violet-500 to-purple-500' },
+        { icon: BarChart3, label: 'School Analytics', path: '/analytics', gradient: 'from-orange-500 to-red-500' },
+        { icon: Settings, label: 'School Settings', path: '/settings', gradient: 'from-gray-500 to-gray-700' },
+      ],
+      'teacher': [
+        { icon: BookOpen, label: 'My Subjects', path: '/subjects', gradient: 'from-violet-500 to-purple-500' },
+        { icon: ClipboardCheck, label: 'Assessments', path: '/assessments', gradient: 'from-yellow-500 to-orange-500' },
+        { icon: Users, label: 'My Students', path: '/students', gradient: 'from-green-500 to-teal-500' },
+        { icon: BarChart3, label: 'Class Progress', path: '/progress', gradient: 'from-pink-500 to-rose-500' },
+      ],
+      'student': [
+        { icon: Brain, label: 'AI Teacher', path: '/ai-teacher', gradient: 'from-violet-600 to-indigo-600', glow: true },
+        { icon: BookMarked, label: 'My Courses', path: '/courses', gradient: 'from-blue-500 to-purple-500' },
+        { icon: Target, label: 'Practice', path: '/practice', gradient: 'from-green-500 to-emerald-500' },
+        { icon: ClipboardCheck, label: 'Assessments', path: '/assessments', gradient: 'from-yellow-500 to-orange-500' },
+        { icon: Trophy, label: 'Achievements', path: '/achievements', gradient: 'from-amber-500 to-yellow-500' },
+        { icon: MessageSquare, label: 'Study Chat', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
+        { icon: BarChart3, label: 'My Progress', path: '/progress', gradient: 'from-cyan-500 to-blue-500' },
+      ],
+      'guardian': [
+        { icon: Users, label: 'My Children', path: '/children', gradient: 'from-green-500 to-emerald-500' },
+        { icon: BarChart3, label: 'Progress Reports', path: '/reports', gradient: 'from-blue-500 to-purple-500' },
+        { icon: MessageSquare, label: 'Teacher Chat', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
+      ],
+    };
+
+    return [...commonItems, ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || [])];
+  };
+
+  const navigationItems = getNavigationItems(currentUser.role);
+
+  // Learning modes for students
+  const learningModes = [
+    { icon: Eye, label: 'Visual', active: true },
+    { icon: Headphones, label: 'Audio', active: false },
+    { icon: PenTool, label: 'Interactive', active: true },
+    { icon: Video, label: 'Video', active: false },
+  ];
+
+  return (
+    <aside 
+      className={`bg-white/80 backdrop-blur-lg border-r border-white/20 shadow-xl transition-all duration-300 z-40 ${
+        sidebarOpen ? (sidebarHovered ? 'w-64' : 'w-24') : 'w-0 overflow-hidden'
+      }`}
+      onMouseEnter={() => onSidebarHover(true)}
+      onMouseLeave={() => onSidebarHover(false)}
+    >
+      <div className="flex flex-col h-full">
+        {/* Logo in Sidebar */}
+        <div className="p-4 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-blue-600 rounded-lg blur-lg opacity-50 animate-pulse"></div>
+                <div className="relative bg-gradient-to-r from-violet-600 to-blue-600 p-2 rounded-lg">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              {sidebarHovered && (
+                <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+                  AI Academy
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {navigationItems.map((item, index) => {
+            const isSelected = pathname === item.path;
+            return (
+              <Link
+                key={index}
+                href={item.path}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
+                  isSelected
+                    ? (item as any).glow
+                      ? 'bg-gradient-to-r from-violet-100 to-blue-100 border border-violet-300 shadow-lg'
+                      : 'bg-gradient-to-r from-gray-100 to-gray-50 border border-gray-300 shadow-md'
+                    : 'hover:bg-gradient-to-r hover:from-violet-50 hover:to-blue-50 border border-transparent'
+                }`}
+              >
+                {(item as any).glow && isSelected && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-indigo-600/20"></div>
+                )}
+                <div className={`relative p-2 rounded-lg bg-gradient-to-r ${item.gradient} group-hover:scale-110 transition-transform ${
+                  isSelected ? 'scale-110 shadow-lg' : ''
+                }`}>
+                  <item.icon className="w-4 h-4 text-white" />
+                </div>
+                <span className={`relative font-medium transition-all duration-300 ${
+                  sidebarHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'
+                } ${
+                  isSelected
+                    ? (item as any).glow
+                      ? 'text-violet-700 font-semibold'
+                      : 'text-gray-800 font-semibold'
+                    : 'text-gray-700 group-hover:text-gray-900'
+                }`}>
+                  {item.label}
+                </span>
+                {isSelected && sidebarHovered && (
+                  <Sparkles className="w-4 h-4 text-violet-600 ml-auto transition-all duration-300" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Learning Mode Selector (for students) */}
+        {currentUser.role === 'student' && sidebarHovered && (
+          <div className="p-4 border-t border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Learning Modes</p>
+            <div className="grid grid-cols-2 gap-2">
+              {learningModes.map((mode, index) => (
+                <button
+                  key={index}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                    mode.active 
+                      ? 'bg-gradient-to-r from-violet-100 to-blue-100 border border-violet-300' 
+                      : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <mode.icon className={`w-4 h-4 ${mode.active ? 'text-violet-600' : 'text-gray-400'}`} />
+                  <span className={`text-xs font-medium ${mode.active ? 'text-violet-700' : 'text-gray-500'}`}>
+                    {mode.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Daily Motivation (for students) */}
+        {currentUser.role === 'student' && sidebarHovered && (
+          <div className="p-4 m-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white">
+            <p className="text-xs font-semibold mb-1 opacity-90">Today&apos;s Goal</p>
+            <p className="text-sm font-bold">Complete 3 lessons to unlock a new badge! 🎯</p>
+            <div className="mt-2 bg-white/20 rounded-full h-2">
+              <div className="bg-white rounded-full h-2 w-2/3 transition-all duration-500"></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}

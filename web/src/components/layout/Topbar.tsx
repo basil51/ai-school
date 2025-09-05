@@ -10,11 +10,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  //DropdownMenuLabel,
-  //DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-//import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Settings, LogOut, Users, Building2, Globe, User, MessageCircle, Brain, BookOpen, FileText, BarChart3, Sparkles } from "lucide-react";
 import { locales, Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";
@@ -39,8 +39,6 @@ export default function Topbar() {
       default: return { text: dict?.roles?.user || 'User', variant: 'outline' as const };
     }
   };
-
-
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -224,7 +222,7 @@ export default function Topbar() {
                       
                       <button
                         onClick={() => {
-                          signOut({ callbackUrl: `/${currentLocale}/signin` });
+                          signOut({ callbackUrl: `/${currentLocale}/login` });
                           setIsUserDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"

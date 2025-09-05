@@ -7,7 +7,7 @@ export default async function AdaptiveTeachingPage() {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    redirect("/signin");
+    redirect("/login");
   }
 
   const userRole = (session as any).role;

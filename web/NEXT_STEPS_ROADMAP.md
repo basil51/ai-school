@@ -38,7 +38,7 @@
 - [ ] **OrganizationSwitcher** component
 - [ ] **OrganizationDetails** component
 - [ ] **Analytics** components
-- [ ] **Form** components (signin, etc.)
+- [ ] **Form** components (login, etc.)
 
 ### **Priority 3: Add Missing Translations**
 - [ ] **Error messages** and notifications

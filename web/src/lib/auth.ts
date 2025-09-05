@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import argon2 from "argon2";
+import { getServerSession } from "next-auth";
 
 const prisma = new PrismaClient();
 
@@ -49,9 +50,9 @@ export const authOptions: AuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Handle signin redirects to our custom signin page
+      // Handle login redirects to our custom login page
       if (url.startsWith('/api/auth/signin')) {
-        return `${baseUrl}/en/signin`;
+        return `${baseUrl}/en/login`;
       }
       // Allow relative URLs
       if (url.startsWith('/')) return `${baseUrl}${url}`;
@@ -61,3 +62,64 @@ export const authOptions: AuthOptions = {
     },
   },
 };
+
+/**
+ * Get the current authenticated user with full user data from database
+ * Returns null if no user is authenticated
+ */
+export async function getCurrentUser() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      organizationId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return user;
+}
+
+/**
+ * Get the current authenticated user with organization context
+ * Returns null if no user is authenticated
+ */
+export async function getCurrentUserWithOrganization() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      organizationId: true,
+      createdAt: true,
+      updatedAt: true,
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  });
+
+  return user;
+}

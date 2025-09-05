@@ -81,7 +81,7 @@ export default function AdminEvaluationsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push(`/${locale}/signin`);
+      router.push(`/${locale}/login`);
     }
   }, [status, router, locale]);
 

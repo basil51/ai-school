@@ -1,8 +1,5 @@
-"use client";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,35 +14,21 @@ import {
   Target,
   Sparkles
 } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
-import { useParams } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function Dashboard() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { dict, loading: dictLoading } = useTranslations();
-  const params = useParams();
-  const locale = params.locale as string;
+interface DashboardPageProps {
+  params: Promise<{ locale: string }>;
+}
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push(`/${locale}/signin`);
-    }
-  }, [status, router, locale]);
+export default async function Dashboard({ params }: DashboardPageProps) {
+  const { locale } = await params;
+  const user = await getCurrentUser();
 
-  if (status === "loading" || dictLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">{dict?.common?.loading || "Loading..."}</div>
-      </div>
-    );
+  if (!user) {
+    redirect(`/${locale}/login`);
   }
 
-  if (!session) {
-    return null;
-  }
-
-  const userRole = (session as any).role;
+  const userRole = user.role;
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -68,7 +51,13 @@ export default function Dashboard() {
   };
 
   const getRoleDisplay = (role: string) => {
-    return dict?.roles?.[role] || role;
+    const roleMap: Record<string, string> = {
+      admin: "Administrator",
+      teacher: "Teacher", 
+      guardian: "Guardian",
+      student: "Student"
+    };
+    return roleMap[role] || role;
   };
 
     return (
@@ -81,16 +70,16 @@ export default function Dashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <BookOpen className="h-5 w-5 mr-2" />
-                  {dict?.dashboard?.aiTutor || "AI Tutor"}
+                  AI Tutor
                 </CardTitle>
                 <CardDescription>
-                  {dict?.dashboard?.startLearningDescription || "Start learning with our AI-powered tutor"}
+                  Start learning with our AI-powered tutor
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href={`/${locale}/tutor`}>
                   <Button className="w-full">
-                    {dict?.dashboard?.startLearning || "Start Learning"}
+                    Start Learning
                   </Button>
                 </Link>
               </CardContent>
@@ -102,16 +91,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <FileText className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.uploadContent || "Upload Content"}
+                    Upload Content
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.uploadContentDescription || "Upload educational materials for the AI tutor"}
+                    Upload educational materials for the AI tutor
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/${locale}/rag`}>
                     <Button className="w-full" variant="outline">
-                      {dict?.dashboard?.uploadDocuments || "Upload Documents"}
+                      Upload Documents
                     </Button>
                   </Link>
                 </CardContent>
@@ -124,16 +113,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Settings className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.adminPanel || "Admin Panel"}
+                    Admin Panel
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.adminPanelDescription || "Manage users and system settings"}
+                    Manage users and system settings
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/${locale}/admin`}>
                     <Button className="w-full" variant="outline">
-                      {dict?.dashboard?.manageSystem || "Manage System"}
+                      Manage System
                     </Button>
                   </Link>
                 </CardContent>
@@ -146,15 +135,15 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BarChart3 className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.analytics || "Analytics"}
+                    Analytics
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.analyticsDescription || "View learning analytics and insights"}
+                    View learning analytics and insights
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" variant="outline" disabled>
-                    {dict?.dashboard?.comingSoon || "Coming Soon"}
+                    Coming Soon
                   </Button>
                 </CardContent>
               </Card>
@@ -166,16 +155,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Brain className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.aiTeacher || "AI Teacher"}
+                    AI Teacher
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.aiTeacherDescription || "Personalized learning with AI teacher"}
+                    Personalized learning with AI teacher
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/${locale}/ai-teacher`}>
                     <Button className="w-full">
-                      {dict?.dashboard?.startLearning || "Start Learning"}
+                      Start Learning
                     </Button>
                   </Link>
                 </CardContent>
@@ -188,16 +177,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Target className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.assessments || "Assessments"}
+                    Assessments
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.assessmentsDescription || "Take assessments to test your knowledge"}
+                    Take assessments to test your knowledge
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/${locale}/assessments`}>
                     <Button className="w-full" variant="outline">
-                      {dict?.dashboard?.takeAssessments || "Take Assessments"}
+                      Take Assessments
                     </Button>
                   </Link>
                 </CardContent>
@@ -236,16 +225,16 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Target className="h-5 w-5 mr-2" />
-                    {dict?.dashboard?.assessments || "Assessments"}
+                    Assessments
                   </CardTitle>
                   <CardDescription>
-                    {dict?.dashboard?.assessmentsManagementDescription || "Create and manage assessments"}
+                    Create and manage assessments
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/${locale}/admin/evaluations`}>
                     <Button className="w-full" variant="outline">
-                      {dict?.dashboard?.manageAssessments || "Manage Assessments"}
+                      Manage Assessments
                     </Button>
                   </Link>
                 </CardContent>
@@ -256,21 +245,21 @@ export default function Dashboard() {
           {/* User Info Card */}
           <Card>
             <CardHeader>
-              <CardTitle>{dict?.dashboard?.accountInformation || "Account Information"}</CardTitle>
-              <CardDescription>{dict?.dashboard?.accountDescription || "Your profile and account details"}</CardDescription>
+              <CardTitle>Account Information</CardTitle>
+              <CardDescription>Your profile and account details</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.email || "Email"}</label>
-                  <p className="text-sm text-gray-900">{session.user?.email}</p>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-sm text-gray-900">{user.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.name || "Name"}</label>
-                  <p className="text-sm text-gray-900">{session.user?.name || (dict?.dashboard?.notProvided || "Not provided")}</p>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <p className="text-sm text-gray-900">{user.name || "Not provided"}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.role || "Role"}</label>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
                   <div className="flex items-center mt-1">
                     <Badge variant={getRoleColor(userRole)}>
                       {getRoleIcon(userRole)}
@@ -279,9 +268,9 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">{dict?.dashboard?.memberSince || "Member Since"}</label>
+                  <label className="text-sm font-medium text-gray-500">Member Since</label>
                   <p className="text-sm text-gray-900">
-                    {dict?.dashboard?.welcomeMessage || "Welcome!"}
+                    Welcome!
                   </p>
                 </div>
               </div>

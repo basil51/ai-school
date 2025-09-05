@@ -46,8 +46,8 @@ export default withAuth(
         
         // Allow public paths
         if (pathname.startsWith('/api/auth') || 
-            pathname.includes('/signin') ||
-            pathname.match(/^\/(en|ar)(\/signin)?$/)) {
+            pathname.includes('/login') ||
+            pathname.match(/^\/(en|ar)(\/login)?$/)) {
           return true;
         }
 
