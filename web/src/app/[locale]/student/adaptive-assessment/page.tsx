@@ -303,10 +303,10 @@ export default function StudentAdaptiveAssessmentPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Adaptive Assessment Center
+          AI Assessment Center
         </h1>
         <p className="text-xl text-gray-600">
-          AI-powered assessments that adapt to your learning level and provide personalized insights
+          AI-powered adaptive assessments that adjust to your learning level and provide personalized insights
         </p>
       </div>
 
