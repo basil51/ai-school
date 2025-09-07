@@ -1,17 +1,23 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Maximize2, Minimize2, Split, RotateCcw, 
-  Volume2, VolumeX, Play, Pause, Settings,
-  Move, Resize, Eye, EyeOff, Download, Share2,
-  ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
-  Palette, Type, Image, Video, Code, Calculator,
-  Brain, Sparkles, BookOpen, Lightbulb
+  Maximize2, Minimize2, Split, Volume2, VolumeX,Play, ZoomIn,
+  ZoomOut,Image, Video, Code, Calculator, Brain, Sparkles
 } from 'lucide-react';
+import MathRenderer from './multimodal/MathRenderer';
+import MermaidDiagram from './multimodal/MermaidDiagram';
+import AudioNarrator from './multimodal/AudioNarrator';
+import ProjectileSimulator from './multimodal/ProjectileSimulator';
+import CodePlayground from './multimodal/CodePlayground';
+import VideoPlayer from './multimodal/VideoPlayer';
+import InteractiveGraph from './multimodal/InteractiveGraph';
+import ThreeJSVisualizer from './multimodal/ThreeJSVisualizer';
+import BabylonJSVisualizer from './multimodal/BabylonJSVisualizer';
+import AdvancedD3Visualizer from './multimodal/AdvancedD3Visualizer';
 
 interface SmartLearningCanvasProps {
   content: any;
-  contentType: 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive';
+  contentType: 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced';
   onContentChange?: (content: any) => void;
   learningStyle?: 'visual' | 'audio' | 'kinesthetic' | 'analytical';
 }
@@ -47,9 +53,12 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
     switch (type) {
       case 'video':
       case 'simulation':
+      case '3d':
+      case 'advanced-3d':
         return 'fullscreen';
       case 'diagram':
       case 'interactive':
+      case 'd3-advanced':
         return 'expanded';
       default:
         return 'compact';
@@ -108,29 +117,27 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
     switch (contentType) {
       case 'math':
         return (
-          <div className="text-center space-y-4">
-            <div className="text-4xl font-mono bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {content.equation || 'x = (-b ± √(b² - 4ac)) / 2a'}
+          <div className="space-y-6">
+            <div className="text-center">
+              <MathRenderer expression={content.equation || String('x=\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}')}/>
             </div>
             {content.explanation && (
-              <p className="text-gray-700 text-lg leading-relaxed">
+              <p className="text-gray-700 text-lg leading-relaxed text-center">
                 {content.explanation}
               </p>
             )}
-            {content.graph && (
-              <div className="mt-6">
-                <svg className="w-full h-64 mx-auto">
-                  <path d="M 50 150 Q 150 50 250 150" stroke="url(#gradient)" strokeWidth="3" fill="none"/>
-                  <defs>
-                    <linearGradient id="gradient">
-                      <stop offset="0%" stopColor="#8B5CF6"/>
-                      <stop offset="100%" stopColor="#3B82F6"/>
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="150" r="5" fill="#8B5CF6"/>
-                  <circle cx="150" cy="50" r="5" fill="#3B82F6"/>
-                  <circle cx="250" cy="150" r="5" fill="#8B5CF6"/>
-                </svg>
+            {(content.graphExpression || content.points) && (
+              <div className="mt-2 flex justify-center">
+                <InteractiveGraph
+                  expression={content.graphExpression}
+                  points={content.points}
+                  title={content.graphTitle || 'Function Plot'}
+                />
+              </div>
+            )}
+            {audioEnabled && content.narration && (
+              <div className="flex justify-center">
+                <AudioNarrator text={content.narration} />
               </div>
             )}
           </div>
@@ -139,69 +146,111 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
       case 'diagram':
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6">
-              <div className="text-center">
-                <div className="text-2xl mb-4">📊</div>
-                <p className="text-gray-700">{content.description}</p>
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            {content.chart ? (
+              <div className="rounded-lg border border-gray-200 bg-white p-3">
+                <MermaidDiagram chart={content.chart} theme={content.theme || 'neutral'} />
               </div>
-            </div>
+            ) : (
+              <p className="text-gray-700">{content.description || 'Diagram unavailable.'}</p>
+            )}
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
           </div>
         );
 
       case 'simulation':
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>
-            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-4xl mb-4">🎮</div>
-                <p className="text-gray-700 mb-4">Interactive Simulation</p>
-                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Start Simulation
-                </button>
-              </div>
-            </div>
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <ProjectileSimulator
+              g={content.g}
+              initialSpeed={content.initialSpeed}
+              angleDeg={content.angleDeg}
+            />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
           </div>
         );
 
       case 'video':
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>
-            <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-4xl mb-4">🎥</div>
-                <p className="mb-4">Video Content</p>
-                <button className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 mx-auto">
-                  <Play className="w-4 h-4" />
-                  Play Video
-                </button>
-              </div>
-            </div>
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <VideoPlayer src={content.src} captions={content.captions} poster={content.poster} />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
           </div>
         );
 
       case 'interactive':
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 min-h-[300px]">
-              <div className="text-center">
-                <div className="text-4xl mb-4">✨</div>
-                <p className="text-gray-700 mb-4">Interactive Learning Experience</p>
-                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                  <button className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                    <Code className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                    <span className="text-sm">Code Editor</span>
-                  </button>
-                  <button className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                    <Calculator className="w-6 h-6 mx-auto mb-2 text-green-600" />
-                    <span className="text-sm">Calculator</span>
-                  </button>
-                </div>
+          <div className="space-y-6">
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2">Code Playground</h4>
+                <CodePlayground initialCode={content.initialCode} />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2">Visualization</h4>
+                <InteractiveGraph expression={content.graphExpression} points={content.points} />
               </div>
             </div>
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
+          </div>
+        );
+
+      case '3d':
+        return (
+          <div className="space-y-4">
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <ThreeJSVisualizer 
+              type={content.visualizationType || 'geometry'}
+              config={content.config}
+              width={canvasState === 'fullscreen' ? 800 : 600}
+              height={canvasState === 'fullscreen' ? 600 : 400}
+            />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
+          </div>
+        );
+
+      case 'advanced-3d':
+        return (
+          <div className="space-y-4">
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <BabylonJSVisualizer 
+              type={content.visualizationType || 'advanced-3d'}
+              config={content.config}
+              width={canvasState === 'fullscreen' ? 800 : 600}
+              height={canvasState === 'fullscreen' ? 600 : 400}
+            />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
+          </div>
+        );
+
+      case 'd3-advanced':
+        return (
+          <div className="space-y-4">
+            {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
+            <AdvancedD3Visualizer 
+              type={content.visualizationType || 'network'}
+              config={content.config}
+              width={canvasState === 'fullscreen' ? 800 : 600}
+              height={canvasState === 'fullscreen' ? 600 : 400}
+            />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
           </div>
         );
 
