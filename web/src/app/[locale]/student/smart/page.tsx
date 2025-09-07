@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo, useState } from 'react';
-import SmartLearningCanvas from "../../../components/SmartLearningCanvas";
+import SmartLearningCanvas from '@/components/SmartLearningCanvas';
 
 type ContentType = 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced';
 
