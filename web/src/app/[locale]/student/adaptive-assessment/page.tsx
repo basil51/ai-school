@@ -72,10 +72,10 @@ export default function StudentAdaptiveAssessmentPage() {
 
   const loadSubjects = async () => {
     try {
-      const response = await fetch('/api/subjects');
+      const response = await fetch('/api/curriculum/generate');
       if (response.ok) {
         const data = await response.json();
-        setSubjects(data.data || []);
+        setSubjects(data.subjects || []);
       }
     } catch (error) {
       console.error('Error loading subjects:', error);
