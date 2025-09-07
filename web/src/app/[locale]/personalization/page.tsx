@@ -1,8 +1,9 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import PersonalizationDashboard from '@/components/PersonalizationDashboard';
+import DemoStudentSelector from '@/components/DemoStudentSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Target, TrendingUp, Users } from 'lucide-react';
@@ -10,6 +11,7 @@ import { Brain, Target, TrendingUp, Users } from 'lucide-react';
 export default function PersonalizationPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('demo-student-1');
 
   if (status === 'loading') {
     return (
@@ -98,8 +100,14 @@ export default function PersonalizationPage() {
         </Card>
       </div>
 
+      {/* Demo Student Selector */}
+      <DemoStudentSelector 
+        onStudentSelect={setSelectedStudentId}
+        selectedStudentId={selectedStudentId}
+      />
+
       {/* Main Dashboard */}
-      <PersonalizationDashboard studentId={(session.user as any)?.id || ''} />
+      <PersonalizationDashboard studentId={selectedStudentId} />
 
       {/* How It Works */}
       <div className="mt-12">

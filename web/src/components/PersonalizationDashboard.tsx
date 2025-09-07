@@ -79,6 +79,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
   const [effectiveness, setEffectiveness] = useState<LearningEffectiveness | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [demoMode, setDemoMode] = useState(false);
 
   useEffect(() => {
     loadPersonalizationData();
@@ -98,6 +99,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
       if (patternResponse.ok) {
         const patternData = await patternResponse.json();
         setLearningPattern(patternData.data);
+        setDemoMode(patternData.demoMode || false);
       }
 
       // Load recommendations
@@ -106,6 +108,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
       if (recommendationsResponse.ok) {
         const recommendationsData = await recommendationsResponse.json();
         setRecommendations(recommendationsData.data);
+        setDemoMode(recommendationsData.demoMode || demoMode);
       }
 
       // Load effectiveness analysis
@@ -114,6 +117,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
       if (effectivenessResponse.ok) {
         const effectivenessData = await effectivenessResponse.json();
         setEffectiveness(effectivenessData.data);
+        setDemoMode(effectivenessData.demoMode || demoMode);
       }
 
     } catch (error) {
@@ -135,8 +139,20 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Personalization Dashboard</h1>
-          <p className="text-gray-600 mt-2">AI-powered learning insights and personalized recommendations</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">Personalization Dashboard</h1>
+            {demoMode && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                DEMO MODE
+              </Badge>
+            )}
+          </div>
+          <p className="text-gray-600 mt-2">
+            {demoMode 
+              ? "Demo data - Learning insights and recommendations are simulated for demonstration purposes"
+              : "AI-powered learning insights and personalized recommendations"
+            }
+          </p>
         </div>
         <Button onClick={loadPersonalizationData} variant="outline">
           <Activity className="w-4 h-4 mr-2" />

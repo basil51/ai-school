@@ -15,7 +15,7 @@ export interface LearningPattern {
 
 export interface TeachingStrategy {
   approach: 'visual' | 'auditory' | 'kinesthetic' | 'analytical' | 'creative' | 'collaborative';
-  modality: 'text' | 'video' | 'interactive' | 'simulation' | '3d' | 'advanced-3d' | 'd3-advanced';
+  modality: 'text' | 'math' | 'diagram' | 'video' | 'interactive' | 'simulation' | '3d' | 'advanced-3d' | 'd3-advanced';
   pacing: 'slow' | 'moderate' | 'fast' | 'adaptive';
   reinforcement: 'minimal' | 'moderate' | 'extensive';
   difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';

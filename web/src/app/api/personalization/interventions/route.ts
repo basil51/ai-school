@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { PersonalizationEngine } from '@/lib/personalization/personalization-engine';
+import { DemoDataGenerator } from '@/lib/personalization/demo-data';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +26,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if we're in demo mode
+    if (DemoDataGenerator.isDemoMode()) {
+      const interventions = DemoDataGenerator.generateDemoInterventions(studentId);
+      return NextResponse.json({
+        success: true,
+        data: interventions,
+        demoMode: true,
+        message: 'Demo data - Interventions are simulated for demonstration purposes'
+      });
+    }
+
     const personalizationEngine = new PersonalizationEngine();
     
     const interventions = await personalizationEngine.createLearningInterventions(
@@ -34,7 +46,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: interventions
+      data: interventions,
+      demoMode: false
     });
 
   } catch (error) {
@@ -69,6 +82,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Check if we're in demo mode
+    if (DemoDataGenerator.isDemoMode()) {
+      const interventions = DemoDataGenerator.generateDemoInterventions(studentId);
+      return NextResponse.json({
+        success: true,
+        data: interventions,
+        demoMode: true,
+        message: 'Demo data - Interventions are simulated for demonstration purposes'
+      });
+    }
+
     const { prisma } = await import('@/lib/prisma');
     
     const interventions = await prisma.learningIntervention.findMany({
@@ -82,7 +106,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: interventions
+      data: interventions,
+      demoMode: false
     });
 
   } catch (error) {
