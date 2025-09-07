@@ -64,6 +64,7 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: BookMarked, label: 'My Courses', path: `/${locale}/student/courses`, gradient: 'from-blue-500 to-purple-500' },
         { icon: Monitor, label: 'Smart Learning', path: `/${locale}/student/smart`, gradient: 'from-indigo-500 to-purple-500' },
         { icon: UserCheck, label: 'My Learning', path: `/${locale}/student/personalization`, gradient: 'from-pink-500 to-rose-500' },
+        { icon: Target, label: 'Adaptive Assessment', path: `/${locale}/student/adaptive-assessment`, gradient: 'from-emerald-500 to-teal-500' },
         { icon: Target, label: 'Assessments', path: `/${locale}/student/assessments`, gradient: 'from-green-500 to-emerald-500' },
         { icon: Trophy, label: 'Achievements', path: `/${locale}/student/achievements`, gradient: 'from-amber-500 to-yellow-500' },
         { icon: MessageSquare, label: 'Study Chat', path: `/${locale}/student/chat`, gradient: 'from-pink-500 to-rose-500' },

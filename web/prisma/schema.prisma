@@ -91,6 +91,11 @@ model User {
   
   // Revolutionary Adaptive Teaching Engine relationships
   neuralPathways NeuralPathway[]
+  
+  // Phase 17: Advanced Assessment Engine relationships
+  adaptiveAssessments AdaptiveAssessment[]
+  assessmentPredictions AssessmentPrediction[]
+  learningGaps LearningGap[]
   learningDimensions LearningDimensions?
   learningInterventions LearningIntervention[]
   crossDomainConnections CrossDomainConnection[]
@@ -635,6 +640,11 @@ model Subject {
   enrollments StudentEnrollment[]
   successMetrics SuccessMetrics[]
   
+  // Phase 17: Advanced Assessment Engine relationships
+  adaptiveAssessments AdaptiveAssessment[]
+  assessmentPredictions AssessmentPrediction[]
+  learningGaps LearningGap[]
+  
   @@unique([organizationId, name])
   @@index([organizationId, isActive])
 }
@@ -652,6 +662,9 @@ model Topic {
   
   subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   lessons     Lesson[]
+  
+  // Phase 17: Advanced Assessment Engine relationships
+  learningGaps LearningGap[]
   
   @@unique([subjectId, name])
   @@index([subjectId, order])
@@ -871,6 +884,202 @@ model StudentResponse {
 
   
   @@unique([attemptId, questionId])
+}
+
+// --- Phase 17: Advanced Assessment Engine ---
+
+// Adaptive Assessment Sessions
+model AdaptiveAssessment {
+  id              String   @id @default(cuid())
+  studentId       String
+  subjectId       String
+  sessionType     AdaptiveSessionType
+  currentLevel    Int      @default(1)
+  totalQuestions  Int      @default(0)
+  correctAnswers  Int      @default(0)
+  currentDifficulty Float  @default(0.5) // 0.0 to 1.0
+  confidence      Float    @default(0.5) // AI confidence in assessment
+  isActive        Boolean  @default(true)
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject         Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions       AdaptiveQuestion[]
+  responses       AdaptiveResponse[]
+  analytics       AdaptiveAnalytics[]
+  
+  @@index([studentId, isActive])
+  @@index([subjectId, sessionType])
+}
+
+enum AdaptiveSessionType {
+  DIAGNOSTIC      // Initial assessment to determine starting level
+  FORMATIVE       // Ongoing assessment during learning
+  SUMMATIVE       // Final assessment of learning outcomes
+  REMEDIATION     // Assessment focused on weak areas
+  ENRICHMENT      // Assessment for advanced learners
+}
+
+// Adaptive Questions with AI-generated content
+model AdaptiveQuestion {
+  id                String   @id @default(cuid())
+  adaptiveAssessmentId String
+  questionType      AdaptiveQuestionType
+  content           Json     // Flexible content structure
+  difficulty        Float    // 0.0 to 1.0
+  estimatedTime     Int      // Seconds
+  learningObjective String?
+  cognitiveLevel    CognitiveLevel
+  isAnswered        Boolean  @default(false)
+  order             Int
+  createdAt         DateTime @default(now())
+  
+  adaptiveAssessment AdaptiveAssessment @relation(fields: [adaptiveAssessmentId], references: [id], onDelete: Cascade)
+  responses          AdaptiveResponse[]
+  
+  @@index([adaptiveAssessmentId, order])
+}
+
+enum AdaptiveQuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_IN_BLANK
+  SHORT_ANSWER
+  ESSAY
+  MATHEMATICAL
+  CODE_EXECUTION
+  SIMULATION
+  AUDIO_RESPONSE
+  VISUAL_ANALYSIS
+  INTERACTIVE_DEMO
+}
+
+enum CognitiveLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
+}
+
+// Student responses to adaptive questions
+model AdaptiveResponse {
+  id                String   @id @default(cuid())
+  adaptiveAssessmentId String
+  questionId        String
+  answer            Json     // Flexible answer structure
+  isCorrect         Boolean?
+  confidence        Float?   // Student's confidence in answer
+  timeSpent         Int      // Seconds
+  hintsUsed         Int      @default(0)
+  attempts          Int      @default(1)
+  aiFeedback        String?  @db.Text
+  createdAt         DateTime @default(now())
+  
+  adaptiveAssessment AdaptiveAssessment @relation(fields: [adaptiveAssessmentId], references: [id], onDelete: Cascade)
+  question           AdaptiveQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@unique([adaptiveAssessmentId, questionId])
+}
+
+// Advanced Assessment Analytics
+model AdaptiveAnalytics {
+  id                String   @id @default(cuid())
+  adaptiveAssessmentId String
+  metricType        AnalyticsMetricType
+  value             Float
+  metadata          Json?    // Additional context data
+  timestamp         DateTime @default(now())
+  
+  adaptiveAssessment AdaptiveAssessment @relation(fields: [adaptiveAssessmentId], references: [id], onDelete: Cascade)
+  
+  @@index([adaptiveAssessmentId, metricType])
+}
+
+enum AnalyticsMetricType {
+  LEARNING_VELOCITY
+  RETENTION_RATE
+  ENGAGEMENT_SCORE
+  CONFIDENCE_LEVEL
+  DIFFICULTY_ADJUSTMENT
+  MASTERY_PROGRESSION
+  TIME_EFFICIENCY
+  ERROR_PATTERN_ANALYSIS
+}
+
+// Assessment Performance Predictions
+model AssessmentPrediction {
+  id                String   @id @default(cuid())
+  studentId         String
+  subjectId         String
+  predictionType    PredictionType
+  predictedScore    Float
+  confidence        Float
+  factors           Json     // Factors influencing prediction
+  actualScore       Float?   // For validation
+  accuracy          Float?   // Prediction accuracy
+  createdAt         DateTime @default(now())
+  validatedAt       DateTime?
+  
+  student           User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject           Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, predictionType])
+  @@index([subjectId, createdAt])
+}
+
+enum PredictionType {
+  ASSESSMENT_SCORE
+  LEARNING_OUTCOME
+  ENGAGEMENT_LEVEL
+  COMPLETION_PROBABILITY
+  DIFFICULTY_LEVEL
+  TIME_TO_MASTERY
+}
+
+// Learning Gap Analysis
+model LearningGap {
+  id                String   @id @default(cuid())
+  studentId         String
+  subjectId         String
+  topicId           String?
+  gapType           GapType
+  severity          GapSeverity
+  description       String   @db.Text
+  recommendedActions Json    // AI-generated recommendations
+  isResolved        Boolean  @default(false)
+  resolvedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  student           User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject           Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic             Topic?   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, isResolved])
+  @@index([subjectId, gapType])
+}
+
+enum GapType {
+  CONCEPTUAL_UNDERSTANDING
+  PROCEDURAL_KNOWLEDGE
+  PROBLEM_SOLVING
+  CRITICAL_THINKING
+  APPLICATION_SKILLS
+  RETENTION_ISSUES
+  ENGAGEMENT_DROP
+  TIME_MANAGEMENT
+}
+
+enum GapSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 // Failure analysis for adaptive teaching
