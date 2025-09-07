@@ -536,6 +536,11 @@ model FailureAnalysis {
 - **Interactive Simulations**: Physics simulations, math graphing
 - **Text-to-Speech**: Accessible audio explanations
 - **Code Execution**: In-browser coding environments
+- **3D visualization tools**: for geometry and science Three.js,WebGL,Babylon.js
+- **AR/VR integration**: for immersive learning AR.js,A-Frame, MindAR, Three.js, WebXR Device API
+- **optional: Voice/video AI tutor**: using TTS + avatars.
+ 
+ 
 
 #### Content Generation Engine
 ```typescript

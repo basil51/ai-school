@@ -5,17 +5,55 @@ import { locales } from "./lib/i18n";
 
 // Get the preferred locale from Accept-Language header
 function getLocale(request: NextRequest): string {
+  // Default to English to prevent unwanted language switching
+  // Only use Arabic if explicitly requested via Accept-Language header
+  // and this is an initial page load (no referer or root path)
   const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage?.includes('ar')) {
-    return 'ar';
+  const referer = request.headers.get('referer');
+  const pathname = request.nextUrl.pathname;
+  
+  // If this is an initial page load (no referer or root path)
+  if (!referer || pathname === '/' || pathname === '') {
+    if (acceptLanguage?.includes('ar')) {
+      return 'ar';
+    }
   }
+  
   return 'en'; // default to English
+}
+
+// Role-based route mapping
+const roleBasedRoutes = {
+  student: ['/student', '/shared'],
+  teacher: ['/teacher', '/shared'],
+  admin: ['/admin', '/shared'],
+  super_admin: ['/super-admin', '/admin', '/shared'],
+  guardian: ['/guardian', '/shared']
+};
+
+// Get role-specific dashboard path
+function getRoleDashboard(role: string, locale: string): string {
+  switch (role) {
+    case 'student': return `/${locale}/student/dashboard`;
+    case 'teacher': return `/${locale}/teacher/dashboard`;
+    case 'admin': return `/${locale}/admin/dashboard`;
+    case 'super_admin': return `/${locale}/super-admin/dashboard`;
+    case 'guardian': return `/${locale}/guardian/dashboard`;
+    default: return `/${locale}/student/dashboard`;
+  }
+}
+
+// Check if user has access to a specific route
+function hasRoleAccess(userRole: string, pathname: string): boolean {
+  const allowedRoutes = roleBasedRoutes[userRole as keyof typeof roleBasedRoutes] || [];
+  return allowedRoutes.some(route => pathname.includes(route));
 }
 
 // Combine auth middleware with tenant middleware and locale handling
 export default withAuth(
   async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const token = (request as any).nextauth?.token;
     
     // Check if there is any supported locale in the pathname
     const pathnameHasLocale = locales.some(
@@ -29,11 +67,46 @@ export default withAuth(
       return await tenantMiddleware(request);
     }
 
-    // Redirect if there is no locale
+    // Redirect if there is no locale (only for root paths, not for navigation)
     if (!pathnameHasLocale) {
-      const locale = getLocale(request);
-      const newUrl = new URL(`/${locale}${pathname}`, request.url);
-      return NextResponse.redirect(newUrl);
+      // Only redirect if this is a root path or initial load
+      // Don't redirect for internal navigation
+      const isRootPath = pathname === '/' || pathname === '';
+      const hasReferer = request.headers.get('referer');
+      
+      if (isRootPath || !hasReferer) {
+        const locale = getLocale(request);
+        const newUrl = new URL(`/${locale}${pathname}`, request.url);
+        return NextResponse.redirect(newUrl);
+      }
+    }
+
+    // Extract locale from pathname
+    const locale = pathname.split('/')[1];
+    
+    // Role-based access control for authenticated users
+    if (token && token.role) {
+      const userRole = token.role as string;
+      
+      // Handle root dashboard redirects
+      if (pathname === `/${locale}/dashboard` || pathname === `/${locale}/dashboard_new`) {
+        const roleDashboard = getRoleDashboard(userRole, locale);
+        return NextResponse.redirect(new URL(roleDashboard, request.url));
+      }
+      
+      // Check role-based access for protected routes
+      if (pathname.includes('/student') || 
+          pathname.includes('/teacher') || 
+          pathname.includes('/admin') || 
+          pathname.includes('/super-admin') ||
+          pathname.includes('/guardian')) {
+        
+        if (!hasRoleAccess(userRole, pathname)) {
+          // Redirect to user's appropriate dashboard if they don't have access
+          const roleDashboard = getRoleDashboard(userRole, locale);
+          return NextResponse.redirect(new URL(roleDashboard, request.url));
+        }
+      }
     }
 
     // Apply tenant isolation
@@ -47,14 +120,17 @@ export default withAuth(
         // Allow public paths
         if (pathname.startsWith('/api/auth') || 
             pathname.includes('/login') ||
+            pathname.includes('/unsubscribe-success') ||
             pathname.match(/^\/(en|ar)(\/login)?$/)) {
           return true;
         }
 
         // Require authentication for protected paths
-        if (pathname.includes('/dashboard') || 
+        if (pathname.includes('/student') || 
+            pathname.includes('/teacher') || 
             pathname.includes('/admin') || 
             pathname.includes('/super-admin') ||
+            pathname.includes('/guardian') ||
             pathname.includes('/tutor')) {
           return !!token;
         }

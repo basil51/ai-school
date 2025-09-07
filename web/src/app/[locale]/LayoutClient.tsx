@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import Aside from '@/components/layout/Aside';
 import Topbar from "@/components/layout/Topbar";
 import Footer from '@/components/layout/Footer';
-import NavigationTabs from '@/components/layout/NavigationTabs';
 
 interface LayoutClientProps {
   children: React.ReactNode;
@@ -14,10 +13,9 @@ interface LayoutClientProps {
 }
 
 export default function LayoutClient({ children, user, locale }: LayoutClientProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarHovered, setSidebarHovered] = useState(false);
   const { data: session, status } = useSession();
-
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   // Use session data if available, fallback to server-side user data
   const currentUser = session?.user || user;
   
@@ -28,7 +26,7 @@ export default function LayoutClient({ children, user, locale }: LayoutClientPro
     avatar: currentUser.name?.charAt(0).toUpperCase() || 'U',
     organization: (currentUser as any).organizationId || 'Default Organization'
   } : null;
-
+  
   // Show loading state while session is being determined
   if (status === 'loading') {
     return (
@@ -43,40 +41,33 @@ export default function LayoutClient({ children, user, locale }: LayoutClientPro
     );
   }
 
-  return (
-    <div className='flex min-h-screen'>
-      {/* Sidebar - Fixed position, covers full height */}
-      {transformedUser && (
+  return (   
+    <div className="h-screen flex flex-col bg-gray-50">
+      <Topbar               
+        sidebarOpen={sidebarOpen}
+        onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+      <div className="flex flex-1 pt-16">
+        {transformedUser && ( 
         <Aside 
-          sidebarOpen={sidebarOpen}
-          sidebarHovered={sidebarHovered}
           currentUser={transformedUser}
-          onSidebarHover={setSidebarHovered}
+          sidebarOpen={sidebarOpen}
+          sidebarExpanded={sidebarExpanded}
+          onSidebarExpand={setSidebarExpanded}
         />
-      )}
-
-      {/* Main content area - positioned to the right of sidebar */}
-      <div className="flex flex-col flex-1 min-h-screen transition-all duration-300">
-        {/* Topbar - takes remaining width */}
-        <Topbar />
-        
-        {/* Navigation Tabs - Only show when user is logged in */}
-        {transformedUser && (
-          <NavigationTabs 
-            userRole={transformedUser.role} 
-          />
         )}
-        
-        {/* Main Content Area */}
-        <main className="flex-1 relative">
-          <div className="container mx-auto px-4 py-6 max-w-7xl">
-            {children}
-          </div>
+        {/* Main content area - positioned to the right of sidebar */}
+        <main className={`flex-1 transition-all duration-300 ${
+                  sidebarOpen ? (sidebarExpanded ? 'ml-64' : 'ml-24') : 'ml-0'
+                }`}>
+          <div className="h-full overflow-y-auto">        
+            <div className="p-6">
+              {children}
+            </div>
+              <Footer />
+          </div>        
         </main>
-        
-        {/* Footer */}
-        <Footer />
       </div>
-    </div>
+    </div>  
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from 'react';
 import { 
   Brain, Send, Mic, Camera, Paperclip, Volume2, 
@@ -339,7 +340,7 @@ const AITeacherPage = () => {
             {/* Learning Progress */}
             <div className="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-xl p-4 text-white">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Today&apos;s Progress</h3>
+                <h3 className="font-semibold">Today's Progress</h3>
                 <Star className="w-5 h-5" />
               </div>
               

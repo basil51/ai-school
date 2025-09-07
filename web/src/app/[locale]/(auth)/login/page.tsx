@@ -30,6 +30,8 @@ export default function Login() {
       setError(dict?.auth?.invalidCredentials || "Invalid email or password");
       setLoading(false);
     } else {
+      // Get user role from the result to redirect to appropriate dashboard
+      // The middleware will handle the role-based redirect
       router.push(`/${locale}/dashboard`);
     }
   };

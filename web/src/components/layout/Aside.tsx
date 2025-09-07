@@ -1,78 +1,77 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, BookOpen, Brain, Trophy, MessageSquare, 
   BarChart3, Users, Settings, School, 
   Sparkles, Target, Zap, BookMarked, ClipboardCheck,
-  Video, Headphones, Eye, PenTool
+  Video, Headphones, Eye, PenTool, FileText
 } from 'lucide-react';
 
 interface AsideProps {
-  sidebarOpen: boolean;
-  sidebarHovered: boolean;
   currentUser: {
     name: string;
     role: string;
     avatar: string;
     organization: string;
   };
-  onSidebarHover: (hovered: boolean) => void;
+  sidebarOpen: boolean;
+  sidebarExpanded: boolean;
+  onSidebarExpand: (expanded: boolean) => void;
 }
 
-
-
-export default function Aside({
-  sidebarOpen,
-  sidebarHovered,
-  currentUser,
-  onSidebarHover
-}: AsideProps) {
+export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSidebarExpand }: AsideProps) {
   const pathname = usePathname();
+  
+  // Extract locale from current pathname
+  const locale = pathname.split('/')[1] || 'en';
+  
   // Role-based navigation items
   const getNavigationItems = (role: string) => {
-    const commonItems = [
-      { icon: Home, label: 'Dashboard', path: '/dashboard', gradient: 'from-blue-500 to-cyan-500' },
-    ];
-
     const roleSpecificItems = {
       'super_admin': [
-        { icon: School, label: 'Organizations', path: '/super-admin/organizations', gradient: 'from-purple-500 to-pink-500' },
-        { icon: Users, label: 'All Users', path: '/users', gradient: 'from-green-500 to-emerald-500' },
-        { icon: BarChart3, label: 'Global Analytics', path: '/analytics', gradient: 'from-orange-500 to-red-500' },
-        { icon: Settings, label: 'System Settings', path: '/settings', gradient: 'from-gray-500 to-gray-700' },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/super-admin/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: School, label: 'Organizations', path: `/${locale}/super-admin/organizations`, gradient: 'from-purple-500 to-pink-500' },
+        { icon: Users, label: 'All Users', path: `/${locale}/super-admin/users`, gradient: 'from-green-500 to-emerald-500' },
+        { icon: BarChart3, label: 'Global Analytics', path: `/${locale}/super-admin/analytics`, gradient: 'from-orange-500 to-red-500' },
+        { icon: Settings, label: 'System Settings', path: `/${locale}/super-admin/settings`, gradient: 'from-gray-500 to-gray-700' },
       ],
       'admin': [
-        { icon: Users, label: 'Manage Users', path: '/users', gradient: 'from-green-500 to-emerald-500' },
-        { icon: BookOpen, label: 'Curriculum', path: '/curriculum', gradient: 'from-violet-500 to-purple-500' },
-        { icon: BarChart3, label: 'School Analytics', path: '/analytics', gradient: 'from-orange-500 to-red-500' },
-        { icon: Settings, label: 'School Settings', path: '/settings', gradient: 'from-gray-500 to-gray-700' },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/admin/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: Users, label: 'Manage Users', path: `/${locale}/admin/users`, gradient: 'from-green-500 to-emerald-500' },
+        { icon: BookOpen, label: 'Curriculum', path: `/${locale}/admin/curriculum`, gradient: 'from-violet-500 to-purple-500' },
+        { icon: BarChart3, label: 'School Analytics', path: `/${locale}/admin/analytics`, gradient: 'from-orange-500 to-red-500' },
+        { icon: Settings, label: 'School Settings', path: `/${locale}/admin/settings`, gradient: 'from-gray-500 to-gray-700' },
       ],
       'teacher': [
-        { icon: BookOpen, label: 'My Subjects', path: '/subjects', gradient: 'from-violet-500 to-purple-500' },
-        { icon: ClipboardCheck, label: 'Assessments', path: '/assessments', gradient: 'from-yellow-500 to-orange-500' },
-        { icon: Users, label: 'My Students', path: '/students', gradient: 'from-green-500 to-teal-500' },
-        { icon: BarChart3, label: 'Class Progress', path: '/progress', gradient: 'from-pink-500 to-rose-500' },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/teacher/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: BookOpen, label: 'My Subjects', path: `/${locale}/teacher/curriculum`, gradient: 'from-violet-500 to-purple-500' },
+        { icon: ClipboardCheck, label: 'Assessments', path: `/${locale}/teacher/assessments`, gradient: 'from-yellow-500 to-orange-500' },
+        { icon: Users, label: 'My Students', path: `/${locale}/teacher/students`, gradient: 'from-green-500 to-teal-500' },
+        { icon: BarChart3, label: 'Class Progress', path: `/${locale}/teacher/progress`, gradient: 'from-pink-500 to-rose-500' },
+        { icon: FileText, label: 'Upload Content', path: `/${locale}/teacher/rag`, gradient: 'from-indigo-500 to-purple-500' },
       ],
       'student': [
-        { icon: Brain, label: 'AI Teacher', path: '/ai-teacher', gradient: 'from-violet-600 to-indigo-600', glow: true },
-        { icon: BookMarked, label: 'My Courses', path: '/courses', gradient: 'from-blue-500 to-purple-500' },
-        { icon: Target, label: 'Practice', path: '/practice', gradient: 'from-green-500 to-emerald-500' },
-        { icon: ClipboardCheck, label: 'Assessments', path: '/assessments', gradient: 'from-yellow-500 to-orange-500' },
-        { icon: Trophy, label: 'Achievements', path: '/achievements', gradient: 'from-amber-500 to-yellow-500' },
-        { icon: MessageSquare, label: 'Study Chat', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
-        { icon: BarChart3, label: 'My Progress', path: '/progress', gradient: 'from-cyan-500 to-blue-500' },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/student/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: Brain, label: 'AI Teacher', path: `/${locale}/student/ai-teacher`, gradient: 'from-violet-600 to-indigo-600', glow: true },
+        { icon: BookMarked, label: 'My Courses', path: `/${locale}/student/courses`, gradient: 'from-blue-500 to-purple-500' },
+        { icon: Target, label: 'Assessments', path: `/${locale}/student/assessments`, gradient: 'from-green-500 to-emerald-500' },
+        { icon: Trophy, label: 'Achievements', path: `/${locale}/student/achievements`, gradient: 'from-amber-500 to-yellow-500' },
+        { icon: MessageSquare, label: 'Study Chat', path: `/${locale}/student/chat`, gradient: 'from-pink-500 to-rose-500' },
+        { icon: BarChart3, label: 'My Progress', path: `/${locale}/student/progress`, gradient: 'from-cyan-500 to-blue-500' },
+        { icon: Sparkles, label: 'Adaptive Teaching', path: `/${locale}/student/adaptive-teaching`, gradient: 'from-purple-500 to-pink-500' },
       ],
       'guardian': [
-        { icon: Users, label: 'My Children', path: '/children', gradient: 'from-green-500 to-emerald-500' },
-        { icon: BarChart3, label: 'Progress Reports', path: '/reports', gradient: 'from-blue-500 to-purple-500' },
-        { icon: MessageSquare, label: 'Teacher Chat', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/guardian/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: Users, label: 'My Children', path: `/${locale}/guardian/children`, gradient: 'from-green-500 to-emerald-500' },
+        { icon: BarChart3, label: 'Progress Reports', path: `/${locale}/guardian/reports`, gradient: 'from-blue-500 to-purple-500' },
+        { icon: MessageSquare, label: 'Teacher Chat', path: `/${locale}/guardian/chat`, gradient: 'from-pink-500 to-rose-500' },
       ],
     };
 
-    return [...commonItems, ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || [])];
+    return roleSpecificItems[role as keyof typeof roleSpecificItems] || [];
   };
 
   const navigationItems = getNavigationItems(currentUser.role);
@@ -84,34 +83,16 @@ export default function Aside({
     { icon: PenTool, label: 'Interactive', active: true },
     { icon: Video, label: 'Video', active: false },
   ];
-
-  return (
+  
+  return (   
     <aside 
-      className={`bg-white/80 backdrop-blur-lg border-r border-white/20 shadow-xl transition-all duration-300 z-40 ${
-        sidebarOpen ? (sidebarHovered ? 'w-64' : 'w-24') : 'w-0 overflow-hidden'
+      className={`fixed left-0 top-16 bottom-0 bg-white/80 border-r border-white/20 shadow-xl transition-all duration-300 z-40 ${
+        sidebarOpen ? (sidebarExpanded ? 'w-64' : 'w-24') : 'w-0 overflow-hidden'
       }`}
-      onMouseEnter={() => onSidebarHover(true)}
-      onMouseLeave={() => onSidebarHover(false)}
+      onMouseEnter={() => onSidebarExpand(true)}
+      onMouseLeave={() => onSidebarExpand(false)}
     >
       <div className="flex flex-col h-full">
-        {/* Logo in Sidebar */}
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-blue-600 rounded-lg blur-lg opacity-50 animate-pulse"></div>
-                <div className="relative bg-gradient-to-r from-violet-600 to-blue-600 p-2 rounded-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              {sidebarHovered && (
-                <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
-                  AI Academy
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -138,7 +119,7 @@ export default function Aside({
                   <item.icon className="w-4 h-4 text-white" />
                 </div>
                 <span className={`relative font-medium transition-all duration-300 ${
-                  sidebarHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'
+                  sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'
                 } ${
                   isSelected
                     ? (item as any).glow
@@ -148,7 +129,7 @@ export default function Aside({
                 }`}>
                   {item.label}
                 </span>
-                {isSelected && sidebarHovered && (
+                {isSelected && sidebarExpanded && (
                   <Sparkles className="w-4 h-4 text-violet-600 ml-auto transition-all duration-300" />
                 )}
               </Link>
@@ -157,7 +138,7 @@ export default function Aside({
         </nav>
 
         {/* Learning Mode Selector (for students) */}
-        {currentUser.role === 'student' && sidebarHovered && (
+        {currentUser.role === 'student' && sidebarExpanded && (
           <div className="p-4 border-t border-gray-100">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Learning Modes</p>
             <div className="grid grid-cols-2 gap-2">
@@ -181,7 +162,7 @@ export default function Aside({
         )}
 
         {/* Daily Motivation (for students) */}
-        {currentUser.role === 'student' && sidebarHovered && (
+        {currentUser.role === 'student' && sidebarExpanded && (
           <div className="p-4 m-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white">
             <p className="text-xs font-semibold mb-1 opacity-90">Today&apos;s Goal</p>
             <p className="text-sm font-bold">Complete 3 lessons to unlock a new badge! 🎯</p>
