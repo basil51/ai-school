@@ -60,11 +60,11 @@ export default function AdaptiveAssessmentInterface({
   const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
 
   // Timer effect
   useEffect(() => {
-    if (!isPaused && currentQuestion) {
+    if (!isPaused && currentQuestion && questionStartTime > 0) {
       const timer = setInterval(() => {
         setTimeSpent(Math.floor((Date.now() - questionStartTime) / 1000));
       }, 1000);
@@ -76,6 +76,13 @@ export default function AdaptiveAssessmentInterface({
   useEffect(() => {
     loadNextQuestion();
   }, []);
+
+  // Initialize timer on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentQuestion && questionStartTime === 0) {
+      setQuestionStartTime(Date.now());
+    }
+  }, [currentQuestion, questionStartTime]);
 
   const loadNextQuestion = async () => {
     setIsLoading(true);
@@ -191,9 +198,9 @@ export default function AdaptiveAssessmentInterface({
       case 'MULTIPLE_CHOICE':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question}</p>
+            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
             <div className="space-y-2">
-              {content.options?.map((option: string, index: number) => (
+              {(content.options || []).map((option: string, index: number) => (
                 <label key={index} className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
@@ -213,7 +220,7 @@ export default function AdaptiveAssessmentInterface({
       case 'SHORT_ANSWER':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question}</p>
+            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
             <textarea
               value={currentAnswer || ''}
               onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -227,7 +234,7 @@ export default function AdaptiveAssessmentInterface({
       case 'MATHEMATICAL':
         return (
           <div className="space-y-4">
-            <div className="text-lg font-medium" dangerouslySetInnerHTML={{ __html: content.question }} />
+            <div className="text-lg font-medium" dangerouslySetInnerHTML={{ __html: content.question || content.text || 'Question not available' }} />
             <div className="space-y-2">
               <input
                 type="text"
@@ -253,7 +260,7 @@ export default function AdaptiveAssessmentInterface({
       case 'TRUE_FALSE':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question}</p>
+            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
             <div className="flex space-x-4">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -284,7 +291,7 @@ export default function AdaptiveAssessmentInterface({
       default:
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question || 'Question content not available'}</p>
+            <p className="text-lg font-medium">{content.question || content.text || 'Question content not available'}</p>
             <textarea
               value={currentAnswer || ''}
               onChange={(e) => setCurrentAnswer(e.target.value)}
