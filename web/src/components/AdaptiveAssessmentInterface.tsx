@@ -61,9 +61,12 @@ export default function AdaptiveAssessmentInterface({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
+  const [isClient, setIsClient] = useState(false);
 
-  // Timer effect
+  // Timer effect - only run on client side
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     if (!isPaused && currentQuestion && questionStartTime > 0) {
       const timer = setInterval(() => {
         setTimeSpent(Math.floor((Date.now() - questionStartTime) / 1000));
@@ -71,6 +74,11 @@ export default function AdaptiveAssessmentInterface({
       return () => clearInterval(timer);
     }
   }, [isPaused, currentQuestion, questionStartTime]);
+
+  // Set client-side flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Load first question when component mounts
   useEffect(() => {
@@ -193,26 +201,70 @@ export default function AdaptiveAssessmentInterface({
     if (!currentQuestion) return null;
 
     const { content, questionType } = currentQuestion;
+    
+    // Debug logging to understand the content structure
+    console.log('Question content:', content);
+    console.log('Question type:', questionType);
+    
+    // Ensure content is properly structured
+    if (!content || typeof content !== 'object') {
+      return (
+        <div className="space-y-4">
+          <p className="text-lg font-medium">Question content is not available.</p>
+        </div>
+      );
+    }
+
+    // Additional safety check - ensure we don't render the entire content object
+    if (Array.isArray(content)) {
+      return (
+        <div className="space-y-4">
+          <p className="text-lg font-medium">Invalid question format received.</p>
+        </div>
+      );
+    }
 
     switch (questionType) {
       case 'MULTIPLE_CHOICE':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
+            <p className="text-lg font-medium">
+              {typeof content.question === 'string' ? content.question : 
+               typeof content.text === 'string' ? content.text : 
+               typeof content.prompt === 'string' ? content.prompt :
+               'Question not available'}
+            </p>
             <div className="space-y-2">
-              {(content.options || []).map((option: string, index: number) => (
-                <label key={index} className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="answer"
-                    value={option}
-                    checked={currentAnswer === option}
-                    onChange={(e) => setCurrentAnswer(e.target.value)}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span>{option}</span>
-                </label>
-              ))}
+              {(content.options || []).map((option: any, index: number) => {
+                // Handle both string options and object options
+                let optionText = '';
+                let optionValue = '';
+                
+                if (typeof option === 'string') {
+                  optionText = option;
+                  optionValue = option;
+                } else if (typeof option === 'object' && option !== null) {
+                  optionText = option.optionText || option.text || option.answer || option.label || JSON.stringify(option);
+                  optionValue = option.optionId || option.value || option.id || optionText;
+                } else {
+                  optionText = String(option);
+                  optionValue = String(option);
+                }
+                
+                return (
+                  <label key={index} className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="answer"
+                      value={optionValue}
+                      checked={currentAnswer === optionValue}
+                      onChange={(e) => setCurrentAnswer(e.target.value)}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <span>{optionText}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         );
@@ -220,7 +272,12 @@ export default function AdaptiveAssessmentInterface({
       case 'SHORT_ANSWER':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
+            <p className="text-lg font-medium">
+              {typeof content.question === 'string' ? content.question : 
+               typeof content.text === 'string' ? content.text : 
+               typeof content.prompt === 'string' ? content.prompt :
+               'Question not available'}
+            </p>
             <textarea
               value={currentAnswer || ''}
               onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -232,9 +289,13 @@ export default function AdaptiveAssessmentInterface({
         );
 
       case 'MATHEMATICAL':
+        const mathQuestion = typeof content.question === 'string' ? content.question : 
+                           typeof content.text === 'string' ? content.text : 
+                           typeof content.prompt === 'string' ? content.prompt :
+                           'Question not available';
         return (
           <div className="space-y-4">
-            <div className="text-lg font-medium" dangerouslySetInnerHTML={{ __html: content.question || content.text || 'Question not available' }} />
+            <div className="text-lg font-medium" dangerouslySetInnerHTML={{ __html: mathQuestion }} />
             <div className="space-y-2">
               <input
                 type="text"
@@ -260,7 +321,12 @@ export default function AdaptiveAssessmentInterface({
       case 'TRUE_FALSE':
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question || content.text || 'Question not available'}</p>
+            <p className="text-lg font-medium">
+              {typeof content.question === 'string' ? content.question : 
+               typeof content.text === 'string' ? content.text : 
+               typeof content.prompt === 'string' ? content.prompt :
+               'Question not available'}
+            </p>
             <div className="flex space-x-4">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -291,7 +357,12 @@ export default function AdaptiveAssessmentInterface({
       default:
         return (
           <div className="space-y-4">
-            <p className="text-lg font-medium">{content.question || content.text || 'Question content not available'}</p>
+            <p className="text-lg font-medium">
+              {typeof content.question === 'string' ? content.question : 
+               typeof content.text === 'string' ? content.text : 
+               typeof content.prompt === 'string' ? content.prompt :
+               'Question content not available'}
+            </p>
             <textarea
               value={currentAnswer || ''}
               onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -364,7 +435,7 @@ export default function AdaptiveAssessmentInterface({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>{timeSpent}s</span>
+                <span>{isClient ? `${timeSpent}s` : '0s'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Lightbulb className="w-4 h-4" />
@@ -475,7 +546,7 @@ export default function AdaptiveAssessmentInterface({
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">
-                  {timeSpent}s
+                  {isClient ? `${timeSpent}s` : '0s'}
                 </div>
                 <div className="text-sm text-gray-600">Time</div>
               </div>

@@ -311,7 +311,15 @@ export class AdaptiveAssessmentEngine {
     3. Is engaging and educational
     4. Includes all necessary components (question text, options if multiple choice, etc.)
     
-    Respond in JSON format with the complete question structure.
+    IMPORTANT: Respond in JSON format with the following structure:
+    {
+      "question": "The question text here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": "Option A",
+      "explanation": "Explanation of the correct answer"
+    }
+    
+    For multiple choice questions, ensure options are simple strings, not objects.
     `;
 
     try {
@@ -321,7 +329,25 @@ export class AdaptiveAssessmentEngine {
         temperature: 0.8,
       });
 
-      return JSON.parse(response.choices[0].message.content || '{}');
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      // Validate and sanitize the result
+      if (!result.question && !result.text && !result.prompt) {
+        throw new Error('No question text found in AI response');
+      }
+      
+      // Ensure options are strings if they exist
+      if (result.options && Array.isArray(result.options)) {
+        result.options = result.options.map((option: any) => {
+          if (typeof option === 'string') return option;
+          if (typeof option === 'object' && option !== null) {
+            return option.optionText || option.text || option.answer || option.label || JSON.stringify(option);
+          }
+          return String(option);
+        });
+      }
+      
+      return result;
     } catch (error) {
       console.error('Error generating question content:', error);
       // Fallback question

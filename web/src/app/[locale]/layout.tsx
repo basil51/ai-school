@@ -15,7 +15,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning={true}>
         <Providers>
           <LayoutClient user={user} locale={locale}>
             {children}
