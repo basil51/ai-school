@@ -5,9 +5,15 @@ import { prisma } from '@/lib/prisma';
 import { toSerializable } from '@/lib/utils';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to prevent build-time errors
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is required');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // POST - Generate questions from lesson content using AI
 export async function POST(request: NextRequest) {
@@ -60,11 +66,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 
-    if (!openai) {
-      return NextResponse.json({ 
-        error: 'OpenAI API not configured' 
-      }, { status: 500 });
-    }
 
     // Generate questions using AI
     const systemPrompt = `You are an expert educational content creator. Generate ${numQuestions} assessment questions based on the provided lesson content.
@@ -112,6 +113,7 @@ ${lesson.content}
 
 Generate ${numQuestions} questions that test understanding of this content.`;
 
+    const openai = getOpenAI();
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.7,

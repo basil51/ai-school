@@ -1,9 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to prevent build-time errors
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is required');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 export interface AdaptiveQuestion {
   id: string;
@@ -264,6 +270,7 @@ export class AdaptiveAssessmentEngine {
     `;
 
     try {
+      const openai = getOpenAI();
       const response = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
@@ -296,68 +303,128 @@ export class AdaptiveAssessmentEngine {
    * Generate question content using AI
    */
   private async generateQuestionContent(params: any): Promise<any> {
+    // Get subject information for better context
+    const subject = await prisma.subject.findUnique({
+      where: { id: this.subjectId },
+      include: { topics: { take: 5 } }
+    });
+
+    const subjectName = subject?.name || 'General';
+    const availableTopics = subject?.topics?.map((t: any) => t.name).join(', ') || 'General topics';
+
     const prompt = `
-    Generate an educational question with the following parameters:
+    You are an expert educational content creator. Generate a high-quality educational question with the following parameters:
     
+    Subject: ${subjectName}
+    Available Topics: ${availableTopics}
     Question Type: ${params.type}
     Difficulty: ${params.difficulty} (0.0 = very easy, 1.0 = very difficult)
     Cognitive Level: ${params.cognitiveLevel}
-    Subject: ${this.subjectId}
     Learning Objective: ${params.learningObjective}
     
-    Create a question that:
-    1. Is appropriate for the difficulty level
-    2. Tests the specified cognitive level
-    3. Is engaging and educational
-    4. Includes all necessary components (question text, options if multiple choice, etc.)
+    Requirements:
+    1. Create a question that is directly related to ${subjectName}
+    2. Use real, educational content - NO made-up technical terms or random words
+    3. Make the question appropriate for the difficulty level
+    4. Test the specified cognitive level (${params.cognitiveLevel})
+    5. Keep the question clear, concise, and educational
+    6. Use proper academic language and terminology
     
-    IMPORTANT: Respond in JSON format with the following structure:
+    IMPORTANT: 
+    - Respond ONLY in JSON format
+    - Do NOT include any text before or after the JSON
+    - Use real educational concepts from ${subjectName}
+    - Avoid any random or nonsensical technical terms
+    
+    JSON Structure:
     {
-      "question": "The question text here",
+      "question": "Clear, educational question about ${subjectName}",
       "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": "Option A",
-      "explanation": "Explanation of the correct answer"
+      "correctAnswer": "The correct option",
+      "explanation": "Educational explanation of why this is correct"
     }
     
     For multiple choice questions, ensure options are simple strings, not objects.
     `;
 
     try {
+      const openai = getOpenAI();
       const response = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
+        temperature: 0.7, // Reduced temperature for more consistent output
+        max_tokens: 1000, // Limit response length
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{}');
+      const content = response.choices[0].message.content || '{}';
+      
+      // Clean the response - remove any text before/after JSON
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const cleanContent = jsonMatch ? jsonMatch[0] : content;
+      
+      const result = JSON.parse(cleanContent);
       
       // Validate and sanitize the result
       if (!result.question && !result.text && !result.prompt) {
         throw new Error('No question text found in AI response');
       }
       
+      // Clean the question text - remove any strange characters or long random strings
+      const questionText = result.question || result.text || result.prompt;
+      const cleanQuestion = this.cleanQuestionText(questionText);
+      
       // Ensure options are strings if they exist
       if (result.options && Array.isArray(result.options)) {
         result.options = result.options.map((option: any) => {
-          if (typeof option === 'string') return option;
+          if (typeof option === 'string') return this.cleanQuestionText(option);
           if (typeof option === 'object' && option !== null) {
-            return option.optionText || option.text || option.answer || option.label || JSON.stringify(option);
+            const optionText = option.optionText || option.text || option.answer || option.label || JSON.stringify(option);
+            return this.cleanQuestionText(optionText);
           }
-          return String(option);
+          return this.cleanQuestionText(String(option));
         });
       }
       
-      return result;
+      return {
+        ...result,
+        question: cleanQuestion
+      };
     } catch (error) {
       console.error('Error generating question content:', error);
-      // Fallback question
+      // Fallback question with subject context
       return {
-        question: 'What is the main concept being tested?',
+        question: `What is a fundamental concept in ${subjectName}?`,
         type: params.type,
         options: ['Option A', 'Option B', 'Option C', 'Option D'],
         correctAnswer: 'Option A',
+        explanation: 'This is a fallback question due to generation error.'
       };
     }
+  }
+
+  /**
+   * Clean question text by removing strange characters and long random strings
+   */
+  private cleanQuestionText(text: string): string {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Remove any text that looks like random technical gibberish
+    // Pattern: long strings of random characters (more than 20 chars with mixed case/numbers)
+    const gibberishPattern = /\b[a-zA-Z0-9]{20,}\b/g;
+    let cleaned = text.replace(gibberishPattern, '[technical term]');
+    
+    // Remove any remaining strange characters but keep normal punctuation
+    cleaned = cleaned.replace(/[^\w\s.,!?;:()\-'"]/g, '');
+    
+    // Clean up multiple spaces
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    
+    // If the text is too short or seems corrupted, return a fallback
+    if (cleaned.length < 10 || cleaned.includes('[technical term]')) {
+      return 'What is the main concept being tested?';
+    }
+    
+    return cleaned;
   }
 
   /**
@@ -383,6 +450,7 @@ export class AdaptiveAssessmentEngine {
     `;
 
     try {
+      const openai = getOpenAI();
       const aiResponse = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
@@ -416,7 +484,7 @@ export class AdaptiveAssessmentEngine {
     if (!assessment) return;
 
     const totalQuestions = assessment.responses.length + 1;
-    const correctAnswers = assessment.responses.filter(r => r.isCorrect).length + (gradingResult.isCorrect ? 1 : 0);
+    const correctAnswers = assessment.responses.filter((r: any) => r.isCorrect).length + (gradingResult.isCorrect ? 1 : 0);
     const accuracy = correctAnswers / totalQuestions;
 
     // Adjust difficulty based on performance
@@ -430,7 +498,7 @@ export class AdaptiveAssessmentEngine {
     // Update confidence based on consistency
     const recentResponses = assessment.responses.slice(-5);
     const recentAccuracy = recentResponses.length > 0 
-      ? recentResponses.filter(r => r.isCorrect).length / recentResponses.length 
+      ? recentResponses.filter((r: any) => r.isCorrect).length / recentResponses.length 
       : 0;
     
     const newConfidence = Math.max(0.1, Math.min(1.0, recentAccuracy));
@@ -461,7 +529,7 @@ export class AdaptiveAssessmentEngine {
 
     const accuracy = assessment.totalQuestions > 0 ? assessment.correctAnswers / assessment.totalQuestions : 0;
     const avgTimeSpent = assessment.responses.length > 0 
-      ? assessment.responses.reduce((sum, r) => sum + r.timeSpent, 0) / assessment.responses.length
+      ? assessment.responses.reduce((sum: number, r: any) => sum + r.timeSpent, 0) / assessment.responses.length
       : 0;
 
     const analytics: AssessmentAnalytics = {

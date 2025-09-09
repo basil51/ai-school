@@ -8,7 +8,7 @@ import {
   BarChart3, Users, Settings, School, 
   Sparkles, Target, Zap, BookMarked, ClipboardCheck,
   Video, Headphones, Eye, PenTool, FileText,
-  Monitor, UserCheck, BrainCircuit
+  Monitor, UserCheck, BrainCircuit, Shield
 } from 'lucide-react';
 
 interface AsideProps {
@@ -42,7 +42,9 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
       'admin': [
         { icon: Home, label: 'Dashboard', path: `/${locale}/admin/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
         { icon: Users, label: 'Manage Users', path: `/${locale}/admin/users`, gradient: 'from-green-500 to-emerald-500' },
+        { icon: Shield, label: 'Guardians', path: `/${locale}/admin/guardians`, gradient: 'from-teal-500 to-cyan-500' },
         { icon: BookOpen, label: 'Curriculum', path: `/${locale}/admin/curriculum`, gradient: 'from-violet-500 to-purple-500' },
+        { icon: ClipboardCheck, label: 'Evaluations', path: `/${locale}/admin/evaluations`, gradient: 'from-yellow-500 to-orange-500' },
         { icon: Monitor, label: 'Smart Learning', path: `/${locale}/admin/smart`, gradient: 'from-indigo-500 to-purple-500' },
         { icon: UserCheck, label: 'Personalization', path: `/${locale}/admin/personalization`, gradient: 'from-pink-500 to-rose-500' },
         { icon: BarChart3, label: 'School Analytics', path: `/${locale}/admin/analytics`, gradient: 'from-orange-500 to-red-500' },

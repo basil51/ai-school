@@ -5,9 +5,15 @@ import { prisma } from '@/lib/prisma';
 import { toSerializable } from '@/lib/utils';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to prevent build-time errors
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is required');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // POST - AI-powered grading of student responses
 export async function POST(request: NextRequest) {
@@ -80,11 +86,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Assessment attempt not found' }, { status: 404 });
     }
 
-    if (!openai) {
-      return NextResponse.json({ 
-        error: 'OpenAI API not configured' 
-      }, { status: 500 });
-    }
 
     // Skip AI grading for multiple choice and true/false (already auto-graded)
     if (['multiple_choice', 'true_false'].includes(question.type)) {
@@ -129,6 +130,7 @@ Return your response as JSON with this structure:
 
 Please grade this response and provide detailed feedback.`;
 
+    const openai = getOpenAI();
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
