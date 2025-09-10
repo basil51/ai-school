@@ -52,6 +52,7 @@
     "d3-contour": "^4.0.2",
     "d3-sankey": "^0.12.3",
     "date-fns": "^4.1.0",
+    "express-rate-limit": "^8.1.0",
     "ioredis": "^5.7.0",
     "jspdf": "^3.0.2",
     "jspdf-autotable": "^5.0.2",
