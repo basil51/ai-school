@@ -306,6 +306,17 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
                       </Link>
                     )}
                     
+                    {['admin', 'teacher', 'super_admin', 'guardian'].includes(userRole) && (
+                      <Link 
+                        href={`/${currentLocale}/analytics`}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <BarChart3 className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm">Advanced Analytics</span>
+                      </Link>
+                    )}
+                    
                     {userRole === 'super_admin' && (
                       <Link 
                         href={`/${currentLocale}/super-admin/organizations`}

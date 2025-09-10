@@ -37,6 +37,7 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: School, label: 'Organizations', path: `/${locale}/super-admin/organizations`, gradient: 'from-purple-500 to-pink-500' },
         { icon: Users, label: 'All Users', path: `/${locale}/super-admin/users`, gradient: 'from-green-500 to-emerald-500' },
         { icon: BarChart3, label: 'Global Analytics', path: `/${locale}/super-admin/analytics`, gradient: 'from-orange-500 to-red-500' },
+        { icon: Target, label: 'Advanced Analytics', path: `/${locale}/analytics`, gradient: 'from-purple-500 to-indigo-500' },
         { icon: Settings, label: 'System Settings', path: `/${locale}/super-admin/settings`, gradient: 'from-gray-500 to-gray-700' },
       ],
       'admin': [
@@ -48,6 +49,7 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: Monitor, label: 'Smart Learning', path: `/${locale}/admin/smart`, gradient: 'from-indigo-500 to-purple-500' },
         { icon: UserCheck, label: 'Personalization', path: `/${locale}/admin/personalization`, gradient: 'from-pink-500 to-rose-500' },
         { icon: BarChart3, label: 'School Analytics', path: `/${locale}/admin/analytics`, gradient: 'from-orange-500 to-red-500' },
+        { icon: Target, label: 'Advanced Analytics', path: `/${locale}/analytics`, gradient: 'from-purple-500 to-indigo-500' },
         { icon: Settings, label: 'School Settings', path: `/${locale}/admin/settings`, gradient: 'from-gray-500 to-gray-700' },
       ],
       'teacher': [
@@ -58,6 +60,7 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: Monitor, label: 'Smart Learning', path: `/${locale}/teacher/smart`, gradient: 'from-indigo-500 to-purple-500' },
         { icon: UserCheck, label: 'Personalization', path: `/${locale}/teacher/personalization`, gradient: 'from-pink-500 to-rose-500' },
         { icon: BarChart3, label: 'Class Progress', path: `/${locale}/teacher/progress`, gradient: 'from-pink-500 to-rose-500' },
+        { icon: Target, label: 'Advanced Analytics', path: `/${locale}/analytics`, gradient: 'from-purple-500 to-indigo-500' },
         { icon: FileText, label: 'Upload Content', path: `/${locale}/teacher/rag`, gradient: 'from-indigo-500 to-purple-500' },
       ],
       'student': [
@@ -77,6 +80,7 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: Home, label: 'Dashboard', path: `/${locale}/guardian/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
         { icon: Users, label: 'My Children', path: `/${locale}/guardian/children`, gradient: 'from-green-500 to-emerald-500' },
         { icon: BarChart3, label: 'Progress Reports', path: `/${locale}/guardian/reports`, gradient: 'from-blue-500 to-purple-500' },
+        { icon: Target, label: 'Advanced Analytics', path: `/${locale}/analytics`, gradient: 'from-purple-500 to-indigo-500' },
         { icon: MessageSquare, label: 'Teacher Chat', path: `/${locale}/guardian/chat`, gradient: 'from-pink-500 to-rose-500' },
       ],
     };

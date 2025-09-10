@@ -101,6 +101,16 @@ model User {
   crossDomainConnections CrossDomainConnection[]
   emotionalStates EmotionalState[]
   predictiveAnalytics PredictiveAnalytics[]
+  
+  // Phase 18: Advanced Analytics & Reporting relationships
+  learningPatterns LearningPattern[]
+  learningCurves LearningCurve[]
+  knowledgeRetention KnowledgeRetention[]
+  engagementOptimizations EngagementOptimization[]
+  guardianInsights GuardianInsight[] @relation("GuardianInsight")
+  studentInsights GuardianInsight[] @relation("StudentInsight")
+  performanceKPIs PerformanceKPI[]
+  analyticsDashboards AnalyticsDashboard[]
 }
 
 model Account {
@@ -644,6 +654,11 @@ model Subject {
   adaptiveAssessments AdaptiveAssessment[]
   assessmentPredictions AssessmentPrediction[]
   learningGaps LearningGap[]
+  
+  // Phase 18: Advanced Analytics & Reporting relationships
+  learningCurves LearningCurve[]
+  knowledgeRetention KnowledgeRetention[]
+  performanceKPIs PerformanceKPI[]
   
   @@unique([organizationId, name])
   @@index([organizationId, isActive])
@@ -1328,4 +1343,267 @@ model PredictiveAnalytics {
   
   @@index([studentId, predictionType])
   @@index([studentId, predictedAt])
+}
+
+// --- Phase 18: Advanced Analytics & Reporting Models ---
+
+// Learning pattern analysis for deep insights
+model LearningPattern {
+  id                    String    @id @default(cuid())
+  studentId             String
+  patternType           LearningPatternType
+  conceptualStrengths   String[]  // Areas of conceptual understanding
+  proceduralStrengths   String[]  // Areas of procedural knowledge
+  commonMistakes        String[]  // Frequently made errors
+  effectiveStrategies   Json      // TeachingStrategy[] that work well
+  optimalStudyTimes     String[]  // Best times for learning
+  preferredContentTypes Json      // ContentType[] preferences
+  learningVelocity      Float     @default(0.5) // Speed of learning
+  retentionRate         Float     @default(0.5) // Knowledge retention
+  engagementPattern     Json      // Engagement patterns over time
+  difficultyPreference  Float     @default(0.5) // Preferred difficulty level
+  socialLearningStyle   Json      // Collaborative vs individual preferences
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
+  
+  student               User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, patternType])
+  @@index([studentId, patternType])
+}
+
+enum LearningPatternType {
+  COGNITIVE_PROCESSING
+  LEARNING_STYLE
+  ENGAGEMENT_PATTERN
+  RETENTION_PATTERN
+  DIFFICULTY_PREFERENCE
+  SOCIAL_LEARNING
+  TEMPORAL_PATTERN
+  CONTENT_PREFERENCE
+}
+
+// Comprehensive learning curve analysis
+model LearningCurve {
+  id                String    @id @default(cuid())
+  studentId         String
+  subjectId         String
+  topicId           String?
+  curveType         CurveType
+  dataPoints        Json      // Array of {time, mastery, difficulty} points
+  slope             Float     // Learning velocity
+  plateauPoints     Json      // Points where learning plateaus
+  accelerationZones Json      // Areas of rapid learning
+  difficultySpikes  Json      // Points of increased difficulty
+  masteryThreshold  Float     @default(0.8) // Threshold for mastery
+  predictedCompletion DateTime? // Predicted completion time
+  confidence        Float     @default(0.5) // AI confidence in curve
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject           Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, subjectId])
+  @@index([studentId, curveType])
+}
+
+enum CurveType {
+  MASTERY_CURVE
+  ENGAGEMENT_CURVE
+  DIFFICULTY_CURVE
+  RETENTION_CURVE
+  VELOCITY_CURVE
+  COMPREHENSION_CURVE
+}
+
+// Knowledge retention tracking with spaced repetition
+model KnowledgeRetention {
+  id                String    @id @default(cuid())
+  studentId         String
+  conceptId         String    // Unique identifier for the concept
+  conceptName       String
+  subjectId         String
+  initialMastery    Float     // Initial mastery level (0-1)
+  retentionLevel    Float     // Current retention level (0-1)
+  lastReviewed      DateTime
+  nextReview        DateTime  // Spaced repetition schedule
+  reviewCount       Int       @default(0)
+  forgettingCurve   Json      // Retention decay over time
+  reinforcementNeeded Boolean @default(false)
+  masteryThreshold  Float     @default(0.8)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject           Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, conceptId])
+  @@index([studentId, nextReview])
+  @@index([studentId, reinforcementNeeded])
+}
+
+// Engagement optimization tracking
+model EngagementOptimization {
+  id                String    @id @default(cuid())
+  studentId         String
+  sessionId         String?   // Link to specific learning session
+  engagementLevel   Float     // Current engagement (0-1)
+  engagementFactors Json      // Factors affecting engagement
+  optimizationActions Json    // Actions taken to improve engagement
+  effectiveness     Float?    // How effective the optimization was
+  contentAdjustments Json     // Content modifications made
+  pacingAdjustments Json      // Pacing changes made
+  interactionChanges Json     // Interaction pattern changes
+  beforeEngagement  Float     // Engagement level before optimization
+  afterEngagement   Float?    // Engagement level after optimization
+  timestamp         DateTime  @default(now())
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, timestamp])
+  @@index([studentId, engagementLevel])
+}
+
+// Parent/Guardian insights and recommendations
+model GuardianInsight {
+  id                String    @id @default(cuid())
+  guardianId        String
+  studentId         String
+  insightType       InsightType
+  title             String
+  description       String    @db.Text
+  recommendations   Json      // Array of actionable recommendations
+  priority          InsightPriority
+  isRead            Boolean   @default(false)
+  actionTaken       Boolean   @default(false)
+  actionNotes       String?   @db.Text
+  effectiveness     Float?    // How effective the insight was
+  generatedAt       DateTime  @default(now())
+  expiresAt         DateTime? // When this insight becomes outdated
+  
+  guardian          User      @relation("GuardianInsight", fields: [guardianId], references: [id], onDelete: Cascade)
+  student           User      @relation("StudentInsight", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([guardianId, isRead])
+  @@index([studentId, insightType])
+  @@index([generatedAt, priority])
+}
+
+enum InsightType {
+  ACADEMIC_PROGRESS
+  LEARNING_STYLE
+  ENGAGEMENT_LEVEL
+  STRUGGLING_AREAS
+  STRENGTH_AREAS
+  STUDY_HABITS
+  MOTIVATION_LEVEL
+  SOCIAL_LEARNING
+  ATTENTION_SPAN
+  DIFFICULTY_PREFERENCE
+  RECOMMENDED_INTERVENTIONS
+  CELEBRATION_MOMENTS
+}
+
+enum InsightPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Comprehensive performance metrics and KPIs
+model PerformanceKPI {
+  id                String    @id @default(cuid())
+  studentId         String
+  subjectId         String?
+  kpiType           KPIType
+  period            PerformancePeriod
+  startDate         DateTime  @db.Date
+  endDate           DateTime  @db.Date
+  
+  // Academic KPIs
+  masteryRate       Float     @default(0.0) // % of concepts mastered
+  completionRate    Float     @default(0.0) // % of lessons completed
+  assessmentScore   Float     @default(0.0) // Average assessment score
+  learningVelocity  Float     @default(0.0) // Rate of learning progress
+  
+  // Engagement KPIs
+  engagementScore   Float     @default(0.0) // Overall engagement level
+  timeOnTask        Int       @default(0) // Minutes spent on learning
+  interactionRate   Float     @default(0.0) // Rate of interactions
+  persistenceScore  Float     @default(0.0) // Persistence in difficult tasks
+  
+  // Retention KPIs
+  retentionRate     Float     @default(0.0) // Knowledge retention over time
+  transferRate      Float     @default(0.0) // Ability to transfer knowledge
+  applicationRate   Float     @default(0.0) // Ability to apply knowledge
+  
+  // Behavioral KPIs
+  attendanceRate    Float     @default(0.0) // Attendance consistency
+  punctualityRate   Float     @default(0.0) // Punctuality in submissions
+  collaborationScore Float    @default(0.0) // Collaborative learning score
+  
+  // Growth KPIs
+  improvementRate   Float     @default(0.0) // Rate of improvement over time
+  goalAchievement   Float     @default(0.0) // % of goals achieved
+  selfEfficacy      Float     @default(0.0) // Self-confidence in learning
+  
+  // Comparative metrics
+  peerComparison    Json      // Comparison with peer group
+  historicalTrend   Json      // Historical performance trend
+  benchmarkScore    Float?    // Score against benchmarks
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  student           User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject           Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, subjectId, kpiType, period, startDate])
+  @@index([studentId, kpiType, period])
+  @@index([studentId, startDate, endDate])
+}
+
+enum KPIType {
+  ACADEMIC_PERFORMANCE
+  ENGAGEMENT_METRICS
+  RETENTION_ANALYSIS
+  BEHAVIORAL_INSIGHTS
+  GROWTH_TRACKING
+  COMPARATIVE_ANALYSIS
+  GOAL_ACHIEVEMENT
+  SKILL_DEVELOPMENT
+}
+
+// Learning analytics dashboard configuration
+model AnalyticsDashboard {
+  id                String    @id @default(cuid())
+  userId            String
+  dashboardType     DashboardType
+  name              String
+  description       String?
+  configuration     Json      // Dashboard layout and widget configuration
+  isDefault         Boolean   @default(false)
+  isPublic          Boolean   @default(false)
+  refreshInterval   Int       @default(300) // Seconds
+  lastRefreshed     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, dashboardType])
+  @@index([userId, isDefault])
+}
+
+enum DashboardType {
+  STUDENT_PROGRESS
+  TEACHER_ANALYTICS
+  ADMIN_OVERVIEW
+  GUARDIAN_INSIGHTS
+  CUSTOM_ANALYTICS
+  PERFORMANCE_TRACKING
+  ENGAGEMENT_MONITORING
+  RETENTION_ANALYSIS
 }
