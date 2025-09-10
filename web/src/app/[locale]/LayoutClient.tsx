@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Aside from '@/components/layout/Aside';
 import Topbar from "@/components/layout/Topbar";
 import Footer from '@/components/layout/Footer';
+import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 
 interface LayoutClientProps {
   children: React.ReactNode;
@@ -68,6 +69,14 @@ export default function LayoutClient({ children, user, locale }: LayoutClientPro
           </div>        
         </main>
       </div>
+      
+      {/* Floating Feedback Button */}
+      <FeedbackButton 
+        context={{
+          page: window?.location?.pathname || 'unknown',
+          feature: 'global_feedback'
+        }}
+      />
     </div>  
   );
 }

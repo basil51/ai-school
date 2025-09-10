@@ -111,6 +111,54 @@ model User {
   studentInsights GuardianInsight[] @relation("StudentInsight")
   performanceKPIs PerformanceKPI[]
   analyticsDashboards AnalyticsDashboard[]
+  
+  // Phase 21: A/B Testing & Evaluation relationships
+  abTestExperiments ABTestExperiment[]
+  abTestParticipants ABTestParticipant[]
+  userFeedback UserFeedback[]
+  feedbackAssigned UserFeedback[] @relation("FeedbackAssignee")
+  accessibilityAudits AccessibilityAudit[]
+  accessibilityIssues AccessibilityIssue[]
+  
+  // Phase 21: Inclusivity Audit relationships
+  inclusivityAudits InclusivityAudit[]
+  inclusivityFindings InclusivityFinding[]
+  accessibilityProfile UserAccessibilityProfile?
+  
+  // Phase 21: Accessibility Compliance relationships
+  accessibilityComplianceAudits AccessibilityCompliance[]
+  accessibilityFindingsAssigned AccessibilityFinding[]
+  accessibilityRecommendationsAssigned AccessibilityRecommendation[]
+  accessibilityTests AccessibilityTest[]
+  accessibilityTrainingCompletions AccessibilityTrainingCompletion[]
+  
+  // Phase 21: Scalability Testing relationships
+  scalabilityTests ScalabilityTest[]
+  performanceBenchmarks PerformanceBenchmark[]
+  optimizationRecommendationsCreated OptimizationRecommendation[] @relation("OptimizationCreator")
+  optimizationRecommendationsAssigned OptimizationRecommendation[] @relation("OptimizationAssignee")
+  
+  // Phase 21: LMS/School System Integration relationships
+  lmsEnrollments LMSEnrollment[]
+  lmsGrades LMSGrade[]
+  ssoUsers SSOUser[]
+  sisStudents SISStudent[]
+  sisTeachers SISTeacher[]
+  
+  // Phase 21: Continuous Monitoring relationships
+  monitoringDashboards MonitoringDashboard[]
+  performanceMetrics PerformanceMetric[]
+  usageAnalytics UsageAnalytic[]
+  alertsAcknowledged Alert[] @relation("AlertAcknowledgedBy")
+  alertsResolved Alert[] @relation("AlertResolvedBy")
+  monitoringRules MonitoringRule[]
+  notificationChannels NotificationChannel[]
+  monitoringReports MonitoringReport[]
+  
+  // Phase 19: Advanced Features relationships
+  learningSessions LearningSession[]
+  teachingEffectiveness TeachingEffectiveness[]
+  securityAudits SecurityAudit[]
 }
 
 model Account {
@@ -188,6 +236,39 @@ model Organization {
   learningSessions LearningSession[]
   teachingEffectiveness TeachingEffectiveness[]
   securityAudits SecurityAudit[]
+  
+  // Phase 21: Inclusivity Audit
+  inclusivityAudits InclusivityAudit[]
+  userAccessibilityProfiles UserAccessibilityProfile[]
+  
+  // Phase 21: Accessibility Compliance
+  accessibilityCompliance AccessibilityCompliance[]
+  accessibilityTests AccessibilityTest[]
+  accessibilityTraining AccessibilityTraining[]
+  
+  // Phase 21: Scalability Testing
+  scalabilityTests ScalabilityTest[]
+  performanceBenchmarks PerformanceBenchmark[]
+  systemResources SystemResource[]
+  cachePerformance CachePerformance[]
+  databasePerformance DatabasePerformance[]
+  optimizationRecommendations OptimizationRecommendation[]
+  
+  // Phase 21: LMS/School System Integration
+  lmsIntegrations LMSIntegration[]
+  ssoIntegrations SSOIntegration[]
+  sisIntegrations SISIntegration[]
+  
+  // Phase 21: Continuous Monitoring
+  monitoringDashboards MonitoringDashboard[]
+  systemMetrics SystemMetric[]
+  performanceMetrics PerformanceMetric[]
+  usageAnalytics UsageAnalytic[]
+  healthChecks HealthCheck[]
+  alerts Alert[]
+  monitoringRules MonitoringRule[]
+  notificationChannels NotificationChannel[]
+  monitoringReports MonitoringReport[]
 }
 
 model OrganizationSettings {
@@ -594,7 +675,7 @@ model VisualElement {
   position    Int
   interactive Boolean  @default(false)
   
-  content     EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  enhancedContent EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 }
 
 model InteractiveElement {
@@ -607,7 +688,7 @@ model InteractiveElement {
   position    Int
   difficulty  String
   
-  content     EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  enhancedContent EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 }
 
 model AudioElement {
@@ -619,7 +700,7 @@ model AudioElement {
   position  Int
   language  String   @default("en")
   
-  content   EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  enhancedContent EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 }
 
 model AssessmentQuestion {
@@ -633,7 +714,7 @@ model AssessmentQuestion {
   difficulty    String
   points        Float    @default(1.0)
   
-  content       EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  enhancedContent EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 }
 
 model Exercise {
@@ -647,24 +728,27 @@ model Exercise {
   hints           String[]
   solution        String
   
-  content         EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  enhancedContent EnhancedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 }
 
 // Learning Sessions
 model LearningSession {
-  id          String      @id @default(cuid())
-  studentId   String
-  subject     String
-  topic       String
-  sessionData Json
-  startTime   DateTime
-  endTime     DateTime?
-  status      SessionStatus @default(active)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  organizationId String
+  studentId      String
+  subject        String
+  topic          String
+  sessionData    Json
+  startTime      DateTime
+  endTime        DateTime?
+  status         SessionStatus @default(active)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   
-  student     User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
   
+  @@index([organizationId])
   @@index([studentId])
   @@index([status])
   @@index([startTime])
@@ -673,6 +757,7 @@ model LearningSession {
 // Teaching Effectiveness Analysis
 model TeachingEffectiveness {
   id                  String   @id @default(cuid())
+  organizationId      String
   studentId           String
   methodId            String
   effectiveness       Float
@@ -684,9 +769,11 @@ model TeachingEffectiveness {
   alternativeMethods  String[]
   analyzedAt          DateTime @default(now())
   
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   student             User                    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   method              AdvancedTeachingMethod  @relation(fields: [methodId], references: [id], onDelete: Cascade)
   
+  @@index([organizationId])
   @@index([studentId])
   @@index([methodId])
 }
@@ -721,19 +808,22 @@ model ContentCache {
 
 // Security Audit
 model SecurityAudit {
-  id        String   @id @default(cuid())
-  type      String   // authentication, authorization, data_access, api_call, system_event
-  userId    String?
-  action    String
-  resource  String
-  ipAddress String
-  userAgent String
-  success   Boolean
-  details   Json
-  timestamp DateTime @default(now())
+  id             String   @id @default(cuid())
+  organizationId String
+  type           String   // authentication, authorization, data_access, api_call, system_event
+  userId         String?
+  action         String
+  resource       String
+  ipAddress      String
+  userAgent      String
+  success        Boolean
+  details        Json
+  timestamp      DateTime @default(now())
   
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  @@index([organizationId])
   @@index([userId])
   @@index([type])
   @@index([timestamp])
@@ -1861,4 +1951,1670 @@ enum DashboardType {
   PERFORMANCE_TRACKING
   ENGAGEMENT_MONITORING
   RETENTION_ANALYSIS
+}
+
+// --- Phase 21: A/B Testing Framework Models ---
+
+// A/B Test Experiments
+model ABTestExperiment {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  description       String   @db.Text
+  hypothesis        String   @db.Text
+  testType          ABTestType
+  status            ABTestStatus @default(draft)
+  startDate         DateTime?
+  endDate           DateTime?
+  targetAudience    Json     // Audience criteria (role, organization, etc.)
+  successMetrics    String[] // Metrics to measure success
+  minimumSampleSize Int      @default(100)
+  confidenceLevel   Float    @default(0.95)
+  isActive          Boolean  @default(false)
+  createdBy         String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  createdByUser     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  variants          ABTestVariant[]
+  participants      ABTestParticipant[]
+  results           ABTestResult[]
+  
+  @@index([status, isActive])
+  @@index([testType])
+  @@index([startDate, endDate])
+}
+
+enum ABTestType {
+  TEACHING_METHOD
+  CONTENT_PRESENTATION
+  ASSESSMENT_FORMAT
+  UI_UX_DESIGN
+  PERSONALIZATION_ALGORITHM
+  ENGAGEMENT_STRATEGY
+  DIFFICULTY_ADJUSTMENT
+  FEEDBACK_MECHANISM
+}
+
+enum ABTestStatus {
+  draft
+  active
+  paused
+  completed
+  cancelled
+}
+
+// A/B Test Variants
+model ABTestVariant {
+  id                String   @id @default(cuid())
+  experimentId      String
+  name              String
+  description       String   @db.Text
+  variantType       VariantType @default(control)
+  configuration     Json     // Variant-specific configuration
+  trafficAllocation Float    @default(0.5) // Percentage of traffic (0-1)
+  isControl         Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  experiment        ABTestExperiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  participants      ABTestParticipant[]
+  results           ABTestResult[]
+  
+  @@index([experimentId, isControl])
+  @@index([variantType])
+}
+
+enum VariantType {
+  control
+  treatment
+  alternative
+}
+
+// A/B Test Participants
+model ABTestParticipant {
+  id                String   @id @default(cuid())
+  experimentId      String
+  variantId         String
+  userId            String
+  enrolledAt        DateTime @default(now())
+  completedAt       DateTime?
+  isActive          Boolean  @default(true)
+  dropoutReason     String?
+  metadata          Json?    // Additional participant data
+  
+  experiment        ABTestExperiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant           ABTestVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interactions      ABTestInteraction[]
+  
+  @@unique([experimentId, userId])
+  @@index([experimentId, variantId])
+  @@index([userId, isActive])
+}
+
+// A/B Test Interactions
+model ABTestInteraction {
+  id                String   @id @default(cuid())
+  participantId     String
+  interactionType   InteractionType
+  action            String
+  context           Json?    // Context data (page, lesson, etc.)
+  timestamp         DateTime @default(now())
+  duration          Int?     // Duration in seconds
+  outcome           String?  // Success/failure outcome
+  metadata          Json?    // Additional interaction data
+  
+  participant       ABTestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  
+  @@index([participantId, interactionType])
+  @@index([timestamp])
+}
+
+enum InteractionType {
+  lesson_start
+  lesson_complete
+  assessment_start
+  assessment_complete
+  content_interaction
+  navigation_action
+  feedback_provided
+  help_requested
+  session_end
+}
+
+// A/B Test Results
+model ABTestResult {
+  id                String   @id @default(cuid())
+  experimentId      String
+  variantId         String
+  metricName        String
+  metricValue       Float
+  sampleSize        Int
+  confidenceInterval Json    // {lower, upper, confidence}
+  statisticalSignificance Float?
+  pValue            Float?
+  effectSize        Float?
+  calculatedAt      DateTime @default(now())
+  
+  experiment        ABTestExperiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant           ABTestVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  
+  @@index([experimentId, metricName])
+  @@index([variantId, metricName])
+}
+
+// User Feedback System
+model UserFeedback {
+  id                String   @id @default(cuid())
+  userId            String
+  feedbackType      FeedbackType
+  category          String
+  rating            Int?     // 1-5 scale
+  title             String
+  description       String   @db.Text
+  context           Json?    // Context data (page, feature, etc.)
+  isAnonymous       Boolean  @default(false)
+  isPublic          Boolean  @default(false)
+  status            FeedbackStatus @default(pending)
+  priority          FeedbackPriority @default(medium)
+  assignedTo        String?
+  response          String?  @db.Text
+  respondedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedToUser    User?    @relation("FeedbackAssignee", fields: [assignedTo], references: [id])
+  tags              FeedbackTag[]
+  
+  @@index([userId, feedbackType])
+  @@index([status, priority])
+  @@index([category])
+}
+
+enum FeedbackType {
+  bug_report
+  feature_request
+  improvement_suggestion
+  general_feedback
+  usability_issue
+  accessibility_concern
+  performance_issue
+  content_feedback
+}
+
+enum FeedbackStatus {
+  pending
+  in_review
+  in_progress
+  resolved
+  closed
+  duplicate
+}
+
+enum FeedbackPriority {
+  low
+  medium
+  high
+  critical
+}
+
+// Feedback Tags
+model FeedbackTag {
+  id                String   @id @default(cuid())
+  feedbackId        String
+  tag               String
+  createdAt         DateTime @default(now())
+  
+  feedback          UserFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  
+  @@unique([feedbackId, tag])
+  @@index([tag])
+}
+
+// System Performance Monitoring
+model SystemPerformance {
+  id                String   @id @default(cuid())
+  metricName        String
+  metricValue       Float
+  unit              String
+  timestamp         DateTime @default(now())
+  context           Json?    // Additional context data
+  severity          PerformanceSeverity @default(info)
+  
+  @@index([metricName, timestamp])
+  @@index([severity, timestamp])
+}
+
+enum PerformanceSeverity {
+  info
+  warning
+  error
+  critical
+}
+
+// Accessibility Audit Results
+model AccessibilityAudit {
+  id                String   @id @default(cuid())
+  pageUrl           String
+  auditType         AccessibilityAuditType
+  wcagLevel         WCAGLevel
+  totalIssues       Int      @default(0)
+  criticalIssues    Int      @default(0)
+  seriousIssues     Int      @default(0)
+  moderateIssues    Int      @default(0)
+  minorIssues       Int      @default(0)
+  score             Float    @default(0.0) // 0-100 accessibility score
+  recommendations   Json     // Array of recommendations
+  auditData         Json     // Detailed audit results
+  auditedAt         DateTime @default(now())
+  auditedBy         String?
+  
+  auditedByUser     User?    @relation(fields: [auditedBy], references: [id])
+  issues            AccessibilityIssue[]
+  
+  @@index([pageUrl, auditType])
+  @@index([wcagLevel, score])
+}
+
+enum AccessibilityAuditType {
+  automated
+  manual
+  user_testing
+  expert_review
+}
+
+enum WCAGLevel {
+  A
+  AA
+  AAA
+}
+
+// Accessibility Issues
+model AccessibilityIssue {
+  id                String   @id @default(cuid())
+  auditId           String
+  issueType         String
+  severity          AccessibilitySeverity
+  description       String   @db.Text
+  wcagCriteria      String
+  elementSelector   String?
+  recommendation    String   @db.Text
+  isFixed           Boolean  @default(false)
+  fixedAt           DateTime?
+  fixedBy           String?
+  
+  audit             AccessibilityAudit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  fixedByUser       User?    @relation(fields: [fixedBy], references: [id])
+  
+  @@index([auditId, severity])
+  @@index([isFixed])
+}
+
+enum AccessibilitySeverity {
+  minor
+  moderate
+  serious
+  critical
+}
+
+// --- Phase 21: Inclusivity Audit Models ---
+model InclusivityAudit {
+  id                String      @id @default(cuid())
+  organizationId    String
+  auditType         InclusivityAuditType
+  targetAudience    String[]    // e.g., ["ADHD", "Dyslexia", "Autism", "ESL"]
+  auditDate         DateTime    @default(now())
+  auditorId         String
+  status            InclusivityAuditStatus @default(pending)
+  overallScore      Float?      // 0-100
+  recommendations   String      @db.Text
+  actionPlan        String      @db.Text
+  followUpDate      DateTime?
+  completedAt       DateTime?
+  
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auditor           User         @relation(fields: [auditorId], references: [id])
+  findings          InclusivityFinding[]
+  
+  @@index([organizationId, auditType])
+  @@index([auditDate])
+  @@index([status])
+}
+
+enum InclusivityAuditType {
+  adhd_accommodations
+  learning_disabilities
+  cultural_sensitivity
+  language_barriers
+  cognitive_accessibility
+  comprehensive
+}
+
+enum InclusivityAuditStatus {
+  pending
+  in_progress
+  completed
+  needs_followup
+  archived
+}
+
+model InclusivityFinding {
+  id                String      @id @default(cuid())
+  auditId           String
+  category          InclusivityCategory
+  severity          InclusivitySeverity
+  title             String
+  description       String      @db.Text
+  currentState      String      @db.Text
+  recommendedAction String      @db.Text
+  priority          InclusivityPriority
+  estimatedEffort   String?     // e.g., "2-4 hours", "1 week"
+  isImplemented     Boolean     @default(false)
+  implementedAt     DateTime?
+  implementedBy     String?
+  
+  audit             InclusivityAudit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  implementedByUser User?            @relation(fields: [implementedBy], references: [id])
+  
+  @@index([auditId, category])
+  @@index([severity])
+  @@index([isImplemented])
+}
+
+enum InclusivityCategory {
+  pacing_timing
+  visual_design
+  content_complexity
+  interaction_patterns
+  feedback_mechanisms
+  navigation_structure
+  language_clarity
+  cultural_representation
+  assistive_technology
+  cognitive_load
+}
+
+enum InclusivitySeverity {
+  low
+  medium
+  high
+  critical
+}
+
+enum InclusivityPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+// User Accessibility Preferences
+model UserAccessibilityProfile {
+  id                    String      @id @default(cuid())
+  userId                String      @unique
+  organizationId        String
+  
+  // Learning Preferences
+  hasADHD               Boolean     @default(false)
+  hasDyslexia           Boolean     @default(false)
+  hasAutism             Boolean     @default(false)
+  hasHearingImpairment  Boolean     @default(false)
+  hasVisualImpairment   Boolean     @default(false)
+  hasMobilityImpairment Boolean     @default(false)
+  isESL                 Boolean     @default(false)
+  
+  // Pacing Preferences
+  preferredPacing       PacingType  @default(standard)
+  breakFrequency        Int         @default(15) // minutes
+  maxSessionLength      Int         @default(45) // minutes
+  
+  // Visual Preferences
+  preferredFontSize     FontSize    @default(medium)
+  preferredColorScheme  ColorScheme @default(standard)
+  highContrast          Boolean     @default(false)
+  reducedMotion         Boolean     @default(false)
+  
+  // Content Preferences
+  simplifiedLanguage    Boolean     @default(false)
+  extraExplanations     Boolean     @default(false)
+  visualAids            Boolean     @default(true)
+  audioSupport          Boolean     @default(true)
+  
+  // Cultural Preferences
+  primaryLanguage       String      @default("en")
+  culturalContext       String?     // e.g., "Middle Eastern", "Asian", "Western"
+  religiousConsiderations String?   // e.g., "Islamic", "Christian", "Secular"
+  
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@index([organizationId])
+  @@index([hasADHD, hasDyslexia, hasAutism])
+}
+
+enum PacingType {
+  very_slow
+  slow
+  standard
+  fast
+  very_fast
+}
+
+enum FontSize {
+  small
+  medium
+  large
+  extra_large
+}
+
+enum ColorScheme {
+  standard
+  high_contrast
+  dark_mode
+  light_mode
+  colorblind_friendly
+}
+
+// --- Phase 21: Accessibility Compliance Models ---
+model AccessibilityCompliance {
+  id                String    @id @default(cuid())
+  organizationId    String
+  auditDate         DateTime  @default(now())
+  complianceLevel   ComplianceLevel
+  wcagVersion       String    @default("2.1")
+  wcagLevel         WCAGLevel
+  overallScore      Float
+  status            ComplianceStatus
+  auditorId         String
+  auditScope        String
+  findings          AccessibilityFinding[]
+  recommendations   AccessibilityRecommendation[]
+  remediationPlan   String?
+  nextAuditDate     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auditor           User         @relation(fields: [auditorId], references: [id], onDelete: Cascade)
+
+  @@map("accessibility_compliance")
+}
+
+model AccessibilityFinding {
+  id                    String    @id @default(cuid())
+  complianceId          String
+  findingType           FindingType
+  severity              FindingSeverity
+  wcagCriteria          String
+  description           String
+  location              String
+  impact                String
+  remediation           String?
+  status                FindingStatus
+  assignedTo            String?
+  dueDate               DateTime?
+  verifiedDate          DateTime?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  compliance            AccessibilityCompliance @relation(fields: [complianceId], references: [id], onDelete: Cascade)
+  assignedUser          User?                   @relation(fields: [assignedTo], references: [id])
+
+  @@map("accessibility_findings")
+}
+
+model AccessibilityRecommendation {
+  id                    String    @id @default(cuid())
+  complianceId          String
+  recommendationType    RecommendationType
+  priority              RecommendationPriority
+  title                 String
+  description           String
+  implementation        String
+  estimatedEffort       String?
+  benefits              String
+  status                RecommendationStatus
+  assignedTo            String?
+  dueDate               DateTime?
+  completedDate         DateTime?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  compliance            AccessibilityCompliance @relation(fields: [complianceId], references: [id], onDelete: Cascade)
+  assignedUser          User?                   @relation(fields: [assignedTo], references: [id])
+
+  @@map("accessibility_recommendations")
+}
+
+model AccessibilityTest {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  testType              TestType
+  testName              String
+  description           String
+  testUrl               String
+  testResults           Json
+  passed                Boolean
+  score                 Float
+  issues                Json?
+  recommendations       Json?
+  testedBy              String
+  testDate              DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tester                User         @relation(fields: [testedBy], references: [id], onDelete: Cascade)
+
+  @@map("accessibility_tests")
+}
+
+model AccessibilityTraining {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  trainingType          TrainingType
+  title                 String
+  description           String
+  content               String
+  duration              Int       // in minutes
+  difficulty            TrainingDifficulty
+  prerequisites         String?
+  learningObjectives    String[]
+  resources             String[]
+  assessment            String?
+  completionCriteria    String
+  isActive              Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  completions           AccessibilityTrainingCompletion[]
+
+  @@map("accessibility_training")
+}
+
+model AccessibilityTrainingCompletion {
+  id                    String    @id @default(cuid())
+  trainingId            String
+  userId                String
+  completedAt           DateTime  @default(now())
+  score                 Float?
+  feedback              String?
+  certificateUrl        String?
+
+  training              AccessibilityTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, userId])
+  @@map("accessibility_training_completions")
+}
+
+// Enums for Accessibility Compliance
+enum ComplianceLevel {
+  A
+  AA
+  AAA
+}
+
+enum ComplianceStatus {
+  pending
+  in_progress
+  compliant
+  non_compliant
+  needs_review
+}
+
+enum FindingType {
+  keyboard_navigation
+  screen_reader
+  color_contrast
+  text_scaling
+  focus_management
+  aria_labels
+  semantic_html
+  multimedia_accessibility
+  form_accessibility
+  error_handling
+}
+
+enum FindingSeverity {
+  critical
+  high
+  medium
+  low
+  minor
+}
+
+enum FindingStatus {
+  open
+  in_progress
+  resolved
+  verified
+  closed
+}
+
+enum RecommendationType {
+  technical_implementation
+  design_improvement
+  content_enhancement
+  training_requirement
+  policy_update
+  tool_implementation
+}
+
+enum RecommendationPriority {
+  critical
+  high
+  medium
+  low
+}
+
+enum RecommendationStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+enum TestType {
+  automated
+  manual
+  user_testing
+  screen_reader_testing
+  keyboard_testing
+  color_contrast_testing
+}
+
+enum TrainingType {
+  general_accessibility
+  wcag_guidelines
+  screen_reader_usage
+  keyboard_navigation
+  color_contrast
+  aria_implementation
+  testing_methodologies
+}
+
+enum TrainingDifficulty {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+// --- Phase 21: Scalability Testing Models ---
+model ScalabilityTest {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  testName              String
+  testType              ScalabilityTestType
+  description           String
+  targetConcurrentUsers Int
+  testDuration          Int       // in minutes
+  testConfiguration     Json
+  status                ScalabilityTestStatus
+  startedAt             DateTime?
+  completedAt           DateTime?
+  results               Json?
+  performanceMetrics    Json?
+  bottlenecks           Json?
+  recommendations       Json?
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  loadTests             LoadTest[]
+
+  @@map("scalability_tests")
+}
+
+model LoadTest {
+  id                    String    @id @default(cuid())
+  scalabilityTestId     String
+  testPhase             String
+  concurrentUsers       Int
+  requestsPerSecond     Float
+  responseTime          Float     // in milliseconds
+  errorRate             Float     // percentage
+  throughput            Float
+  cpuUsage              Float     // percentage
+  memoryUsage           Float     // percentage
+  databaseConnections   Int
+  cacheHitRate          Float     // percentage
+  networkLatency        Float     // in milliseconds
+  timestamp             DateTime  @default(now())
+  metadata              Json?
+
+  scalabilityTest       ScalabilityTest @relation(fields: [scalabilityTestId], references: [id], onDelete: Cascade)
+
+  @@map("load_tests")
+}
+
+model PerformanceBenchmark {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  benchmarkName         String
+  benchmarkType         BenchmarkType
+  description           String
+  targetMetrics         Json
+  actualMetrics         Json
+  performanceScore      Float
+  status                BenchmarkStatus
+  baselineDate          DateTime
+  comparisonDate        DateTime?
+  improvements          Json?
+  regressions           Json?
+  recommendations       Json?
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("performance_benchmarks")
+}
+
+model SystemResource {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  resourceType          ResourceType
+  resourceName          String
+  currentUsage          Float
+  maxCapacity           Float
+  utilizationPercentage Float
+  status                ResourceStatus
+  alerts                Json?
+  metrics               Json
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("system_resources")
+}
+
+model CachePerformance {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  cacheType             CacheType
+  cacheKey              String
+  hitRate               Float     // percentage
+  missRate              Float     // percentage
+  evictionRate          Float     // percentage
+  averageResponseTime   Float     // in milliseconds
+  cacheSize             Int       // in bytes
+  maxCacheSize          Int       // in bytes
+  memoryUsage           Float     // percentage
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("cache_performance")
+}
+
+model DatabasePerformance {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  databaseName          String
+  queryType             QueryType
+  averageResponseTime   Float     // in milliseconds
+  slowQueries           Int
+  totalQueries          Int
+  connectionPoolUsage   Float     // percentage
+  deadlocks             Int
+  lockWaits             Int
+  indexUsage            Float     // percentage
+  tableScans            Int
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("database_performance")
+}
+
+model OptimizationRecommendation {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  recommendationType    OptimizationType
+  priority              OptimizationPriority
+  title                 String
+  description           String
+  currentPerformance    Json
+  expectedImprovement   Json
+  implementation        String
+  estimatedEffort       String
+  impact                String
+  status                OptimizationStatus
+  assignedTo            String?
+  dueDate               DateTime?
+  completedDate         DateTime?
+  results               Json?
+  notes                 String?
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation("OptimizationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  assignedUser          User?        @relation("OptimizationAssignee", fields: [assignedTo], references: [id])
+
+  @@map("optimization_recommendations")
+}
+
+// Enums for Scalability Testing
+enum ScalabilityTestType {
+  load_testing
+  stress_testing
+  spike_testing
+  volume_testing
+  endurance_testing
+  capacity_testing
+}
+
+enum ScalabilityTestStatus {
+  pending
+  running
+  completed
+  failed
+  cancelled
+}
+
+enum BenchmarkType {
+  response_time
+  throughput
+  resource_utilization
+  database_performance
+  cache_performance
+  api_performance
+  user_experience
+}
+
+enum BenchmarkStatus {
+  pending
+  running
+  completed
+  failed
+  baseline
+  comparison
+}
+
+enum ResourceType {
+  cpu
+  memory
+  disk
+  network
+  database
+  cache
+  api_endpoint
+  queue
+}
+
+enum ResourceStatus {
+  healthy
+  warning
+  critical
+  overloaded
+  offline
+}
+
+enum CacheType {
+  redis
+  memory
+  cdn
+  browser
+  application
+  database
+}
+
+enum QueryType {
+  select
+  insert
+  update
+  delete
+  join
+  aggregate
+  index_scan
+  table_scan
+}
+
+enum OptimizationType {
+  database_optimization
+  cache_optimization
+  api_optimization
+  resource_scaling
+  code_optimization
+  infrastructure_optimization
+  query_optimization
+  indexing_optimization
+}
+
+enum OptimizationPriority {
+  critical
+  high
+  medium
+  low
+}
+
+enum OptimizationStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+  failed
+}
+
+// --- Phase 21: LMS/School System Integration Models ---
+model LMSIntegration {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  lmsType               LMSType
+  lmsName               String
+  baseUrl               String
+  apiKey                String?   // Encrypted
+  clientId              String?   // For OAuth
+  clientSecret          String?   // Encrypted
+  accessToken           String?   // Encrypted
+  refreshToken          String?   // Encrypted
+  tokenExpiresAt        DateTime?
+  configuration         Json
+  status                IntegrationStatus
+  lastSyncAt            DateTime?
+  syncFrequency         Int       // in minutes
+  autoSync              Boolean   @default(false)
+  errorCount            Int       @default(0)
+  lastError             String?
+  lastErrorAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  courses               LMSCourse[]
+  enrollments           LMSEnrollment[]
+  assignments           LMSAssignment[]
+  grades                LMSGrade[]
+  syncLogs              LMSSyncLog[]
+
+  @@map("lms_integrations")
+}
+
+model LMSCourse {
+  id                    String    @id @default(cuid())
+  lmsIntegrationId      String
+  lmsCourseId           String    // External LMS course ID
+  courseName            String
+  courseCode            String?
+  description           String?
+  startDate             DateTime?
+  endDate               DateTime?
+  status                String?
+  enrollmentCount       Int       @default(0)
+  lmsData               Json?     // Additional LMS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  lmsIntegration        LMSIntegration @relation(fields: [lmsIntegrationId], references: [id], onDelete: Cascade)
+  enrollments           LMSEnrollment[]
+  assignments           LMSAssignment[]
+
+  @@unique([lmsIntegrationId, lmsCourseId])
+  @@map("lms_courses")
+}
+
+model LMSEnrollment {
+  id                    String    @id @default(cuid())
+  lmsIntegrationId      String
+  lmsCourseId           String
+  userId                String
+  lmsUserId             String?   // External LMS user ID
+  enrollmentDate        DateTime?
+  status                EnrollmentStatus
+  role                  String?   // student, teacher, ta, etc.
+  lmsData               Json?     // Additional LMS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  lmsIntegration        LMSIntegration @relation(fields: [lmsIntegrationId], references: [id], onDelete: Cascade)
+  course                LMSCourse @relation(fields: [lmsCourseId], references: [id], onDelete: Cascade)
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grades                LMSGrade[]
+
+  @@unique([lmsIntegrationId, lmsCourseId, userId])
+  @@map("lms_enrollments")
+}
+
+model LMSAssignment {
+  id                    String    @id @default(cuid())
+  lmsIntegrationId      String
+  lmsCourseId           String
+  lmsAssignmentId       String    // External LMS assignment ID
+  assignmentName        String
+  description           String?
+  dueDate               DateTime?
+  points                Float?
+  assignmentType        String?   // homework, quiz, exam, project, etc.
+  status                String?
+  lmsData               Json?     // Additional LMS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  lmsIntegration        LMSIntegration @relation(fields: [lmsIntegrationId], references: [id], onDelete: Cascade)
+  course                LMSCourse @relation(fields: [lmsCourseId], references: [id], onDelete: Cascade)
+  grades                LMSGrade[]
+
+  @@unique([lmsIntegrationId, lmsCourseId, lmsAssignmentId])
+  @@map("lms_assignments")
+}
+
+model LMSGrade {
+  id                    String    @id @default(cuid())
+  lmsIntegrationId      String
+  lmsEnrollmentId       String
+  lmsAssignmentId       String
+  userId                String
+  grade                 Float?
+  maxPoints             Float?
+  percentage            Float?
+  letterGrade           String?
+  feedback              String?
+  submittedAt           DateTime?
+  gradedAt              DateTime?
+  lmsData               Json?     // Additional LMS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  lmsIntegration        LMSIntegration @relation(fields: [lmsIntegrationId], references: [id], onDelete: Cascade)
+  enrollment            LMSEnrollment @relation(fields: [lmsEnrollmentId], references: [id], onDelete: Cascade)
+  assignment            LMSAssignment @relation(fields: [lmsAssignmentId], references: [id], onDelete: Cascade)
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lmsIntegrationId, lmsEnrollmentId, lmsAssignmentId])
+  @@map("lms_grades")
+}
+
+model LMSSyncLog {
+  id                    String    @id @default(cuid())
+  lmsIntegrationId      String
+  syncType              SyncType
+  status                SyncStatus
+  recordsProcessed      Int       @default(0)
+  recordsCreated        Int       @default(0)
+  recordsUpdated        Int       @default(0)
+  recordsFailed         Int       @default(0)
+  errorMessage          String?
+  startedAt             DateTime  @default(now())
+  completedAt           DateTime?
+  duration              Int?      // in milliseconds
+  metadata              Json?
+
+  lmsIntegration        LMSIntegration @relation(fields: [lmsIntegrationId], references: [id], onDelete: Cascade)
+
+  @@map("lms_sync_logs")
+}
+
+model SSOIntegration {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  ssoType               SSOType
+  ssoName               String
+  entityId              String?   // SAML Entity ID
+  ssoUrl                String?   // SAML SSO URL
+  certificate           String?   // SAML Certificate (encrypted)
+  clientId              String?   // OAuth Client ID
+  clientSecret          String?   // OAuth Client Secret (encrypted)
+  redirectUri           String?
+  scopes                String[]  // OAuth scopes
+  configuration         Json
+  status                IntegrationStatus
+  lastSyncAt            DateTime?
+  autoProvision         Boolean   @default(false)
+  errorCount            Int       @default(0)
+  lastError             String?
+  lastErrorAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ssoUsers              SSOUser[]
+
+  @@map("sso_integrations")
+}
+
+model SSOUser {
+  id                    String    @id @default(cuid())
+  ssoIntegrationId      String
+  userId                String
+  ssoUserId             String    // External SSO user ID
+  ssoUsername           String?
+  ssoEmail              String?
+  ssoData               Json?     // Additional SSO-specific data
+  lastLoginAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  ssoIntegration        SSOIntegration @relation(fields: [ssoIntegrationId], references: [id], onDelete: Cascade)
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ssoIntegrationId, ssoUserId])
+  @@map("sso_users")
+}
+
+model SISIntegration {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  sisType               SISType
+  sisName               String
+  baseUrl               String
+  apiKey                String?   // Encrypted
+  username              String?
+  password              String?   // Encrypted
+  configuration         Json
+  status                IntegrationStatus
+  lastSyncAt            DateTime?
+  syncFrequency         Int       // in minutes
+  autoSync              Boolean   @default(false)
+  errorCount            Int       @default(0)
+  lastError             String?
+  lastErrorAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  students              SISStudent[]
+  teachers              SISTeacher[]
+  classes               SISClass[]
+  syncLogs              SISSyncLog[]
+
+  @@map("sis_integrations")
+}
+
+model SISStudent {
+  id                    String    @id @default(cuid())
+  sisIntegrationId      String
+  userId                String?
+  sisStudentId          String    // External SIS student ID
+  studentNumber         String?
+  firstName             String
+  lastName              String
+  email                 String?
+  grade                 String?
+  schoolYear            String?
+  enrollmentStatus      String?
+  sisData               Json?     // Additional SIS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  sisIntegration        SISIntegration @relation(fields: [sisIntegrationId], references: [id], onDelete: Cascade)
+  user                  User? @relation(fields: [userId], references: [id])
+  classes               SISClass[]
+
+  @@unique([sisIntegrationId, sisStudentId])
+  @@map("sis_students")
+}
+
+model SISTeacher {
+  id                    String    @id @default(cuid())
+  sisIntegrationId      String
+  userId                String?
+  sisTeacherId          String    // External SIS teacher ID
+  employeeNumber        String?
+  firstName             String
+  lastName              String
+  email                 String?
+  department            String?
+  sisData               Json?     // Additional SIS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  sisIntegration        SISIntegration @relation(fields: [sisIntegrationId], references: [id], onDelete: Cascade)
+  user                  User? @relation(fields: [userId], references: [id])
+  classes               SISClass[]
+
+  @@unique([sisIntegrationId, sisTeacherId])
+  @@map("sis_teachers")
+}
+
+model SISClass {
+  id                    String    @id @default(cuid())
+  sisIntegrationId      String
+  sisClassId            String    // External SIS class ID
+  className             String
+  classCode             String?
+  subject               String?
+  grade                 String?
+  period                String?
+  room                  String?
+  teacherId             String?
+  enrollmentCount       Int       @default(0)
+  sisData               Json?     // Additional SIS-specific data
+  lastSyncAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  sisIntegration        SISIntegration @relation(fields: [sisIntegrationId], references: [id], onDelete: Cascade)
+  teacher               SISTeacher? @relation(fields: [teacherId], references: [id])
+  students              SISStudent[]
+
+  @@unique([sisIntegrationId, sisClassId])
+  @@map("sis_classes")
+}
+
+model SISSyncLog {
+  id                    String    @id @default(cuid())
+  sisIntegrationId      String
+  syncType              SyncType
+  status                SyncStatus
+  recordsProcessed      Int       @default(0)
+  recordsCreated        Int       @default(0)
+  recordsUpdated        Int       @default(0)
+  recordsFailed         Int       @default(0)
+  errorMessage          String?
+  startedAt             DateTime  @default(now())
+  completedAt           DateTime?
+  duration              Int?      // in milliseconds
+  metadata              Json?
+
+  sisIntegration        SISIntegration @relation(fields: [sisIntegrationId], references: [id], onDelete: Cascade)
+
+  @@map("sis_sync_logs")
+}
+
+// Enums for LMS/School System Integration
+enum LMSType {
+  canvas
+  blackboard
+  google_classroom
+  moodle
+  schoology
+  brightspace
+  sakai
+  custom
+}
+
+enum SSOType {
+  saml
+  oauth2
+  openid_connect
+  ldap
+  active_directory
+  google_workspace
+  microsoft_azure
+  custom
+}
+
+enum SISType {
+  powerschool
+  infinite_campus
+  skyward
+  gradelink
+  renweb
+  schooltool
+  custom
+}
+
+enum IntegrationStatus {
+  active
+  inactive
+  error
+  pending
+  configuring
+}
+
+enum EnrollmentStatus {
+  active
+  inactive
+  dropped
+  completed
+  pending
+}
+
+enum SyncType {
+  full
+  incremental
+  manual
+  scheduled
+}
+
+enum SyncStatus {
+  pending
+  running
+  completed
+  failed
+  cancelled
+}
+
+// --- Phase 21: Continuous Monitoring Models ---
+model MonitoringDashboard {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  dashboardName         String
+  dashboardType         MonitoringDashboardType
+  description           String?
+  configuration         Json
+  isDefault             Boolean   @default(false)
+  isPublic              Boolean   @default(false)
+  refreshInterval       Int       @default(30) // in seconds
+  autoRefresh           Boolean   @default(true)
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  widgets               MonitoringWidget[]
+
+  @@map("monitoring_dashboards")
+}
+
+model MonitoringWidget {
+  id                    String    @id @default(cuid())
+  dashboardId           String
+  widgetName            String
+  widgetType            WidgetType
+  position              Json      // {x, y, width, height}
+  configuration         Json
+  refreshInterval       Int       @default(30) // in seconds
+  isVisible             Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  dashboard             MonitoringDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@map("monitoring_widgets")
+}
+
+model SystemMetric {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  metricName            String
+  metricType            MetricType
+  value                 Float
+  unit                  String?
+  tags                  Json?     // Additional metadata
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("system_metrics")
+}
+
+model PerformanceMetric {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  endpoint              String
+  method                String
+  responseTime          Float     // in milliseconds
+  statusCode            Int
+  requestSize           Int?      // in bytes
+  responseSize          Int?      // in bytes
+  userAgent             String?
+  ipAddress             String?
+  userId                String?
+  sessionId             String?
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                  User?        @relation(fields: [userId], references: [id])
+
+  @@map("performance_metrics")
+}
+
+model UsageAnalytic {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  userId                String?
+  sessionId             String?
+  eventType             EventType
+  eventName             String
+  eventData             Json?
+  pageUrl               String?
+  referrer              String?
+  userAgent             String?
+  ipAddress             String?
+  timestamp             DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                  User?        @relation(fields: [userId], references: [id])
+
+  @@map("usage_analytics")
+}
+
+model HealthCheck {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  checkName             String
+  checkType             HealthCheckType
+  status                HealthStatus
+  responseTime          Float?    // in milliseconds
+  errorMessage          String?
+  metadata              Json?
+  lastCheckedAt         DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("health_checks")
+}
+
+model Alert {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  alertName             String
+  alertType             AlertType
+  severity              AlertSeverity
+  status                AlertStatus
+  message               String
+  description           String?
+  source                String?   // What triggered the alert
+  metadata              Json?
+  acknowledgedBy        String?
+  acknowledgedAt        DateTime?
+  resolvedBy            String?
+  resolvedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  acknowledgedUser      User?        @relation("AlertAcknowledgedBy", fields: [acknowledgedBy], references: [id])
+  resolvedUser          User?        @relation("AlertResolvedBy", fields: [resolvedBy], references: [id])
+
+  @@map("alerts")
+}
+
+model MonitoringRule {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  ruleName              String
+  ruleType              RuleType
+  condition             Json      // Rule condition configuration
+  threshold             Float?
+  operator              ComparisonOperator
+  isEnabled             Boolean   @default(true)
+  alertSeverity         AlertSeverity
+  notificationChannels  String[]  // Email, Slack, Webhook, etc.
+  cooldownPeriod        Int       @default(300) // in seconds
+  lastTriggeredAt       DateTime?
+  triggerCount          Int       @default(0)
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("monitoring_rules")
+}
+
+model NotificationChannel {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  channelName           String
+  channelType           NotificationChannelType
+  configuration         Json
+  isEnabled             Boolean   @default(true)
+  isDefault             Boolean   @default(false)
+  createdBy             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator               User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("notification_channels")
+}
+
+model MonitoringReport {
+  id                    String    @id @default(cuid())
+  organizationId        String
+  reportName            String
+  reportType            ReportType
+  period                String    // daily, weekly, monthly, custom
+  startDate             DateTime
+  endDate               DateTime
+  data                  Json      // Report data
+  status                ReportStatus
+  generatedBy           String
+  generatedAt           DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  generator             User         @relation(fields: [generatedBy], references: [id], onDelete: Cascade)
+
+  @@map("monitoring_reports")
+}
+
+// Enums for Continuous Monitoring
+enum MonitoringDashboardType {
+  system_overview
+  performance_monitoring
+  usage_analytics
+  health_monitoring
+  custom
+}
+
+enum WidgetType {
+  metric_chart
+  line_chart
+  bar_chart
+  pie_chart
+  gauge
+  table
+  alert_list
+  health_status
+  custom
+}
+
+enum MetricType {
+  counter
+  gauge
+  histogram
+  summary
+  custom
+}
+
+enum EventType {
+  page_view
+  user_action
+  api_call
+  error
+  performance
+  custom
+}
+
+enum HealthCheckType {
+  api_endpoint
+  database
+  external_service
+  system_resource
+  custom
+}
+
+enum HealthStatus {
+  healthy
+  warning
+  critical
+  unknown
+}
+
+enum AlertType {
+  threshold_breach
+  error_rate
+  performance_degradation
+  system_down
+  custom
+}
+
+enum AlertSeverity {
+  info
+  warning
+  critical
+  emergency
+}
+
+enum AlertStatus {
+  active
+  acknowledged
+  resolved
+  suppressed
+}
+
+enum RuleType {
+  metric_threshold
+  error_rate
+  response_time
+  availability
+  custom
+}
+
+enum ComparisonOperator {
+  greater_than
+  less_than
+  equal_to
+  not_equal_to
+  greater_than_or_equal
+  less_than_or_equal
+}
+
+enum NotificationChannelType {
+  email
+  slack
+  webhook
+  sms
+  push_notification
+  custom
+}
+
+enum ReportType {
+  performance_summary
+  usage_analytics
+  system_health
+  error_analysis
+  custom
+}
+
+enum ReportStatus {
+  generating
+  completed
+  failed
 }
