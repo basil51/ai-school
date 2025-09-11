@@ -159,6 +159,9 @@ model User {
   learningSessions LearningSession[]
   teachingEffectiveness TeachingEffectiveness[]
   securityAudits SecurityAudit[]
+  
+  // Smart Teaching relationships
+  smartTeachingSessions SmartTeachingSession[]
 }
 
 model Account {
@@ -1051,6 +1054,10 @@ model Lesson {
   progress      StudentProgress[]
   adaptations   LessonAdaptation[]
   
+  // Smart Teaching relationships
+  smartTeachingSessions SmartTeachingSession[]
+  generatedContent GeneratedContent[]
+  
   @@unique([topicId, title])
   @@index([topicId, order])
 }
@@ -1167,6 +1174,9 @@ model Assessment {
   questions   Question[]
   attempts    AssessmentAttempt[]
   failureAnalysis FailureAnalysis[]
+  
+  // Smart Teaching relationships
+  smartTeachingAssessments SmartTeachingAssessment[]
   
   @@index([lessonId, type])
 }
@@ -3617,4 +3627,120 @@ enum ReportStatus {
   generating
   completed
   failed
+}
+
+// Smart Teaching Session Management
+model SmartTeachingSession {
+  id          String   @id @default(cuid())
+  studentId   String
+  lessonId    String
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  status      SmartTeachingSessionStatus @default(active)
+  progress    Json?     // Real-time progress tracking
+  metadata    Json?     // Additional session data
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  interactions SmartTeachingInteraction[]
+  assessments SmartTeachingAssessment[]
+  
+  @@unique([studentId, lessonId])
+  @@index([studentId, status])
+  @@index([lessonId, status])
+}
+
+model SmartTeachingInteraction {
+  id        String   @id @default(cuid())
+  sessionId String
+  type      SmartTeachingInteractionType
+  content   Json
+  timestamp DateTime @default(now())
+  metadata  Json?
+  
+  session   SmartTeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionId, timestamp])
+  @@index([type, timestamp])
+}
+
+model SmartTeachingAssessment {
+  id        String   @id @default(cuid())
+  sessionId String
+  assessmentId String
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  score     Float?
+  status    AssessmentStatus @default(not_started)
+  responses Json?    // Student responses
+  feedback  Json?    // AI-generated feedback
+  
+  session   SmartTeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  
+  @@unique([sessionId, assessmentId])
+  @@index([sessionId, status])
+}
+
+model GeneratedContent {
+  id          String   @id @default(cuid())
+  lessonId    String
+  contentType ContentType
+  content     Json
+  metadata    Json?
+  quality     Float?   // AI-generated quality score
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@index([lessonId, contentType])
+  @@index([contentType, quality])
+}
+
+enum SmartTeachingSessionStatus {
+  active
+  paused
+  completed
+  abandoned
+}
+
+enum SmartTeachingInteractionType {
+  content_view
+  content_interaction
+  question_asked
+  answer_provided
+  hint_requested
+  method_change
+  difficulty_adjustment
+  assessment_started
+  assessment_completed
+  feedback_provided
+  adaptive_question_generated
+  progress_update
+}
+
+enum AssessmentStatus {
+  not_started
+  in_progress
+  completed
+  abandoned
+}
+
+enum ContentType {
+  text
+  math
+  diagram
+  simulation
+  video
+  audio
+  interactive
+  three_d
+  advanced_three_d
+  d3_advanced
+  assessment
+  feedback
+  full
 }
