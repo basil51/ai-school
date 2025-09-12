@@ -17,7 +17,7 @@ import AdvancedD3Visualizer from './multimodal/AdvancedD3Visualizer';
 
 interface SmartLearningCanvasProps {
   content: any;
-  contentType: 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced';
+  contentType: 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced' | '3d_model' | 'particle_effects';
   onContentChange?: (content: any) => void;
   learningStyle?: 'visual' | 'audio' | 'kinesthetic' | 'analytical';
 }
@@ -248,6 +248,34 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
               width={canvasState === 'fullscreen' ? 800 : 600}
               height={canvasState === 'fullscreen' ? 600 : 400}
             />
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
+          </div>
+        );
+
+      case '3d_model':
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">{content.title || '3D Model'}</h3>
+            <div className="text-center p-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 mb-4">3D Model visualization would be rendered here</p>
+              <p className="text-sm text-gray-500">{content.description || 'Interactive 3D model for enhanced learning'}</p>
+            </div>
+            {audioEnabled && content.narration && (
+              <AudioNarrator text={content.narration} />
+            )}
+          </div>
+        );
+
+      case 'particle_effects':
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">{content.title || 'Particle Effects'}</h3>
+            <div className="text-center p-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 mb-4">Particle effects visualization would be rendered here</p>
+              <p className="text-sm text-gray-500">{content.description || 'Dynamic particle effects for engaging learning'}</p>
+            </div>
             {audioEnabled && content.narration && (
               <AudioNarrator text={content.narration} />
             )}

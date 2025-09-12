@@ -5,6 +5,8 @@ import EnhancedMathRenderer from './EnhancedMathRenderer';
 import EnhancedDiagramRenderer from './EnhancedDiagramRenderer';
 import EnhancedSimulationRenderer from './EnhancedSimulationRenderer';
 import EnhancedInteractiveRenderer from './EnhancedInteractiveRenderer';
+import Enhanced3DRenderer from './Enhanced3DRenderer';
+import ParticleEffectsRenderer from './ParticleEffectsRenderer';
 import { 
   Brain, 
   Sparkles, 
@@ -55,6 +57,8 @@ interface GeneratedContent {
   video?: any;
   interactive?: any;
   threeD?: any;
+  model3D?: any;
+  particleEffects?: any;
   assessment?: any;
   metadata: {
     difficulty: string;
@@ -81,7 +85,7 @@ export default function EnhancedSmartLearningCanvas({
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentContentType, setCurrentContentType] = useState<'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced'>('text');
+  const [currentContentType, setCurrentContentType] = useState<'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced' | '3d_model' | 'particle_effects'>('text');
   const [availableContentTypes, setAvailableContentTypes] = useState<string[]>(['text']);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -128,6 +132,8 @@ export default function EnhancedSmartLearningCanvas({
       if (data.data.video) availableTypes.push('video');
       if (data.data.interactive) availableTypes.push('interactive');
       if (data.data.threeD) availableTypes.push('3d', 'advanced-3d');
+      if (data.data.model3D) availableTypes.push('3d_model');
+      if (data.data.particleEffects) availableTypes.push('particle_effects');
       
       setAvailableContentTypes(availableTypes);
       
@@ -385,6 +391,30 @@ export default function EnhancedSmartLearningCanvas({
               content={generatedContent.interactive}
               learningStyle={learningStyle}
               onProgress={(progress) => console.log('Interactive progress:', progress)}
+            />
+          );
+        }
+        break;
+        
+      case '3d_model':
+        if (generatedContent.model3D) {
+          return (
+            <Enhanced3DRenderer
+              content={generatedContent.model3D}
+              learningStyle={learningStyle}
+              onInteraction={(interaction) => console.log('3D interaction:', interaction)}
+            />
+          );
+        }
+        break;
+        
+      case 'particle_effects':
+        if (generatedContent.particleEffects) {
+          return (
+            <ParticleEffectsRenderer
+              content={generatedContent.particleEffects}
+              learningStyle={learningStyle}
+              onEffectChange={(effect) => console.log('Particle effect:', effect)}
             />
           );
         }

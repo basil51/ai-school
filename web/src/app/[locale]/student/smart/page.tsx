@@ -5,7 +5,8 @@ import EnhancedSmartLearningCanvas from '@/components/smart-teaching/EnhancedSma
 import LessonSelector from '@/components/smart-teaching/LessonSelector';
 import SmartAssessmentInterface from '@/components/smart-teaching/SmartAssessmentInterface';
 import AdaptiveQuestionTrigger from '@/components/smart-teaching/AdaptiveQuestionTrigger';
-import { BookOpen, Settings, Brain, Target, Sparkles, Zap, ClipboardCheck } from 'lucide-react';
+import AdaptiveTeachingInterface from '@/components/smart-teaching/AdaptiveTeachingInterface';
+import { BookOpen, Settings, Brain, Target, Sparkles, Zap, ClipboardCheck, Users } from 'lucide-react';
 
 type ContentType = 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced';
 
@@ -48,6 +49,8 @@ export default function Page() {
   const [studentEngagement, setStudentEngagement] = useState(0.7);
   const [timeSpent, setTimeSpent] = useState(0);
   const [confusionDetected, setConfusionDetected] = useState(false);
+  const [showAdaptiveTeaching, setShowAdaptiveTeaching] = useState(false);
+  const [adaptiveSession, setAdaptiveSession] = useState<any>(null);
 
   // Load lesson data when a lesson is selected
   useEffect(() => {
@@ -122,6 +125,25 @@ export default function Page() {
       setStudentEngagement(Math.max(0, studentEngagement - 0.1));
       setConfusionDetected(true);
     }
+  };
+
+  // Handle adaptive teaching changes
+  const handleAdaptiveTeachingChange = (adaptation: any) => {
+    console.log('Adaptive teaching change:', adaptation);
+    setAdaptiveSession(adaptation);
+    // Update learning style based on adaptation
+    if (adaptation.teachingMethod) {
+      const methodType = adaptation.teachingMethod.type;
+      if (methodType === 'visual') setLearningStyle('visual');
+      else if (methodType === 'auditory') setLearningStyle('audio');
+      else if (methodType === 'kinesthetic') setLearningStyle('kinesthetic');
+      else if (methodType === 'analytical') setLearningStyle('analytical');
+    }
+  };
+
+  const handleMethodChange = (method: any) => {
+    console.log('Teaching method changed:', method);
+    setAdaptiveSession((prev: any) => prev ? { ...prev, currentMethod: method } : null);
   };
 
   // Simulate time tracking
@@ -312,6 +334,22 @@ export default function Page() {
                   </div>
                 </button>
               )}
+
+              {lessonData && currentSessionId && (
+                <button
+                  onClick={() => setShowAdaptiveTeaching(!showAdaptiveTeaching)}
+                  className={`px-3 py-2 rounded-md transition-colors ${
+                    showAdaptiveTeaching 
+                      ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <Users className="w-4 h-4" />
+                    <span>{showAdaptiveTeaching ? 'Hide Adaptive' : 'Show Adaptive'}</span>
+                  </div>
+                </button>
+              )}
               
               <button
                 onClick={() => setShowLessonSelector(!showLessonSelector)}
@@ -403,6 +441,18 @@ export default function Page() {
                   timeSpent={timeSpent}
                   confusionDetected={confusionDetected}
                 />
+              )}
+
+              {/* Adaptive Teaching Interface */}
+              {showAdaptiveTeaching && lessonData && currentSessionId && (
+                <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50">
+                  <AdaptiveTeachingInterface
+                    sessionId={currentSessionId}
+                    lessonId={lessonData.lesson.id}
+                    onAdaptation={handleAdaptiveTeachingChange}
+                    onMethodChange={handleMethodChange}
+                  />
+                </div>
               )}
 
               {/* Smart Learning Canvas */}

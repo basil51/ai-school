@@ -66,6 +66,36 @@ const ThreeDContentSchema = z.object({
   narration: z.string().describe('Audio narration text')
 });
 
+const Model3DContentSchema = z.object({
+  title: z.string().describe('Title of the 3D model'),
+  visualizationType: z.enum(['geometry', 'molecule', 'anatomy', 'architecture', 'physics']).describe('Type of 3D model'),
+  config: z.object({
+    type: z.string().describe('Specific model type (e.g., cube, sphere, pendulum)'),
+    parameters: z.record(z.string(), z.any()).describe('Model parameters (dimensions, colors, etc.)')
+  }).describe('3D model configuration'),
+  description: z.string().describe('Description of the 3D model'),
+  interactions: z.array(z.string()).describe('Available interactions'),
+  narration: z.string().describe('Audio narration text'),
+  learningObjectives: z.array(z.string()).describe('Learning objectives for the 3D model'),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']).describe('Difficulty level')
+});
+
+const ParticleEffectsContentSchema = z.object({
+  title: z.string().describe('Title of the particle effects'),
+  effectType: z.enum(['fire', 'smoke', 'stars', 'sparkles', 'rain', 'snow']).describe('Type of particle effect'),
+  config: z.object({
+    count: z.number().describe('Number of particles'),
+    color: z.string().describe('Particle color'),
+    size: z.number().describe('Particle size'),
+    opacity: z.number().describe('Particle opacity'),
+    speed: z.number().describe('Animation speed'),
+    amplitude: z.number().describe('Animation amplitude')
+  }).describe('Particle effect configuration'),
+  description: z.string().describe('Description of the particle effects'),
+  learningObjectives: z.array(z.string()).describe('Learning objectives'),
+  educationalValue: z.string().describe('How this effect helps learning')
+});
+
 const AssessmentContentSchema = z.object({
   title: z.string().describe('Title of the assessment'),
   questions: z.array(z.object({
@@ -97,6 +127,8 @@ const SmartTeachingContentSchema = z.object({
   video: VideoContentSchema.optional(),
   interactive: InteractiveContentSchema.optional(),
   threeD: ThreeDContentSchema.optional(),
+  model3D: Model3DContentSchema.optional(),
+  particleEffects: ParticleEffectsContentSchema.optional(),
   assessment: AssessmentContentSchema.optional(),
   metadata: z.object({
     difficulty: z.string(),
@@ -116,6 +148,8 @@ export type SimulationContent = z.infer<typeof SimulationContentSchema>;
 export type VideoContent = z.infer<typeof VideoContentSchema>;
 export type InteractiveContent = z.infer<typeof InteractiveContentSchema>;
 export type ThreeDContent = z.infer<typeof ThreeDContentSchema>;
+export type Model3DContent = z.infer<typeof Model3DContentSchema>;
+export type ParticleEffectsContent = z.infer<typeof ParticleEffectsContentSchema>;
 export type AssessmentContent = z.infer<typeof AssessmentContentSchema>;
 
 export class SmartTeachingContentGenerator {
@@ -275,6 +309,8 @@ Generate content that will make students excited to learn and help them master t
       video: VideoContentSchema,
       interactive: InteractiveContentSchema,
       threeD: ThreeDContentSchema,
+      model3D: Model3DContentSchema,
+      particleEffects: ParticleEffectsContentSchema,
       assessment: AssessmentContentSchema
     };
 
