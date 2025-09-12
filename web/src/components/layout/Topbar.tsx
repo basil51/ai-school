@@ -227,12 +227,12 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
                     {userRole === 'student' && (
                       <>
                         <Link 
-                          href={`/${currentLocale}/student/ai-teacher`}
+                          href={`/${currentLocale}/student/unified`}
                           className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
                           <Brain className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm">{dict?.userMenu?.aiTeacher || "AI Teacher"}</span>
+                          <span className="text-sm">AI Learning Hub</span>
                         </Link>
                         
                         <Link 
