@@ -432,7 +432,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   const renderSmartTeachingCanvas = () => {
     if (loading) {
       return (
-        <div className="h-full flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-gray-600 mb-2">Loading Lesson...</h3>
@@ -444,7 +444,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
 
     if (error) {
       return (
-        <div className="h-full flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <div className="text-center text-red-600">
             <Brain className="w-16 h-16 text-red-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Error Loading Lesson</h3>
@@ -462,7 +462,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
 
     if (lessonData) {
       return (
-        <div className="h-full">
+        <div className="h-full overflow-hidden">
           <EnhancedSmartLearningCanvas
             lessonData={lessonData}
             learningStyle={learningStyle}
@@ -473,7 +473,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     }
     
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="text-center">
           <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-600 mb-2">Smart Teaching Canvas</h3>
@@ -488,7 +488,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     const canvasHeight = isFullscreen ? window.innerHeight - 200 : isExpanded ? 600 : 400;
     
     return (
-      <div className="relative w-full h-full flex flex-col">
+      <div className="relative w-full flex flex-col">
         <canvas
           ref={canvasRef}
           width={canvasWidth}
@@ -510,7 +510,9 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
             ref={(gridCanvas) => {
               if (gridCanvas) {
                 const ctx = gridCanvas.getContext('2d');
-                drawGrid(ctx, canvasWidth, canvasHeight);
+                if (ctx) {
+                  drawGrid(ctx, canvasWidth, canvasHeight);
+                }
               }
             }}
           />
@@ -662,8 +664,8 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      <div className="mx-auto flex flex-col">
         {/* Unified Header */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 mb-4 p-4">
           <div className="flex items-center justify-between">
@@ -696,12 +698,17 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                     <span>Streak: {personalProgress.currentStreak} days</span>
                   </div>
                   
+                  <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 rounded-full text-sm font-medium shadow-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>Time: {Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
+                  </div>
+                  
                   <div className="flex items-center gap-2">
                     <label className="text-sm text-gray-600">Learning style:</label>
                     <select
                       value={learningStyle}
                       onChange={(e) => setLearningStyle(e.target.value as any)}
-                      className="border border-gray-200 rounded-md px-2 py-1 text-sm"
+                      className="border border-gray-200 rounded-md px-2 py-1 text-sm h-8 min-h-8 max-h-8"
                     >
                       <option value="visual">Visual</option>
                       <option value="audio">Audio</option>
@@ -724,7 +731,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                     <select
                       value={learningStyle}
                       onChange={(e) => setLearningStyle(e.target.value as any)}
-                      className="border border-gray-200 rounded-md px-2 py-1 text-sm"
+                      className="border border-gray-200 rounded-md px-2 py-1 text-sm h-8 min-h-8 max-h-8"
                     >
                       <option value="visual">Visual</option>
                       <option value="audio">Audio</option>
@@ -739,73 +746,11 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
         </div>
 
         {/* Main Content Grid */}
-        <div className={`grid ${isFullscreen ? 'grid-cols-1' : 'grid-cols-12'} gap-4`}>
-          {/* Left Sidebar - Controls */}
-          {!isFullscreen && (
-            <div className="col-span-2">
-              {mode === 'student' ? (
-                // Student-focused sidebar
-                <>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4 mb-4">
-                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                      <Target className="w-4 h-4 mr-2" />
-                      My Progress
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <BookOpen className="w-4 h-4 text-blue-500 mr-2" />
-                          <span className="text-sm text-gray-600">Lessons</span>
-                        </div>
-                        <span className="text-sm font-semibold text-blue-600">
-                          {personalProgress.lessonsCompleted}/{personalProgress.totalLessons}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <TrendingUp className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-600">Streak</span>
-                        </div>
-                        <span className="text-sm font-semibold text-green-600">{personalProgress.currentStreak} days</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Clock className="w-4 h-4 text-purple-500 mr-2" />
-                          <span className="text-sm text-gray-600">Time</span>
-                        </div>
-                        <span className="text-sm font-semibold text-purple-600">{Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4">
-                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                      <Brain className="w-4 h-4 mr-2" />
-                      AI Assistant
-                    </h3>
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => setShowAIAssistant(!showAIAssistant)}
-                        className={`w-full p-3 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                          showAIAssistant
-                            ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700'
-                            : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700'
-                        }`}
-                      >
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        {showAIAssistant ? 'Hide Chat' : 'Ask AI Teacher'}
-                      </button>
-                      
-                      <button className="w-full p-3 rounded-xl bg-gradient-to-r from-green-100 to-emerald-200 text-green-700 hover:from-green-200 hover:to-emerald-300 transition-all duration-200">
-                        <Sparkles className="w-5 h-5 mr-2" />
-                        Smart Help
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                // Teacher-focused sidebar
-                <>
+        <div className={`flex-1 flex ${isFullscreen ? 'flex-col' : mode === 'student' ? 'flex-col' : 'flex-row'} gap-4 min-h-0`}>
+          {/* Left Sidebar - Controls (Only for teacher mode) */}
+          {!isFullscreen && mode === 'teacher' && (
+            <div className="w-64 flex-shrink-0">
+              {/* Teacher-focused sidebar */}
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4 mb-4">
                     <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
                       <Settings className="w-4 h-4 mr-2" />
@@ -869,16 +814,14 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                       </div>
                     </div>
                   </div>
-                </>
-              )}
             </div>
           )}
 
           {/* Main Teaching Area */}
-          <div className={`${isFullscreen ? 'w-full h-screen' : mode === 'student' ? 'col-span-10' : 'col-span-8'}`}>
+          <div className={`flex-1 min-h-0 ${isFullscreen ? 'h-screen' : ''}`}>
             <div 
-              className={`bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/30 transition-all duration-500 ${
-                isExpanded ? 'h-[85vh]' : 'h-[500px]'
+              className={`bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/30 transition-all duration-500 h-full flex flex-col ${
+                isExpanded ? 'max-h-[calc(100vh-200px)]' : 'max-h-full'
               } ${isFullscreen ? 'h-full' : ''}`}
             >
               {/* Unified Tab Navigation */}
@@ -1104,7 +1047,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
               )}
 
               {/* Content Area */}
-              <div className="p-4 h-full overflow-hidden">
+              <div className="flex-1 p-4 min-h-0">
                 <div className="h-full rounded-lg">
                   {renderUnifiedCanvas()}
                 </div>
@@ -1114,7 +1057,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
 
           {/* Right Sidebar - Student Panel (Teacher Mode Only) */}
           {!isFullscreen && showStudentPanel && mode === 'teacher' && (
-            <div className="col-span-2">
+            <div className="w-64 flex-shrink-0">
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-800 flex items-center">

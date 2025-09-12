@@ -43,7 +43,7 @@ export default function LayoutClient({ children, user, locale }: LayoutClientPro
   }
 
   return (   
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="flex flex-col bg-gray-50">
       <Topbar               
         sidebarOpen={sidebarOpen}
         onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}

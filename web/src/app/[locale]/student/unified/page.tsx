@@ -159,7 +159,7 @@ export default function UnifiedSmartTeachingPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -212,21 +212,21 @@ export default function UnifiedSmartTeachingPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex">
         {activeTab === 'learning' ? (
           <>
             {/* Lesson Selector Sidebar */}
             {showLessonSelector && (
-              <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
+            <div className="flex-1 bg-white border-r border-gray-200 flex-shrink-0">
                 <LessonSelector 
                   onLessonSelect={handleLessonSelect}
                   selectedLessonId={selectedLessonId || undefined}
                 />
-              </div>
+            </div>
             )}
 
             {/* Unified Interface */}
-            <div className="flex-1">
+            <div className="flex-2">
               <UnifiedSmartTeachingInterface
                 studentId="demo-student"
                 initialTab="smart-teaching"
@@ -240,7 +240,7 @@ export default function UnifiedSmartTeachingPage() {
         ) : (
           /* Courses Tab Content */
           <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="mx-auto">
               {/* Current Enrollments */}
               {enrollments.length > 0 && (
                 <Card className="mb-6">

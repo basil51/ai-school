@@ -162,6 +162,15 @@ model User {
   
   // Smart Teaching relationships
   smartTeachingSessions SmartTeachingSession[]
+  
+  // Phase 3: Production Readiness - Progress Tracking and Analytics
+  realTimeProgress RealTimeProgress[]
+  phase3LearningAnalytics Phase3LearningAnalytics[]
+  phase3PerformanceMetricsStudent Phase3PerformanceMetrics[] @relation("Phase3PerformanceStudent")
+  phase3PerformanceMetricsTeacher Phase3PerformanceMetrics[] @relation("Phase3PerformanceTeacher")
+  learningOutcomePredictions LearningOutcomePrediction[]
+  phase3ProgressReports Phase3ProgressReport[]
+  generatedReports Phase3ProgressReport[] @relation("ReportGeneratedBy")
 }
 
 model Account {
@@ -272,6 +281,9 @@ model Organization {
   monitoringRules MonitoringRule[]
   notificationChannels NotificationChannel[]
   monitoringReports MonitoringReport[]
+  
+  // Phase 3: Production Readiness - Progress Tracking and Analytics
+  phase3PerformanceMetrics Phase3PerformanceMetrics[]
 }
 
 model OrganizationSettings {
@@ -377,6 +389,33 @@ model ProgressReport {
   createdAt   DateTime @default(now())
   
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Phase 3.1: Comprehensive Progress Reports
+model Phase3ProgressReport {
+  id              String   @id @default(cuid())
+  studentId       String
+  reportType      String   // 'daily', 'weekly', 'monthly', 'custom'
+  periodStart     DateTime
+  periodEnd       DateTime
+  generatedBy     String?  // User ID who generated the report
+  summary         String   @db.Text
+  keyMetrics      Json     // Store complex metrics as JSON
+  achievements    String[] // Array of achievements
+  improvements    String[] // Array of improvement areas
+  recommendations String[] // Array of recommendations
+  goals           String[] // Array of goals for next period
+  parentNotes     String?  @db.Text
+  isShared        Boolean  @default(false)
+  sharedWith      String[] // Array of user IDs who can view this report
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  generatedByUser User?    @relation("ReportGeneratedBy", fields: [generatedBy], references: [id])
+  
+  @@index([studentId, reportType])
+  @@index([periodStart, periodEnd])
 }
 
 // --- Email Templates ---
@@ -1008,6 +1047,10 @@ model Subject {
   knowledgeRetention KnowledgeRetention[]
   performanceKPIs PerformanceKPI[]
   
+  // Phase 3: Production Readiness - Progress Tracking and Analytics
+  phase3LearningAnalytics Phase3LearningAnalytics[]
+  learningOutcomePredictions LearningOutcomePrediction[]
+  
   @@unique([organizationId, name])
   @@index([organizationId, isActive])
 }
@@ -1057,6 +1100,9 @@ model Lesson {
   // Smart Teaching relationships
   smartTeachingSessions SmartTeachingSession[]
   generatedContent GeneratedContent[]
+  
+  // Phase 3: Production Readiness - Progress Tracking and Analytics
+  realTimeProgress RealTimeProgress[]
   
   @@unique([topicId, title])
   @@index([topicId, order])
@@ -1120,6 +1166,123 @@ enum ProgressStatus {
   completed
   failed
   retry_needed
+}
+
+// === Phase 3: Production Readiness - Progress Tracking and Analytics ===
+
+model RealTimeProgress {
+  id                String   @id @default(cuid())
+  studentId         String
+  sessionId         String
+  lessonId          String?
+  activityType      String   // "lesson", "assessment", "whiteboard", "chat", etc.
+  activityId        String?  // Specific activity identifier
+  startTime         DateTime @default(now())
+  endTime           DateTime?
+  duration          Int      @default(0) // Seconds
+  engagementLevel   Float    @default(0.0) // 0.0 to 1.0
+  interactionCount  Int      @default(0)
+  focusTime         Int      @default(0) // Seconds of focused activity
+  distractionCount  Int      @default(0)
+  completionRate    Float    @default(0.0) // 0.0 to 1.0
+  accuracy          Float?   // For assessments/quizzes
+  difficulty        String?  // "easy", "medium", "hard"
+  learningStyle     String?  // Detected learning style
+  emotionalState    String?  // "engaged", "confused", "frustrated", "excited"
+  metadata          Json?    // Additional tracking data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  student           User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson            Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  
+  @@index([studentId, startTime])
+  @@index([sessionId])
+  @@index([activityType, startTime])
+}
+
+model Phase3LearningAnalytics {
+  id                    String   @id @default(cuid())
+  studentId             String
+  subjectId             String?
+  timeframe             String   // "daily", "weekly", "monthly", "yearly"
+  periodStart           DateTime
+  periodEnd             DateTime
+  totalLearningTime     Int      @default(0) // Minutes
+  totalSessions         Int      @default(0)
+  averageSessionLength  Float    @default(0.0) // Minutes
+  averageEngagement     Float    @default(0.0) // 0.0 to 1.0
+  lessonsCompleted      Int      @default(0)
+  assessmentsCompleted  Int      @default(0)
+  averageAccuracy       Float    @default(0.0) // 0.0 to 1.0
+  improvementRate       Float    @default(0.0) // Percentage improvement
+  learningVelocity      Float    @default(0.0) // Lessons per hour
+  retentionRate         Float    @default(0.0) // 0.0 to 1.0
+  difficultyProgression Float    @default(0.0) // How well student handles harder content
+  preferredLearningTime String?  // "morning", "afternoon", "evening"
+  preferredLearningStyle String? // "visual", "auditory", "kinesthetic", "reading"
+  strengths             String[] // Array of subject/topic strengths
+  weaknesses            String[] // Array of areas needing improvement
+  goals                 String[] // Learning goals for the period
+  achievements          String[] // Achievements unlocked
+  recommendations       Json?    // AI-generated recommendations
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  student               User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject               Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  
+  @@unique([studentId, subjectId, timeframe, periodStart])
+  @@index([studentId, periodStart])
+  @@index([timeframe, periodStart])
+}
+
+model Phase3PerformanceMetrics {
+  id                    String   @id @default(cuid())
+  studentId             String?
+  teacherId             String?
+  organizationId        String?
+  metricType            String   // "system", "user", "content", "engagement"
+  metricName            String   // "response_time", "accuracy", "engagement", etc.
+  metricValue           Float
+  metricUnit            String?  // "ms", "percentage", "count", etc.
+  context               Json?    // Additional context data
+  timestamp             DateTime @default(now())
+  sessionId             String?
+  lessonId              String?
+  assessmentId          String?
+  
+  student               User?    @relation("Phase3PerformanceStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher               User?    @relation("Phase3PerformanceTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  organization          Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@index([metricType, timestamp])
+  @@index([studentId, timestamp])
+  @@index([organizationId, timestamp])
+}
+
+model LearningOutcomePrediction {
+  id                    String   @id @default(cuid())
+  studentId             String
+  subjectId             String?
+  predictionType        String   // "success", "engagement", "retention", "completion"
+  predictedValue        Float    // Predicted score/outcome
+  confidence            Float    // Confidence level (0.0 to 1.0)
+  timeframe             String   // "short_term", "medium_term", "long_term"
+  predictionDate        DateTime @default(now())
+  targetDate            DateTime // When the prediction is for
+  factors               Json     // Factors that influenced the prediction
+  recommendations       String[] // Recommendations to improve outcome
+  actualOutcome         Float?   // Actual outcome when available
+  accuracy              Float?   // How accurate the prediction was
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  student               User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject               Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  
+  @@index([studentId, predictionType, targetDate])
+  @@index([predictionType, predictionDate])
 }
 
 // Student learning profile for personalization
