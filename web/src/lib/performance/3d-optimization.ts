@@ -48,6 +48,9 @@ export class ThreeDOptimizationManager {
   private frameCount: number = 0;
   private fpsUpdateInterval: number = 1000; // Update FPS every second
   private lastFpsUpdate: number = 0;
+  private monitoringInterval: NodeJS.Timeout | null = null;
+  private lastQualityLogTime: number = 0;
+  private qualityLogThrottle: number = 5000; // Only log quality changes every 5 seconds
 
   constructor(
     lodConfig: Partial<LODConfig> = {},
@@ -82,7 +85,10 @@ export class ThreeDOptimizationManager {
       memoryUsage: 0,
     };
 
-    this.startPerformanceMonitoring();
+    // Only start monitoring in browser environment, not during build
+    if (typeof window !== 'undefined') {
+      this.startPerformanceMonitoring();
+    }
   }
 
   // Create LOD levels for a 3D object
@@ -162,7 +168,7 @@ export class ThreeDOptimizationManager {
     this.renderingConfig.maxDrawCalls = Math.max(100, this.renderingConfig.maxDrawCalls * 0.8);
     this.renderingConfig.maxTriangles = Math.max(10000, this.renderingConfig.maxTriangles * 0.8);
     
-    console.log('Reduced 3D rendering quality due to poor performance');
+    this.logQualityChange('Reduced 3D rendering quality due to poor performance');
   }
 
   // Increase rendering quality
@@ -177,7 +183,7 @@ export class ThreeDOptimizationManager {
     this.renderingConfig.maxDrawCalls = Math.min(2000, this.renderingConfig.maxDrawCalls * 1.1);
     this.renderingConfig.maxTriangles = Math.min(2000000, this.renderingConfig.maxTriangles * 1.1);
     
-    console.log('Increased 3D rendering quality due to good performance');
+    this.logQualityChange('Increased 3D rendering quality due to good performance');
   }
 
   // Frustum culling - remove objects outside camera view
@@ -251,18 +257,38 @@ export class ThreeDOptimizationManager {
 
   // Start performance monitoring
   private startPerformanceMonitoring(): void {
+    // Only start if not already running
+    if (this.monitoringInterval) return;
+    
     const monitor = () => {
       // This would integrate with the actual 3D rendering engine
       // For now, we'll simulate some metrics
       this.updatePerformanceMetrics(
         Math.floor(Math.random() * 1000),
         Math.floor(Math.random() * 100000),
-        process.memoryUsage().heapUsed
+        typeof process !== 'undefined' ? process.memoryUsage().heapUsed : 0
       );
     };
 
-    // Monitor every frame (60 FPS)
-    setInterval(monitor, 16.67);
+    // Monitor every frame (60 FPS) - but only in browser
+    this.monitoringInterval = setInterval(monitor, 16.67);
+  }
+
+  // Stop performance monitoring
+  stopPerformanceMonitoring(): void {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+  }
+
+  // Throttled logging for quality changes
+  private logQualityChange(message: string): void {
+    const now = Date.now();
+    if (now - this.lastQualityLogTime > this.qualityLogThrottle) {
+      console.log(message);
+      this.lastQualityLogTime = now;
+    }
   }
 
   // Get current performance metrics

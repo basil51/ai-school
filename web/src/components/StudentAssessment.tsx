@@ -3,29 +3,29 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+//import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+//import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Clock, 
   CheckCircle, 
-  XCircle, 
-  Play, 
-  Pause, 
-  RotateCcw,
-  Brain,
+  //XCircle, 
+  //Play, 
+  //Pause, 
+  //RotateCcw,
+  //Brain,
   FileText,
   Loader2,
   AlertCircle,
   ArrowLeft,
   ArrowRight
 } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
+//import { useTranslations } from "@/lib/useTranslations";
 
 interface QuestionOption {
   id: string;
@@ -81,7 +81,7 @@ export function StudentAssessment({
   onExit,
   className = "" 
 }: StudentAssessmentProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -90,19 +90,11 @@ export function StudentAssessment({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  //const [startTime, setStartTime] = useState<Date | null>(null);
   const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const questionTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    startAssessment();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (questionTimerRef.current) clearInterval(questionTimerRef.current);
-    };
-  }, [assessmentId]);
 
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0) {
@@ -157,7 +149,6 @@ export function StudentAssessment({
       const attemptData = await attemptResponse.json();
       setAttemptId(attemptData.id);
       setAssessment(attemptData.assessment);
-      setStartTime(new Date());
       setQuestionStartTime(new Date());
 
       // Initialize responses array
@@ -178,6 +169,14 @@ export function StudentAssessment({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    startAssessment();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (questionTimerRef.current) clearInterval(questionTimerRef.current);
+    };
+  }, [assessmentId, startAssessment]);
 
   const updateQuestionTimeSpent = (questionIndex: number, timeSpent: number) => {
     setResponses(prev => {

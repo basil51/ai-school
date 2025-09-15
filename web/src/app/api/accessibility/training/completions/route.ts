@@ -11,11 +11,11 @@ const createCompletionSchema = z.object({
   certificateUrl: z.string().url().optional(),
 });
 
-const updateCompletionSchema = z.object({
+/*const updateCompletionSchema = z.object({
   score: z.number().min(0).max(100).optional(),
   feedback: z.string().optional(),
   certificateUrl: z.string().url().optional(),
-});
+});*/
 
 export async function GET(request: NextRequest) {
   try {

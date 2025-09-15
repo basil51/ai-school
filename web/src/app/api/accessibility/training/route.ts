@@ -27,7 +27,7 @@ const createTrainingSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-const updateTrainingSchema = createTrainingSchema.partial();
+//const updateTrainingSchema = createTrainingSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

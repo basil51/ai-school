@@ -5,23 +5,23 @@ import {
   Brain, Send, Mic, Camera, Paperclip, Volume2, 
   RefreshCw, ThumbsUp, ThumbsDown, BookOpen, 
   Lightbulb, Code, Calculator, Palette, Music,
-  Globe, Beaker, History, Heart, Star, Sparkles,
+  Globe, Beaker, History, Star, Sparkles,
   ChevronRight, Eye, Headphones, PenTool, Video,
   ArrowLeft, Settings, Download, Share2, Bookmark
 } from 'lucide-react';
 
 const AITeacherPage = () => {
   const [selectedSubject, setSelectedSubject] = useState('mathematics');
-  const [currentTopic, setCurrentTopic] = useState('algebra');
+  //const [currentTopic, setCurrentTopic] = useState('algebra');
   const [teachingMethod, setTeachingMethod] = useState('visual');
-  const [messages, setMessages] = useState([
+  const messages=[
     {
       type: 'ai',
       content: "Hello! I'm your AI Teacher. Today we're learning about Quadratic Equations. How would you like me to explain this topic?",
       methods: ['Step-by-Step', 'Visual Diagram', 'Real-World Examples', 'Interactive Practice'],
       timestamp: '2:30 PM'
     }
-  ]);
+  ];
   const [inputMessage, setInputMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
 
@@ -340,7 +340,7 @@ const AITeacherPage = () => {
             {/* Learning Progress */}
             <div className="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-xl p-4 text-white">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Today's Progress</h3>
+                <h3 className="font-semibold">Today&#39s Progress</h3>
                 <Star className="w-5 h-5" />
               </div>
               

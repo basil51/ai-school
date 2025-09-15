@@ -1,7 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { Redis } from 'ioredis';
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+let redis: Redis | null = null;
+
+// Only initialize Redis if configured
+try {
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      enableReadyCheck: false,
+    });
+
+    redis.on('error', (error) => {
+      console.warn('Scalability Redis connection error:', error.message);
+      redis = null;
+    });
+  }
+} catch (error) {
+  console.warn('Failed to initialize scalability Redis:', error);
+  redis = null;
+}
 
 export interface ScalabilityConfig {
   enableHorizontalScaling: boolean;
@@ -212,13 +231,13 @@ export class ScalabilityEngine {
 
     try {
       // Analyze data distribution
-      const dataDistribution = await this.analyzeDataDistribution(shardKey);
+      const dataDistribution = await this.analyzeDataDistribution();
       
       // Create shards based on distribution
-      const shards = await this.createDatabaseShards(dataDistribution);
+      const shards = await this.createDatabaseShards();
       
       // Migrate data to shards
-      await this.migrateDataToShards(shards, shardKey);
+      await this.migrateDataToShards(shards);
       
       // Update application configuration
       await this.updateShardingConfig(shards);
@@ -258,7 +277,7 @@ export class ScalabilityEngine {
       }
       
       // Optimize cache TTL based on data access patterns
-      const optimizedTTL = await this.optimizeCacheTTL(cacheAnalysis.accessPatterns);
+      const optimizedTTL = await this.optimizeCacheTTL();
       improvements.push(`Optimized cache TTL to ${optimizedTTL} seconds`);
       
       // Implement cache compression
@@ -432,7 +451,7 @@ export class ScalabilityEngine {
         }
       });
     } catch (error) {
-      console.warn('ScalabilityMetrics model not available yet. Run migration to enable metrics storage.');
+      console.warn('ScalabilityMetrics model not available yet. Run migration to enable metrics storage.', error);
     }
   }
 
@@ -455,7 +474,13 @@ export class ScalabilityEngine {
 
   private async getCurrentUserCount(): Promise<number> {
     // Get current active users from Redis or database
-    return await redis.scard('active_users') || 0;
+    if (!redis) return 0;
+    try {
+      return await redis.scard('active_users') || 0;
+    } catch (error) {
+      console.warn('Failed to get user count from Redis:', error);
+      return 0;
+    }
   }
 
   private async getRequestsPerSecond(): Promise<number> {
@@ -478,7 +503,7 @@ export class ScalabilityEngine {
       
       return timeDiff > 0 ? (requestDiff / timeDiff) * 1000 : 0;
     } catch (error) {
-      console.warn('ScalabilityMetrics model not available yet.');
+      console.warn('ScalabilityMetrics model not available yet.', error);
       return 0;
     }
   }
@@ -497,7 +522,7 @@ export class ScalabilityEngine {
 
       return recentMetrics?.averageResponseTime || 0;
     } catch (error) {
-      console.warn('ScalabilityMetrics model not available yet.');
+      console.warn('ScalabilityMetrics model not available yet.', error);
       return 0;
     }
   }
@@ -509,20 +534,32 @@ export class ScalabilityEngine {
 
   private async getCacheHitRate(): Promise<number> {
     // Get cache hit rate from Redis
-    const info = await redis.info('stats');
-    const hits = info.match(/keyspace_hits:(\d+)/)?.[1] || '0';
-    const misses = info.match(/keyspace_misses:(\d+)/)?.[1] || '0';
-    const total = parseInt(hits) + parseInt(misses);
-    return total > 0 ? parseInt(hits) / total : 0;
+    if (!redis) return 0;
+    try {
+      const info = await redis.info('stats');
+      const hits = info.match(/keyspace_hits:(\d+)/)?.[1] || '0';
+      const misses = info.match(/keyspace_misses:(\d+)/)?.[1] || '0';
+      const total = parseInt(hits) + parseInt(misses);
+      return total > 0 ? parseInt(hits) / total : 0;
+    } catch (error) {
+      console.warn('Failed to get cache hit rate from Redis:', error);
+      return 0;
+    }
   }
 
   private async getMemoryUsage(): Promise<number> {
     // Get memory usage percentage
-    const info = await redis.info('memory');
-    const used = info.match(/used_memory:(\d+)/)?.[1] || '0';
-    const max = info.match(/maxmemory:(\d+)/)?.[1] || '0';
-    const maxNum = parseInt(max);
-    return maxNum > 0 ? parseInt(used) / maxNum : 0;
+    if (!redis) return 0;
+    try {
+      const info = await redis.info('memory');
+      const used = info.match(/used_memory:(\d+)/)?.[1] || '0';
+      const max = info.match(/maxmemory:(\d+)/)?.[1] || '0';
+      const maxNum = parseInt(max);
+      return maxNum > 0 ? parseInt(used) / maxNum : 0;
+    } catch (error) {
+      console.warn('Failed to get memory usage from Redis:', error);
+      return 0;
+    }
   }
 
   private async getCPUUsage(): Promise<number> {
@@ -552,7 +589,7 @@ export class ScalabilityEngine {
 
       return totalRequests > 0 ? recentErrors / totalRequests : 0;
     } catch (error) {
-      console.warn('SecurityAudit model not available yet.');
+      console.warn('SecurityAudit model not available yet.', error);
       return 0;
     }
   }
@@ -572,17 +609,17 @@ export class ScalabilityEngine {
     console.log(`Deploying ${count} new instances`);
   }
 
-  private async analyzeDataDistribution(shardKey: string): Promise<any> {
+  private async analyzeDataDistribution(): Promise<any> {
     // Analyze data distribution for sharding (placeholder)
     return { distribution: 'even' };
   }
 
-  private async createDatabaseShards(distribution: any): Promise<any[]> {
+  private async createDatabaseShards(): Promise<any[]> {
     // Create database shards (placeholder)
     return [{ id: 'shard1' }, { id: 'shard2' }];
   }
 
-  private async migrateDataToShards(shards: any[], shardKey: string): Promise<void> {
+  private async migrateDataToShards(shards: any[]): Promise<void> {
     // Migrate data to shards (placeholder)
     console.log(`Migrating data to ${shards.length} shards`);
   }
@@ -605,7 +642,7 @@ export class ScalabilityEngine {
     console.log(`Implementing cache warming for: ${frequentData.join(', ')}`);
   }
 
-  private async optimizeCacheTTL(accessPatterns: any): Promise<number> {
+  private async optimizeCacheTTL(): Promise<number> {
     // Optimize cache TTL (placeholder)
     return 1800; // 30 minutes
   }

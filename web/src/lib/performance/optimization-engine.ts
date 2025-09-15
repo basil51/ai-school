@@ -2,8 +2,25 @@ import { Redis } from 'ioredis';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 
-// Redis connection for caching
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Redis connection for caching - only if configured
+let redis: Redis | null = null;
+
+try {
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      enableReadyCheck: false,
+    });
+
+    redis.on('error', (error) => {
+      console.warn('Performance Redis error (disabling cache):', error.message);
+      redis = null;
+    });
+  }
+} catch (error) {
+  console.warn('Failed to initialize Redis (performance cache disabled):', error);
+}
 
 export interface CacheConfig {
   ttl: number; // Time to live in seconds
@@ -32,6 +49,16 @@ export class PerformanceOptimizationEngine {
   private cachePrefix = 'ai-school:';
   private defaultTTL = 3600; // 1 hour
 
+  private async safeRedisOperation<T>(operation: () => Promise<T>, fallback: T): Promise<T> {
+    if (!redis) return fallback;
+    try {
+      return await operation();
+    } catch (error) {
+      console.warn('Redis operation failed:', error);
+      return fallback;
+    }
+  }
+
   /**
    * Cache AI-generated content with intelligent key generation
    */
@@ -47,7 +74,7 @@ export class PerformanceOptimizationEngine {
       context: this.sanitizeContext(context)
     };
 
-    await redis.setex(cacheKey, ttl, JSON.stringify(cacheData));
+    await this.safeRedisOperation(() => redis!.setex(cacheKey, ttl, JSON.stringify(cacheData)), undefined);
     return cacheKey;
   }
 
@@ -56,7 +83,7 @@ export class PerformanceOptimizationEngine {
    */
   async getCachedAIContent(context: any): Promise<string | null> {
     const cacheKey = this.generateCacheKey('ai-content', context);
-    const cached = await redis.get(cacheKey);
+    const cached = await this.safeRedisOperation(() => redis!.get(cacheKey), null);
     
     if (cached) {
       const data = JSON.parse(cached);
@@ -82,7 +109,7 @@ export class PerformanceOptimizationEngine {
       query: query.substring(0, 100) // Truncate for storage
     };
 
-    await redis.setex(cacheKey, ttl, JSON.stringify(cacheData));
+    await this.safeRedisOperation(() => redis!.setex(cacheKey, ttl, JSON.stringify(cacheData)), undefined);
     return cacheKey;
   }
 
@@ -91,7 +118,7 @@ export class PerformanceOptimizationEngine {
    */
   async getCachedQuery(query: string, params: any[]): Promise<any | null> {
     const cacheKey = this.generateCacheKey('db-query', { query, params });
-    const cached = await redis.get(cacheKey);
+    const cached = await this.safeRedisOperation(() => redis!.get(cacheKey), null);
     
     if (cached) {
       const data = JSON.parse(cached);
@@ -116,7 +143,7 @@ export class PerformanceOptimizationEngine {
       studentId
     };
 
-    await redis.setex(cacheKey, ttl, JSON.stringify(cacheData));
+    await this.safeRedisOperation(() => redis!.setex(cacheKey, ttl, JSON.stringify(cacheData)), undefined);
     return cacheKey;
   }
 
@@ -125,7 +152,7 @@ export class PerformanceOptimizationEngine {
    */
   async getCachedLearningPattern(studentId: string): Promise<any | null> {
     const cacheKey = this.generateCacheKey('learning-pattern', { studentId });
-    const cached = await redis.get(cacheKey);
+    const cached = await this.safeRedisOperation(() => redis!.get(cacheKey), null);
     
     if (cached) {
       const data = JSON.parse(cached);
@@ -231,12 +258,12 @@ export class PerformanceOptimizationEngine {
    * Monitor and report performance metrics
    */
   async getPerformanceMetrics(): Promise<PerformanceMetrics> {
-    const cacheInfo = await redis.info('memory');
+    const cacheInfo = await this.safeRedisOperation(() => redis!.info('memory'), '');
     const dbMetrics = await this.getDatabaseMetrics();
     
     return {
       responseTime: await this.getAverageResponseTime(),
-      cacheHitRate: await this.getCacheHitRate(),
+      cacheHitRate: await this.calculateCacheHitRate(),
       databaseQueryTime: dbMetrics.averageQueryTime,
       aiGenerationTime: await this.getAverageAIGenerationTime(),
       memoryUsage: this.parseMemoryUsage(cacheInfo),
@@ -248,11 +275,11 @@ export class PerformanceOptimizationEngine {
    * Implement smart cache invalidation
    */
   async invalidateCache(tags: string[]): Promise<void> {
-    const keys = await redis.keys(`${this.cachePrefix}*`);
+    const keys = await this.safeRedisOperation(() => redis!.keys(`${this.cachePrefix}*`), []);
     const keysToDelete: string[] = [];
 
     for (const key of keys) {
-      const cached = await redis.get(key);
+      const cached = await this.safeRedisOperation(() => redis!.get(key), null);
       if (cached) {
         const data = JSON.parse(cached);
         if (data.tags && data.tags.some((tag: string) => tags.includes(tag))) {
@@ -262,7 +289,7 @@ export class PerformanceOptimizationEngine {
     }
 
     if (keysToDelete.length > 0) {
-      await redis.del(...keysToDelete);
+      await this.safeRedisOperation(() => redis!.del(...keysToDelete), 0);
     }
   }
 
@@ -271,7 +298,7 @@ export class PerformanceOptimizationEngine {
    */
   async optimizeMemory(): Promise<void> {
     // Clear expired cache entries
-    await redis.eval(`
+    await this.safeRedisOperation(() => redis!.eval(`
       local keys = redis.call('keys', ARGV[1])
       local now = tonumber(ARGV[2])
       local expired = {}
@@ -286,7 +313,7 @@ export class PerformanceOptimizationEngine {
       if #expired > 0 then
         redis.call('del', unpack(expired))
       end
-    `, 0, `${this.cachePrefix}*`, Math.floor(Date.now() / 1000));
+    `, 0, `${this.cachePrefix}*`, Math.floor(Date.now() / 1000)), 0);
 
     // Force garbage collection if available
     if (global.gc) {
@@ -378,7 +405,7 @@ export class PerformanceOptimizationEngine {
     const cacheKey = this.generateCacheKey('pregen-content', context);
     
     // Check if already pre-generated
-    const existing = await redis.get(cacheKey);
+    const existing = await this.safeRedisOperation(() => redis!.get(cacheKey), null);
     if (existing) return;
     
     // Pre-generate content (placeholder)
@@ -388,27 +415,27 @@ export class PerformanceOptimizationEngine {
 
   private async getAverageResponseTime(): Promise<number> {
     // Get average response time from metrics
-    const metrics = await redis.get(`${this.cachePrefix}metrics:response-time`);
+    const metrics = await this.safeRedisOperation(() => redis!.get(`${this.cachePrefix}metrics:response-time`), null);
     return metrics ? parseFloat(metrics) : 0;
   }
 
-  private async getCacheHitRate(): Promise<number> {
-    const hits = await redis.get(`${this.cachePrefix}metrics:cache-hits`) || '0';
-    const misses = await redis.get(`${this.cachePrefix}metrics:cache-misses`) || '0';
-    const total = parseInt(hits) + parseInt(misses);
-    return total > 0 ? parseInt(hits) / total : 0;
+  private async calculateCacheHitRate(): Promise<number> {
+    const hits = await this.safeRedisOperation(() => redis!.get(`${this.cachePrefix}metrics:cache-hits`), '0');
+    const misses = await this.safeRedisOperation(() => redis!.get(`${this.cachePrefix}metrics:cache-misses`), '0');
+    const total = parseInt(hits || '0') + parseInt(misses || '0');
+    return total > 0 ? parseInt(hits || '0') / total : 0;
   }
 
   private async getDatabaseMetrics(): Promise<{ averageQueryTime: number }> {
     // Get database performance metrics
-    const queryTime = await redis.get(`${this.cachePrefix}metrics:db-query-time`);
+    const queryTime = await this.safeRedisOperation(() => redis!.get(`${this.cachePrefix}metrics:db-query-time`), null);
     return {
       averageQueryTime: queryTime ? parseFloat(queryTime) : 0
     };
   }
 
   private async getAverageAIGenerationTime(): Promise<number> {
-    const aiTime = await redis.get(`${this.cachePrefix}metrics:ai-generation-time`);
+    const aiTime = await this.safeRedisOperation(() => redis!.get(`${this.cachePrefix}metrics:ai-generation-time`), null);
     return aiTime ? parseFloat(aiTime) : 0;
   }
 

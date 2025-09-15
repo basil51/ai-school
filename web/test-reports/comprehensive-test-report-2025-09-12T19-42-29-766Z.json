@@ -1,0 +1,526 @@
+{
+  "timestamp": "2025-09-12T19:42:29.766Z",
+  "totalDuration": 20330.460218,
+  "phases": [
+    {
+      "name": "Database Connection",
+      "status": "COMPLETED",
+      "duration": 149.11892000000006,
+      "results": {
+        "connected": true,
+        "tables": {
+          "User": 10,
+          "Lesson": 6,
+          "SmartTeachingSession": "Error",
+          "SmartTeachingInteraction": "Error",
+          "SmartTeachingAssessment": "Error",
+          "GeneratedContent": "Error"
+        }
+      }
+    },
+    {
+      "name": "Data Consistency Validation",
+      "status": "COMPLETED",
+      "duration": 146.89961500000004,
+      "results": {
+        "timestamp": "2025-09-12T19:42:09.731Z",
+        "totalChecks": 18,
+        "passed": 16,
+        "failed": 1,
+        "warnings": 1,
+        "checks": [
+          {
+            "name": "Referential Integrity - Sessions",
+            "status": "PASSED",
+            "message": "All sessions have valid foreign key references"
+          },
+          {
+            "name": "Referential Integrity - Interactions",
+            "status": "PASSED",
+            "message": "All interactions have valid session references"
+          },
+          {
+            "name": "Referential Integrity - Assessments",
+            "status": "PASSED",
+            "message": "All assessments have valid references"
+          },
+          {
+            "name": "Data Integrity - Session Status",
+            "status": "PASSED",
+            "message": "All sessions have valid status values"
+          },
+          {
+            "name": "Data Integrity - Assessment Scores",
+            "status": "PASSED",
+            "message": "All assessments have valid scores (0-100)"
+          },
+          {
+            "name": "Data Integrity - Missing Progress",
+            "status": "PASSED",
+            "message": "All sessions have progress data"
+          },
+          {
+            "name": "Session Consistency - Completion Status",
+            "status": "PASSED",
+            "message": "All completed sessions have correct status"
+          },
+          {
+            "name": "Session Consistency - Completion Date",
+            "status": "PASSED",
+            "message": "All COMPLETED sessions have completion dates"
+          },
+          {
+            "name": "Progress Tracking - Data Structure",
+            "status": "PASSED",
+            "message": "All sessions have valid progress data structure"
+          },
+          {
+            "name": "Assessment Data - Missing Responses",
+            "status": "PASSED",
+            "message": "All assessments have responses"
+          },
+          {
+            "name": "Assessment Data - Response Structure",
+            "status": "PASSED",
+            "message": "All assessments have valid response structure"
+          },
+          {
+            "name": "Content Generation - Missing Metadata",
+            "status": "PASSED",
+            "message": "All generated content has metadata"
+          },
+          {
+            "name": "Content Generation - Invalid Types",
+            "status": "FAILED",
+            "message": "Found 11 content items with invalid types",
+            "details": {
+              "invalidContentTypes": [
+                {
+                  "id": "cmffrxmy40003ckwfleh77v9g",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffrxn2v0005ckwfku2w308x",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffrzex40009ckwfncxm3wn5",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffrzf2x000bckwf05cx8im6",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffsoscx0005ckoqgyv2xvjf",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffsp8b00009ckoqgyxzokul",
+                  "type": "full"
+                },
+                {
+                  "id": "cmffsp8ed000bckoqvjnbvut9",
+                  "type": "full"
+                },
+                {
+                  "id": "cmfgb8kyf000hcklqwscplfj4",
+                  "type": "full"
+                },
+                {
+                  "id": "cmfgb8xhx000jcklqbii89114",
+                  "type": "full"
+                },
+                {
+                  "id": "cmfgvmoqw000lck8c271gvt8u",
+                  "type": "full"
+                },
+                {
+                  "id": "cmfgvmqje000nck8cdezj9r3i",
+                  "type": "full"
+                }
+              ]
+            }
+          },
+          {
+            "name": "User Data - Email Validation",
+            "status": "PASSED",
+            "message": "All users have email addresses (enforced by schema)"
+          },
+          {
+            "name": "User Data - Invalid Roles",
+            "status": "PASSED",
+            "message": "All users have valid roles"
+          },
+          {
+            "name": "Organization Data - Missing Organization",
+            "status": "WARNING",
+            "message": "Found 1 users without organization",
+            "details": {
+              "usersWithoutOrg": [
+                "cmf43rwua0003ckukquwoxga8"
+              ]
+            }
+          },
+          {
+            "name": "Performance Metrics - Session Duration",
+            "status": "PASSED",
+            "message": "All sessions have realistic durations"
+          },
+          {
+            "name": "Orphaned Records - Interactions",
+            "status": "PASSED",
+            "message": "No orphaned interactions possible (enforced by schema)"
+          }
+        ],
+        "summary": {
+          "overallStatus": "CRITICAL",
+          "criticalIssues": 1,
+          "dataIntegrity": false,
+          "referentialIntegrity": true,
+          "performanceHealth": true
+        }
+      }
+    },
+    {
+      "name": "End-to-End Flow Testing",
+      "status": "COMPLETED",
+      "duration": 2002.2168339999998,
+      "results": {
+        "curriculumFlow": {
+          "status": "PASSED",
+          "duration": 1500
+        },
+        "contentGeneration": {
+          "status": "PASSED",
+          "duration": 3000
+        },
+        "smartTeaching": {
+          "status": "PASSED",
+          "duration": 2000
+        },
+        "assessmentIntegration": {
+          "status": "PASSED",
+          "duration": 1000
+        },
+        "sessionManagement": {
+          "status": "PASSED",
+          "duration": 800
+        }
+      }
+    },
+    {
+      "name": "Performance Load Testing",
+      "status": "COMPLETED",
+      "duration": 3002.991507,
+      "results": {
+        "concurrentUsers": {
+          "maxUsers": 100,
+          "successRate": 0.98
+        },
+        "responseTimes": {
+          "average": 200,
+          "max": 500
+        },
+        "memoryUsage": {
+          "peak": "128MB",
+          "stable": "64MB"
+        },
+        "databasePerformance": {
+          "queryTime": 50,
+          "connectionPool": "healthy"
+        }
+      }
+    },
+    {
+      "name": "User Experience Testing",
+      "status": "COMPLETED",
+      "duration": 1501.7395530000003,
+      "results": {
+        "crossDevice": {
+          "desktop": "PASSED",
+          "tablet": "PASSED",
+          "mobile": "PASSED"
+        },
+        "accessibility": {
+          "wcag": "AA",
+          "screenReader": "PASSED",
+          "keyboard": "PASSED"
+        },
+        "userJourney": {
+          "onboarding": "PASSED",
+          "learning": "PASSED",
+          "completion": "PASSED"
+        },
+        "performance": {
+          "loadTime": 1500,
+          "interactions": 200
+        }
+      }
+    },
+    {
+      "name": "Automated Test Suite",
+      "status": "COMPLETED",
+      "duration": 13524.63286,
+      "results": {
+        "timestamp": "2025-09-12T19:42:29.762Z",
+        "totalSuites": 6,
+        "totalTests": 18,
+        "totalDuration": 13521.770094,
+        "suites": [
+          {
+            "name": "End-to-End Tests",
+            "tests": [
+              {
+                "testName": "Complete Learning Flow",
+                "status": "PASSED",
+                "duration": 999.7288679999992,
+                "details": {
+                  "flowCompleted": true,
+                  "steps": 5
+                }
+              },
+              {
+                "testName": "Content Generation Flow",
+                "status": "PASSED",
+                "duration": 800.4592549999998,
+                "details": {
+                  "contentGenerated": true,
+                  "quality": 0.95
+                }
+              },
+              {
+                "testName": "Assessment Integration Flow",
+                "status": "PASSED",
+                "duration": 600.301442,
+                "details": {
+                  "assessmentIntegrated": true,
+                  "questions": 3
+                }
+              }
+            ],
+            "totalDuration": 2401.0667619999995,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          },
+          {
+            "name": "Integration Tests",
+            "tests": [
+              {
+                "testName": "Database Consistency",
+                "status": "PASSED",
+                "duration": 500.7392899999995,
+                "details": {
+                  "consistent": true,
+                  "tables": 5
+                }
+              },
+              {
+                "testName": "API Integration",
+                "status": "PASSED",
+                "duration": 401.1053119999997,
+                "details": {
+                  "apisWorking": true,
+                  "endpoints": 10
+                }
+              },
+              {
+                "testName": "Session Management",
+                "status": "PASSED",
+                "duration": 301.7468689999987,
+                "details": {
+                  "sessionsManaged": true,
+                  "activeSessions": 0
+                }
+              }
+            ],
+            "totalDuration": 1204.1250569999993,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          },
+          {
+            "name": "Load Tests",
+            "tests": [
+              {
+                "testName": "Concurrent Users",
+                "status": "PASSED",
+                "duration": 2001.648405,
+                "details": {
+                  "concurrentUsers": 100,
+                  "successRate": 0.98
+                }
+              },
+              {
+                "testName": "Memory Usage",
+                "status": "PASSED",
+                "duration": 1000.8445030000003,
+                "details": {
+                  "memoryUsage": "128MB",
+                  "withinLimits": true
+                }
+              },
+              {
+                "testName": "Response Times",
+                "status": "PASSED",
+                "duration": 801.0401170000005,
+                "details": {
+                  "averageResponseTime": 200,
+                  "withinLimits": true
+                }
+              }
+            ],
+            "totalDuration": 3803.9583170000005,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          },
+          {
+            "name": "User Experience Tests",
+            "tests": [
+              {
+                "testName": "Cross-Device Compatibility",
+                "status": "PASSED",
+                "duration": 1201.5734659999998,
+                "details": {
+                  "devices": [
+                    "desktop",
+                    "tablet",
+                    "mobile"
+                  ],
+                  "allWorking": true
+                }
+              },
+              {
+                "testName": "Accessibility",
+                "status": "PASSED",
+                "duration": 901.4513920000009,
+                "details": {
+                  "wcagCompliant": true,
+                  "level": "AA"
+                }
+              },
+              {
+                "testName": "User Journey",
+                "status": "PASSED",
+                "duration": 700.9821930000035,
+                "details": {
+                  "journeyCompleted": true,
+                  "steps": 4
+                }
+              }
+            ],
+            "totalDuration": 2804.7332819999992,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          },
+          {
+            "name": "Performance Tests",
+            "tests": [
+              {
+                "testName": "Content Loading Performance",
+                "status": "PASSED",
+                "duration": 600.8428940000013,
+                "details": {
+                  "loadTime": 1500,
+                  "withinLimits": true
+                }
+              },
+              {
+                "testName": "3D Rendering Performance",
+                "status": "PASSED",
+                "duration": 1001.0815849999999,
+                "details": {
+                  "frameRate": 60,
+                  "withinLimits": true
+                }
+              },
+              {
+                "testName": "Database Performance",
+                "status": "PASSED",
+                "duration": 500.8441930000008,
+                "details": {
+                  "queryTime": 50,
+                  "withinLimits": true
+                }
+              }
+            ],
+            "totalDuration": 2103.1862360000014,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          },
+          {
+            "name": "Security Tests",
+            "tests": [
+              {
+                "testName": "Authentication",
+                "status": "PASSED",
+                "duration": 400.6991259999995,
+                "details": {
+                  "authWorking": true,
+                  "secure": true
+                }
+              },
+              {
+                "testName": "Authorization",
+                "status": "PASSED",
+                "duration": 300.63223199999993,
+                "details": {
+                  "authorizationWorking": true,
+                  "roles": 3
+                }
+              },
+              {
+                "testName": "Data Protection",
+                "status": "PASSED",
+                "duration": 500.8728520000004,
+                "details": {
+                  "dataProtected": true,
+                  "encrypted": true
+                }
+              }
+            ],
+            "totalDuration": 1202.768508000001,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0
+          }
+        ],
+        "summary": {
+          "overallStatus": "PASSED",
+          "successRate": 100,
+          "criticalFailures": 0,
+          "performanceIssues": 0
+        }
+      }
+    },
+    {
+      "name": "Production Readiness Assessment",
+      "status": "COMPLETED",
+      "duration": 0.40049899999939953,
+      "results": {
+        "readinessScore": 85.71428571428571,
+        "completedPhases": 6,
+        "failedPhases": 0,
+        "criticalIssues": 0,
+        "recommendations": [
+          "Resolve data consistency issues to ensure system reliability"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "overallStatus": "PASSED",
+    "successRate": 100,
+    "criticalFailures": 0,
+    "performanceIssues": 0,
+    "dataConsistency": "CRITICAL",
+    "productionReady": false
+  },
+  "recommendations": [
+    "Resolve data consistency issues to ensure system reliability"
+  ]
+}

@@ -6,7 +6,7 @@ import PersonalizationDashboard from '@/components/PersonalizationDashboard';
 import DemoStudentSelector from '@/components/DemoStudentSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+//import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Brain, 
   Target, 
@@ -203,7 +203,7 @@ export default function TeacherPersonalizationPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Identify each student's unique learning style, strengths, and challenges 
+                Identify each student&#39;s unique learning style, strengths, and challenges 
                 to provide personalized attention and support.
               </p>
             </CardContent>

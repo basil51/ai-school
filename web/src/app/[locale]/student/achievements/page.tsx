@@ -11,12 +11,12 @@ import {
   Star, 
   Target, 
   BookOpen, 
-  Brain, 
-  Zap, 
+  //Brain, 
+  //Zap, 
   Award, 
-  Crown,
-  Medal,
-  Flame,
+  //Crown,
+  //Medal,
+  //Flame,
   Sparkles,
   CheckCircle,
   Clock,
@@ -46,8 +46,8 @@ interface AchievementCategory {
 }
 
 export default function AchievementsPage() {
-  const params = useParams();
-  const locale = params.locale as string;
+  //const params = useParams();
+  //const locale = params.locale as string;
   
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,7 +207,7 @@ export default function AchievementsPage() {
       setAchievements(mockAchievements);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [ mockAchievements ]);
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {

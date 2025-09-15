@@ -14,7 +14,7 @@ const createComplianceSchema = z.object({
   nextAuditDate: z.string().datetime().optional(),
 });
 
-const updateComplianceSchema = createComplianceSchema.partial();
+//const updateComplianceSchema = createComplianceSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,13 +1,42 @@
 import { Redis } from 'ioredis';
 
-// Redis client configuration
-const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
-  maxRetriesPerRequest: 3,
-  lazyConnect: true,
-});
+// Redis client configuration with error handling
+let redis: Redis | null = null;
+
+// Only initialize Redis if we're not in build mode and Redis is configured
+const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.REDIS_URL && !process.env.REDIS_HOST;
+if (!isBuildTime && (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.NODE_ENV === 'development')) {
+  try {
+    redis = new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      password: process.env.REDIS_PASSWORD,
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      enableReadyCheck: false,
+    });
+
+    // Handle Redis connection errors gracefully
+    redis.on('error', (error) => {
+      if (typeof window !== 'undefined') {
+        console.warn('Redis connection error (cache will be disabled):', error.message);
+      }
+      redis = null;
+    });
+
+    redis.on('connect', () => {
+      // Only log in browser environment, not during build
+      if (typeof window !== 'undefined') {
+        console.log('Redis connected successfully');
+      }
+    });
+  } catch (error) {
+    if (typeof window !== 'undefined') {
+      console.warn('Failed to initialize Redis, caching will be disabled:', error);
+    }
+    redis = null;
+  }
+}
 
 // Cache configuration
 export const CACHE_CONFIG = {
@@ -34,7 +63,7 @@ export const CACHE_CONFIG = {
 
 // Cache utility functions
 export class CacheManager {
-  private redis: Redis;
+  private redis: Redis | null;
 
   constructor() {
     this.redis = redis;
@@ -42,6 +71,7 @@ export class CacheManager {
 
   // Generic cache operations
   async get<T>(key: string): Promise<T | null> {
+    if (!this.redis) return null;
     try {
       const data = await this.redis.get(key);
       return data ? JSON.parse(data) : null;
@@ -52,6 +82,7 @@ export class CacheManager {
   }
 
   async set(key: string, value: any, ttl?: number): Promise<boolean> {
+    if (!this.redis) return false;
     try {
       const serialized = JSON.stringify(value);
       if (ttl) {
@@ -67,6 +98,7 @@ export class CacheManager {
   }
 
   async del(key: string): Promise<boolean> {
+    if (!this.redis) return false;
     try {
       await this.redis.del(key);
       return true;
@@ -77,6 +109,7 @@ export class CacheManager {
   }
 
   async exists(key: string): Promise<boolean> {
+    if (!this.redis) return false;
     try {
       const result = await this.redis.exists(key);
       return result === 1;
@@ -88,6 +121,7 @@ export class CacheManager {
 
   // Pattern-based operations
   async getPattern(pattern: string): Promise<string[]> {
+    if (!this.redis) return [];
     try {
       return await this.redis.keys(pattern);
     } catch (error) {
@@ -97,6 +131,7 @@ export class CacheManager {
   }
 
   async delPattern(pattern: string): Promise<number> {
+    if (!this.redis) return 0;
     try {
       const keys = await this.redis.keys(pattern);
       if (keys.length === 0) return 0;
@@ -128,6 +163,7 @@ export class CacheManager {
 
   // Batch operations for performance
   async mget<T>(keys: string[]): Promise<(T | null)[]> {
+    if (!this.redis) return keys.map(() => null);
     try {
       const values = await this.redis.mget(...keys);
       return values.map(v => v ? JSON.parse(v) : null);
@@ -138,6 +174,7 @@ export class CacheManager {
   }
 
   async mset(keyValuePairs: Record<string, any>, ttl?: number): Promise<boolean> {
+    if (!this.redis) return false;
     try {
       const serializedPairs: string[] = [];
       for (const [key, value] of Object.entries(keyValuePairs)) {
@@ -185,6 +222,9 @@ export class CacheManager {
   // Health check
   async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; latency: number }> {
     const start = Date.now();
+    if (!this.redis) {
+      return { status: 'unhealthy', latency: 0 };
+    }
     try {
       await this.redis.ping();
       const latency = Date.now() - start;
@@ -196,6 +236,10 @@ export class CacheManager {
 
   // Connection management
   async connect(): Promise<void> {
+    if (!this.redis) {
+      console.warn('Redis is not initialized, skipping connection');
+      return;
+    }
     try {
       await this.redis.connect();
     } catch (error) {
@@ -204,6 +248,7 @@ export class CacheManager {
   }
 
   async disconnect(): Promise<void> {
+    if (!this.redis) return;
     try {
       await this.redis.disconnect();
     } catch (error) {

@@ -4,7 +4,7 @@
  * for real-time teaching method adaptation and personalization
  */
 
-import { prisma } from '@/lib/prisma';
+//import { prisma } from '@/lib/prisma';
 import { neuralPathwayEngine } from '@/lib/adaptive/neural-pathways';
 import { predictiveEngine } from '@/lib/adaptive/predictive-engine';
 import { contentGenerator } from '@/lib/adaptive/content-generator';
@@ -123,8 +123,8 @@ export class AdaptiveTeachingIntegration {
       // Select initial teaching method based on learning style and lesson content
       const initialMethod = await this.selectInitialTeachingMethod(
         learningStyle,
-        lessonId,
-        pathways
+        //lessonId,
+        //pathways
       );
 
       // Create adaptive session
@@ -238,8 +238,8 @@ export class AdaptiveTeachingIntegration {
       // Adapt content based on current teaching method
       const adaptedContent = await this.adaptContentForMethod(
         personalizedContent,
-        session.currentMethod,
-        session.learningStyle
+        //session.currentMethod,
+        //session.learningStyle
       );
 
       return {
@@ -363,8 +363,8 @@ export class AdaptiveTeachingIntegration {
    */
   private async selectInitialTeachingMethod(
     learningStyle: LearningStyle,
-    lessonId: string,
-    pathways: NeuralPathway[]
+    //lessonId: string,
+    //pathways: NeuralPathway[]
   ): Promise<TeachingMethod> {
     // Determine dominant learning style
     const styles = [
@@ -594,8 +594,8 @@ export class AdaptiveTeachingIntegration {
    */
   private async adaptContentForMethod(
     content: any,
-    method: TeachingMethod,
-    learningStyle: LearningStyle
+    //method: TeachingMethod,
+    //learningStyle: LearningStyle
   ): Promise<any> {
     // This would integrate with the existing content generation system
     // to adapt content based on the teaching method

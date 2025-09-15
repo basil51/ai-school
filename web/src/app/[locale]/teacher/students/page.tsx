@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,14 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
   Search, 
-  Filter, 
+  //Filter, 
   Mail, 
   MessageCircle, 
-  BookOpen, 
+  //BookOpen, 
   TrendingUp, 
   Clock,
-  Star,
-  Award,
+  //Star,
+  //Award,
   AlertCircle,
   CheckCircle,
   UserPlus,
@@ -143,7 +143,7 @@ export default function TeacherStudentsPage() {
               My Students
             </h1>
             <p className="text-gray-600 mt-2">
-              Manage and monitor your students' progress and performance
+              Manage and monitor your students&#39; progress and performance
             </p>
           </div>
           <div className="flex gap-3">

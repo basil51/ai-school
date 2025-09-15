@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Calendar, 
+  //Calendar, 
   Users, 
   CheckCircle, 
   XCircle, 
@@ -20,27 +20,27 @@ import {
   Plus,
   Save,
   Download,
-  Filter,
-  BarChart3,
-  TrendingUp,
-  TrendingDown
+  //Filter,
+  //BarChart3,
+  //TrendingUp,
+  //TrendingDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTranslations } from '@/lib/useTranslations';
+//import { useTranslations } from '@/lib/useTranslations';
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  //BarChart,
+  //Bar,
+  //XAxis,
+  //YAxis,
+  //CartesianGrid,
   Tooltip,
   Legend,
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line
+  //LineChart,
+  //Line
 } from 'recharts';
 
 interface Student {
@@ -79,10 +79,10 @@ const ATTENDANCE_STATUSES = [
   { value: 'sick', label: 'Sick', color: 'bg-purple-100 text-purple-800', icon: AlertCircle },
 ];
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6'];
+//const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6'];
 
 export default function AttendanceManagement({ organizationId, className = '' }: AttendanceManagementProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);

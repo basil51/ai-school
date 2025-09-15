@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,10 +10,10 @@ import {
   TrendingUp, 
   TrendingDown, 
   Users, 
-  BookOpen, 
-  Award,
+  //BookOpen, 
+  //Award,
   Clock,
-  Target,
+  //Target,
   AlertTriangle,
   CheckCircle,
   Download,
@@ -28,9 +28,9 @@ import {
   Star,
   Zap,
   Building2,
-  Globe,
-  Crown,
-  Shield
+  //Globe,
+  //Crown,
+  //Shield
 } from 'lucide-react';
 
 export default function SuperAdminAnalyticsPage() {

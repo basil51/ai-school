@@ -3,18 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+//import { Progress } from '@/components/ui/progress';
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Brain, 
-  Target, 
+  //Target, 
   Clock, 
   CheckCircle, 
   XCircle, 
-  TrendingUp,
-  AlertCircle,
+  //TrendingUp,
+  //AlertCircle,
   Lightbulb,
-  BarChart3,
+  //BarChart3,
   Play,
   Pause,
   RotateCcw
@@ -80,11 +80,6 @@ export default function AdaptiveAssessmentInterface({
     setIsClient(true);
   }, []);
 
-  // Load first question when component mounts
-  useEffect(() => {
-    loadNextQuestion();
-  }, []);
-
   // Initialize timer on client side only
   useEffect(() => {
     if (typeof window !== 'undefined' && currentQuestion && questionStartTime === 0) {
@@ -122,6 +117,11 @@ export default function AdaptiveAssessmentInterface({
       setIsLoading(false);
     }
   };
+
+  // Load first question when component mounts
+  useEffect(() => {
+    loadNextQuestion();
+  }, [ loadNextQuestion ]);
 
   const submitAnswer = async () => {
     if (!currentQuestion || !currentAnswer) return;

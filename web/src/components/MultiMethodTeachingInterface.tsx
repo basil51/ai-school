@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
   BookOpen, 
@@ -12,13 +12,13 @@ import {
   Zap, 
   Brain,
   CheckCircle,
-  Clock,
+  //Clock,
   TrendingUp,
   Star,
   ArrowRight
 } from 'lucide-react';
 
-interface TeachingMethod {
+/*interface TeachingMethod {
   id: string;
   name: string;
   description: string;
@@ -26,7 +26,7 @@ interface TeachingMethod {
   example: string;
   effectiveness: number;
   studentPreference: number;
-}
+}*/
 
 interface MultiMethodExplanation {
   originalContent: string;
@@ -81,10 +81,6 @@ export default function MultiMethodTeachingInterface({
   const [startTime, setStartTime] = useState<number>(0);
   const [hasSelected, setHasSelected] = useState(false);
 
-  useEffect(() => {
-    generateExplanations();
-  }, [lessonContent, studentId, subject, topic]);
-
   const generateExplanations = async () => {
     setIsLoading(true);
     try {
@@ -115,6 +111,10 @@ export default function MultiMethodTeachingInterface({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    generateExplanations();
+  }, [lessonContent, studentId, subject, topic, generateExplanations]);
 
   const handleMethodSelect = (method: string) => {
     setSelectedMethod(method);

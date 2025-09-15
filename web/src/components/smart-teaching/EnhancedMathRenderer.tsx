@@ -15,6 +15,8 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react';
+import MathRenderer from '@/components/multimodal/MathRenderer';
+import InteractiveGraph from '@/components/multimodal/InteractiveGraph';
 
 interface MathContent {
   equation: string;
@@ -49,7 +51,7 @@ export default function EnhancedMathRenderer({
   const steps = [
     { title: "Equation", content: content.equation, type: "equation" },
     { title: "Explanation", content: content.explanation, type: "explanation" },
-    { title: "Graph", content: content.graphExpression, type: "graph" },
+    ...(content.graphExpression ? [{ title: "Graph", content: content.graphExpression, type: "graph" }] : []),
     { title: "Examples", content: content.examples, type: "examples" }
   ];
 
@@ -92,10 +94,7 @@ export default function EnhancedMathRenderer({
   const renderEquation = (equation: string) => (
     <div className="bg-gray-50 p-6 rounded-lg border-2 border-blue-200">
       <div className="text-center">
-        <div className="text-2xl font-mono bg-white p-4 rounded border shadow-sm">
-          {equation}
-        </div>
-        <p className="text-sm text-gray-600 mt-2">LaTeX Equation</p>
+        <MathRenderer expression={equation} />
       </div>
     </div>
   );
@@ -121,10 +120,7 @@ export default function EnhancedMathRenderer({
         </h4>
         <p className="text-green-800 mb-3">{graphTitle}</p>
         <div className="bg-white p-4 rounded border">
-          <div className="text-center text-gray-600">
-            <p>Graph: {graphExpression}</p>
-            <p className="text-sm mt-2">Interactive visualization would render here</p>
-          </div>
+          <InteractiveGraph expression={graphExpression} title={graphTitle || 'Function Plot'} />
         </div>
       </div>
     </div>
@@ -136,7 +132,7 @@ export default function EnhancedMathRenderer({
         <BookOpen className="w-4 h-4 mr-2" />
         Practice Examples
       </h4>
-      {examples.map((example, index) => (
+      {examples && examples.length > 0 ? examples.map((example, index) => (
         <Card key={index} className="border-purple-200">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-purple-800">
@@ -179,7 +175,12 @@ export default function EnhancedMathRenderer({
             )}
           </CardContent>
         </Card>
-      ))}
+      )) : (
+        <div className="text-center py-8 text-gray-500">
+          <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p>No practice examples available for this topic.</p>
+        </div>
+      )}
     </div>
   );
 

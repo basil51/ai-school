@@ -14,20 +14,20 @@ import {
   Save, 
   Upload, 
   Download, 
-  Trash2, 
+  //Trash2, 
   Plus, 
   Edit, 
   Eye,
   Shield,
   Bell,
-  Users,
+  //Users,
   BookOpen,
   Globe,
-  Mail,
+  //Mail,
   Database,
   Zap,
-  Lock,
-  Key,
+  //Lock,
+  //Key,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -36,7 +36,7 @@ import {
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
-  const [hasChanges, setHasChanges] = useState(false);
+  const hasChanges= false;
 
   // Mock data for school settings
   const schoolInfo = {
@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
               School Settings
             </h1>
             <p className="text-gray-600 mt-2">
-              Configure and manage your school's settings and preferences
+              Configure and manage your school&#39;s settings and preferences
             </p>
           </div>
           <div className="flex gap-3">

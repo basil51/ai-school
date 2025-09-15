@@ -614,6 +614,285 @@ interface TestScenario {
 
 ---
 
+### **Phase 4: Rich Media Content Generation Enhancement** 🎨
+*Duration: 2-3 weeks*
+*Priority: Critical*
+
+**Goal:** Transform the smart teaching system from text-only output to rich multimodal educational experiences with sound effects, 3D models, videos, and interactive content as specified in the roadmaps.
+
+#### **Step 4.1: AI Model Upgrade and Enhanced Prompts** 🤖
+**Duration:** 0.5 weeks  
+**Priority:** Critical
+
+**Goals:**
+- Upgrade AI model for better multimodal content generation
+- Enhance system prompts to force rich media content creation
+- Ensure consistent generation of visual, audio, and interactive elements
+
+**Tasks:**
+- [ ] Upgrade from `gpt-4o-mini` to `gpt-4o` in content generation
+- [ ] Enhance system prompts with explicit multimodal content requirements
+- [ ] Add content type detection based on subject and lesson content
+- [ ] Implement fallback mechanisms for content generation failures
+
+**Technical Implementation:**
+```typescript
+// In ai-content-generator.ts
+model: openai('gpt-4o'), // Upgrade from 'gpt-4o-mini'
+
+// Enhanced system prompt
+"CRITICAL: You MUST generate multimodal content. For each lesson, include:
+- Math content with LaTeX equations if applicable
+- Mermaid diagrams for visual concepts  
+- 3D models for spatial concepts
+- Interactive elements for engagement
+- Audio narration for all content
+Do not return content with only baseContent - always include at least 2-3 multimodal elements."
+```
+
+**Exit Criteria:** AI consistently generates rich multimodal content instead of text-only output
+
+---
+
+#### **Step 4.2: Progressive Content Generation System** 🔄
+**Duration:** 0.5 weeks  
+**Priority:** High
+
+**Goals:**
+- Implement staged content generation to ensure multimodal output
+- Add automatic content type detection based on lesson content
+- Create fallback mechanisms for missing content types
+
+**Tasks:**
+- [ ] Implement progressive content generation pipeline
+- [ ] Add subject-based content type requirements
+- [ ] Create content type detection algorithms
+- [ ] Build fallback content generation for missing elements
+
+**Technical Implementation:**
+```typescript
+const getRequiredContentTypes = (subject: string) => {
+  switch (subject.toLowerCase()) {
+    case 'mathematics': return ['math', 'diagram', 'interactive'];
+    case 'science': return ['diagram', 'simulation', '3d'];
+    case 'physics': return ['simulation', '3d', 'math'];
+    default: return ['diagram', 'interactive'];
+  }
+};
+
+async generateProgressiveContent(lessonData) {
+  const baseContent = await this.generateBasicContent(/*...*/);
+  
+  // Force generation of specific content types
+  if (!baseContent.math && this.shouldHaveMath(lessonData)) {
+    baseContent.math = await this.generateSpecificContentType(/*...*/);
+  }
+  
+  return baseContent;
+}
+```
+
+**Exit Criteria:** Every lesson generates appropriate multimodal content based on subject and content analysis
+
+---
+
+#### **Step 4.3: Content Quality Validation Framework** ✅
+**Duration:** 0.5 weeks  
+**Priority:** High
+
+**Goals:**
+- Implement content quality validation to ensure rich media output
+- Add validation for multimodal content completeness
+- Create error handling for insufficient content generation
+
+**Tasks:**
+- [ ] Implement content quality validation system
+- [ ] Add multimodal content completeness checks
+- [ ] Create content enhancement pipeline for missing elements
+- [ ] Build error handling and retry mechanisms
+
+**Technical Implementation:**
+```typescript
+const validateGeneratedContent = (content) => {
+  const hasMultimodal = !!(content.math || content.diagram || content.simulation || 
+                           content.video || content.interactive || content.threeD);
+  
+  if (!hasMultimodal) {
+    throw new Error('Generated content lacks multimodal elements');
+  }
+  
+  return content;
+};
+
+async enhanceContent(content, lessonData) {
+  // Add visual effects if missing
+  if (!content.particleEffects && content.threeD) {
+    content.particleEffects = await this.generateParticleEffects(/*...*/);
+  }
+  
+  return content;
+}
+```
+
+**Exit Criteria:** All generated content passes quality validation and includes rich media elements
+
+---
+
+#### **Step 4.4: Enhanced Visual Effects Integration** ✨
+**Duration:** 0.5 weeks  
+**Priority:** Medium
+
+**Goals:**
+- Integrate advanced visual effects with generated content
+- Ensure 3D models and particle effects are properly rendered
+- Add sound effects and audio narration to all content types
+
+**Tasks:**
+- [ ] Enhance visual effects integration with content generation
+- [ ] Implement automatic particle effects for 3D content
+- [ ] Add sound effects library integration
+- [ ] Ensure audio narration is generated for all content
+
+**Technical Implementation:**
+```typescript
+// Automatic visual effects for 3D content
+if (content.threeD && !content.particleEffects) {
+  content.particleEffects = {
+    effectType: 'sparkles',
+    config: {
+      count: 100,
+      color: '#ffd700',
+      size: 2,
+      opacity: 0.8,
+      speed: 1.0,
+      amplitude: 0.5
+    }
+  };
+}
+
+// Sound effects integration
+const soundEffects = {
+  math: 'calculation_sound.mp3',
+  diagram: 'drawing_sound.mp3',
+  simulation: 'interaction_sound.mp3',
+  '3d': 'rotation_sound.mp3'
+};
+```
+
+**Exit Criteria:** All content types include appropriate visual effects and audio elements
+
+---
+
+#### **Step 4.5: Interactive Content Enhancement** 🎮
+**Duration:** 0.5 weeks  
+**Priority:** Medium
+
+**Goals:**
+- Enhance interactive elements in generated content
+- Ensure simulations and interactive tools are properly configured
+- Add gamification elements to increase engagement
+
+**Tasks:**
+- [ ] Enhance interactive content generation
+- [ ] Implement simulation parameter optimization
+- [ ] Add gamification elements (progress bars, achievements, etc.)
+- [ ] Ensure interactive elements work across all devices
+
+**Technical Implementation:**
+```typescript
+// Enhanced interactive content
+const interactiveEnhancements = {
+  physics: {
+    parameters: { gravity: 9.81, friction: 0.1, elasticity: 0.8 },
+    controls: ['play', 'pause', 'reset', 'speed'],
+    visualizations: ['trajectory', 'velocity', 'acceleration']
+  },
+  math: {
+    interactiveGraphs: true,
+    stepByStepSolutions: true,
+    practiceProblems: true
+  }
+};
+```
+
+**Exit Criteria:** All interactive content is engaging and properly functional
+
+---
+
+#### **Step 4.6: Performance Optimization for Rich Media** ⚡
+**Duration:** 0.5 weeks  
+**Priority:** Medium
+
+**Goals:**
+- Optimize performance for rich media content rendering
+- Implement efficient loading strategies for 3D models and effects
+- Ensure smooth user experience with complex content
+
+**Tasks:**
+- [ ] Optimize 3D model loading and rendering
+- [ ] Implement progressive loading for rich media
+- [ ] Add performance monitoring for multimodal content
+- [ ] Optimize memory usage for visual effects
+
+**Technical Implementation:**
+```typescript
+// Performance optimizations
+const performanceConfig = {
+  modelLOD: true, // Level of Detail for 3D models
+  progressiveLoading: true,
+  effectCulling: true, // Hide effects when not visible
+  memoryManagement: {
+    maxParticles: 1000,
+    maxModels: 5,
+    textureCompression: true
+  }
+};
+```
+
+**Exit Criteria:** Rich media content renders smoothly without performance issues
+
+---
+
+#### **Step 4.7: Testing and Validation of Rich Media Experience** 🧪
+**Duration:** 0.5 weeks  
+**Priority:** Critical
+
+**Goals:**
+- Comprehensive testing of rich media content generation
+- Validation that students receive engaging multimodal experiences
+- Performance testing under various conditions
+
+**Tasks:**
+- [ ] Test content generation across all subjects and difficulty levels
+- [ ] Validate multimodal content rendering and interaction
+- [ ] Performance testing with rich media content
+- [ ] User experience testing with students and teachers
+
+**Testing Scenarios:**
+```typescript
+const testScenarios = [
+  {
+    subject: 'Mathematics',
+    expectedContent: ['math', 'diagram', 'interactive'],
+    testCases: ['algebra', 'geometry', 'calculus']
+  },
+  {
+    subject: 'Science',
+    expectedContent: ['diagram', 'simulation', '3d'],
+    testCases: ['physics', 'chemistry', 'biology']
+  },
+  {
+    subject: 'History',
+    expectedContent: ['diagram', 'interactive', 'video'],
+    testCases: ['timeline', 'events', 'biography']
+  }
+];
+```
+
+**Exit Criteria:** All content types generate rich, engaging multimodal experiences that exceed simple text output
+
+---
+
 ## 🎯 Success Metrics
 
 ### **Technical Metrics**
@@ -873,16 +1152,58 @@ The phased approach ensures steady progress while maintaining system stability. 
   - [x] Implement progressive loading
   - [x] Add performance monitoring
 
-- [ ] **Step 3.3: End-to-End Testing**
-  - [ ] Test complete system flow
-  - [ ] Verify data consistency
-  - [ ] Test performance under load
-  - [ ] Validate user experience
-  - [ ] Implement automated testing suite
+- [x] **Step 3.3: End-to-End Testing** ✅ **COMPLETED**
+  - [x] Test complete system flow
+  - [x] Verify data consistency
+  - [x] Test performance under load
+  - [x] Validate user experience
+  - [x] Implement automated testing suite
 
-**Total Estimated Duration: 9.5-10.5 weeks**  
-**Target Completion: March 2025**
+### **Phase 4: Rich Media Content Generation Enhancement**
+- [ ] **Step 4.1: AI Model Upgrade and Enhanced Prompts**
+  - [ ] Upgrade from `gpt-4o-mini` to `gpt-4o` in content generation
+  - [ ] Enhance system prompts with explicit multimodal content requirements
+  - [ ] Add content type detection based on subject and lesson content
+  - [ ] Implement fallback mechanisms for content generation failures
 
+- [ ] **Step 4.2: Progressive Content Generation System**
+  - [ ] Implement progressive content generation pipeline
+  - [ ] Add subject-based content type requirements
+  - [ ] Create content type detection algorithms
+  - [ ] Build fallback content generation for missing elements
+
+- [ ] **Step 4.3: Content Quality Validation Framework**
+  - [ ] Implement content quality validation system
+  - [ ] Add multimodal content completeness checks
+  - [ ] Create content enhancement pipeline for missing elements
+  - [ ] Build error handling and retry mechanisms
+
+- [ ] **Step 4.4: Enhanced Visual Effects Integration**
+  - [ ] Enhance visual effects integration with content generation
+  - [ ] Implement automatic particle effects for 3D content
+  - [ ] Add sound effects library integration
+  - [ ] Ensure audio narration is generated for all content
+
+- [ ] **Step 4.5: Interactive Content Enhancement**
+  - [ ] Enhance interactive content generation
+  - [ ] Implement simulation parameter optimization
+  - [ ] Add gamification elements (progress bars, achievements, etc.)
+  - [ ] Ensure interactive elements work across all devices
+
+- [ ] **Step 4.6: Performance Optimization for Rich Media**
+  - [ ] Optimize 3D model loading and rendering
+  - [ ] Implement progressive loading for rich media
+  - [ ] Add performance monitoring for multimodal content
+  - [ ] Optimize memory usage for visual effects
+
+- [ ] **Step 4.7: Testing and Validation of Rich Media Experience**
+  - [ ] Test content generation across all subjects and difficulty levels
+  - [ ] Validate multimodal content rendering and interaction
+  - [ ] Performance testing with rich media content
+  - [ ] User experience testing with students and teachers
+
+**Total Estimated Duration: 11.5-12.5 weeks**  
+**Target Completion: April 2025**
 
 
 

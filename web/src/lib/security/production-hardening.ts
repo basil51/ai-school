@@ -124,7 +124,7 @@ export class ProductionHardeningEngine {
     const encryptionKey = key || process.env.ENCRYPTION_KEY || 'default-key';
     const algorithm = 'aes-256-cbc';
     const parts = encryptedData.split(':');
-    const iv = Buffer.from(parts[0], 'hex');
+    //const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
     
     const decipher = crypto.createDecipher(algorithm, encryptionKey);
@@ -244,7 +244,7 @@ export class ProductionHardeningEngine {
         }
       });
     } catch (error) {
-      console.warn('SecurityAudit model not available yet. Run migration to enable audit logging.');
+      console.warn('SecurityAudit model not available yet. Run migration to enable audit logging.', error);
     }
   }
 
@@ -277,7 +277,7 @@ export class ProductionHardeningEngine {
         }
       });
     } catch (error) {
-      console.warn('SecurityAudit model not available yet.');
+      console.warn('SecurityAudit model not available yet.', error);
     }
 
     if (recentFailedLogins >= 5) {
@@ -301,7 +301,7 @@ export class ProductionHardeningEngine {
         distinct: ['ipAddress']
       });
     } catch (error) {
-      console.warn('SecurityAudit model not available yet.');
+      console.warn('SecurityAudit model not available yet.', error);
     }
 
     if (userIPs.length > 3 && !userIPs.some(ip => ip.ipAddress === activity.ipAddress)) {
@@ -322,7 +322,7 @@ export class ProductionHardeningEngine {
         }
       });
     } catch (error) {
-      console.warn('SecurityAudit model not available yet.');
+      console.warn('SecurityAudit model not available yet.', error);
     }
 
     if (recentAPICalls >= 100) {
@@ -417,7 +417,7 @@ export class ProductionHardeningEngine {
         })
       ]);
     } catch (error) {
-      console.warn('SecurityAudit model not available yet.');
+      console.warn('SecurityAudit model not available yet.', error);
     }
 
     return {

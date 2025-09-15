@@ -82,38 +82,38 @@ export class VisualEffectsEngine {
 
     switch (type) {
       case 'fire':
-        geometry = this.createFireGeometry(count, parameters);
-        material = this.createFireMaterial(parameters);
+        geometry = this.createFireGeometry(count);
+        material = this.createFireMaterial();
         animation = { type: 'float', speed: 0.02, amplitude: 0.5 };
         break;
 
       case 'smoke':
-        geometry = this.createSmokeGeometry(count, parameters);
-        material = this.createSmokeMaterial(parameters);
+        geometry = this.createSmokeGeometry(count);
+        material = this.createSmokeMaterial();
         animation = { type: 'float', speed: 0.01, amplitude: 0.3 };
         break;
 
       case 'stars':
-        geometry = this.createStarsGeometry(count, parameters);
-        material = this.createStarsMaterial(parameters);
+        geometry = this.createStarsGeometry(count);
+        material = this.createStarsMaterial();
         animation = { type: 'rotate', speed: 0.005 };
         break;
 
       case 'sparkles':
-        geometry = this.createSparklesGeometry(count, parameters);
-        material = this.createSparklesMaterial(parameters);
+        geometry = this.createSparklesGeometry(count, );
+        material = this.createSparklesMaterial();
         animation = { type: 'pulse', speed: 0.03, amplitude: 0.2 };
         break;
 
       case 'rain':
-        geometry = this.createRainGeometry(count, parameters);
-        material = this.createRainMaterial(parameters);
+        geometry = this.createRainGeometry(count);
+        material = this.createRainMaterial();
         animation = { type: 'float', speed: 0.05, amplitude: 1.0 };
         break;
 
       case 'snow':
-        geometry = this.createSnowGeometry(count, parameters);
-        material = this.createSnowMaterial(parameters);
+        geometry = this.createSnowGeometry(count);
+        material = this.createSnowMaterial();
         animation = { type: 'float', speed: 0.01, amplitude: 0.8 };
         break;
 
@@ -141,7 +141,7 @@ export class VisualEffectsEngine {
     return particleSystem;
   }
 
-  private createFireGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createFireGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -173,7 +173,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createFireMaterial(parameters: any): THREE.Material {
+  private createFireMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 0.2,
       vertexColors: true,
@@ -184,7 +184,7 @@ export class VisualEffectsEngine {
     });
   }
 
-  private createSmokeGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createSmokeGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -212,7 +212,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createSmokeMaterial(parameters: any): THREE.Material {
+  private createSmokeMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 1.0,
       vertexColors: true,
@@ -223,7 +223,7 @@ export class VisualEffectsEngine {
     });
   }
 
-  private createStarsGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createStarsGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -254,7 +254,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createStarsMaterial(parameters: any): THREE.Material {
+  private createStarsMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 0.1,
       vertexColors: true,
@@ -265,7 +265,7 @@ export class VisualEffectsEngine {
     });
   }
 
-  private createSparklesGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createSparklesGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -295,7 +295,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createSparklesMaterial(parameters: any): THREE.Material {
+  private createSparklesMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 0.1,
       vertexColors: true,
@@ -306,7 +306,7 @@ export class VisualEffectsEngine {
     });
   }
 
-  private createRainGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createRainGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -330,7 +330,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createRainMaterial(parameters: any): THREE.Material {
+  private createRainMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 0.1,
       vertexColors: true,
@@ -341,7 +341,7 @@ export class VisualEffectsEngine {
     });
   }
 
-  private createSnowGeometry(count: number, parameters: any): THREE.BufferGeometry {
+  private createSnowGeometry(count: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -369,7 +369,7 @@ export class VisualEffectsEngine {
     return geometry;
   }
 
-  private createSnowMaterial(parameters: any): THREE.Material {
+  private createSnowMaterial(): THREE.Material {
     return new THREE.PointsMaterial({
       size: 0.2,
       vertexColors: true,
@@ -478,7 +478,7 @@ export class VisualEffectsEngine {
     intensity?: number;
     parameters?: any;
   }): THREE.Light {
-    const { id, type, position = new THREE.Vector3(0, 0, 0), color = 0xffffff, intensity = 1, parameters = {} } = config;
+    const { type, position = new THREE.Vector3(0, 0, 0), color = 0xffffff, intensity = 1, parameters = {} } = config;
 
     let light: THREE.Light;
 
@@ -520,13 +520,13 @@ export class VisualEffectsEngine {
     });
 
     // Update animations
-    this.animations.forEach((animation) => {
-      this.updateAnimation(animation, deltaTime, elapsedTime);
+    this.animations.forEach(() => {
+      this.updateAnimation();
     });
 
     // Update transitions
-    this.transitions.forEach((transition) => {
-      this.updateTransition(transition, deltaTime, elapsedTime);
+    this.transitions.forEach(() => {
+      this.updateTransition();
     });
   }
 
@@ -562,12 +562,12 @@ export class VisualEffectsEngine {
     particleSystem.geometry.attributes.position.needsUpdate = true;
   }
 
-  private updateAnimation(animation: AnimationEffect, deltaTime: number, elapsedTime: number): void {
+  private updateAnimation(): void {
     // Implementation for animation updates
     // This would handle keyframe interpolation and easing
   }
 
-  private updateTransition(transition: TransitionEffect, deltaTime: number, elapsedTime: number): void {
+  private updateTransition(): void {
     // Implementation for transition updates
     // This would handle smooth transitions between states
   }

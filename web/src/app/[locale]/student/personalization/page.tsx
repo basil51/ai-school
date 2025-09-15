@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import PersonalizationDashboard from '@/components/PersonalizationDashboard';
 import DemoStudentSelector from '@/components/DemoStudentSelector';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Target, TrendingUp, Users } from 'lucide-react';
 

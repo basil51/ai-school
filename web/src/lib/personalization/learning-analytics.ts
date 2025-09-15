@@ -1,5 +1,5 @@
 import { prisma } from '../prisma';
-import { User, StudentProgress, AssessmentAttempt, LearningAnalytics, PersonalizationData, NeuralPathway, LearningDimensions, EmotionalState, PredictiveAnalytics } from '@prisma/client';
+import { User } from '@prisma/client';
 
 export interface LearningPattern {
   conceptualStrengths: string[];
@@ -139,19 +139,19 @@ export class LearningAnalyticsEngine {
     const effectiveStrategies = await this.determineEffectiveStrategies(studentId, assessments, progress);
     
     // Analyze optimal study times
-    const optimalStudyTimes = this.analyzeOptimalStudyTimes(emotionalStates, progress);
+    const optimalStudyTimes = this.analyzeOptimalStudyTimes(emotionalStates);
     
     // Determine preferred content types
     const preferredContentTypes = await this.determinePreferredContentTypes(studentId, progress);
     
     // Calculate learning velocity
-    const learningVelocity = this.calculateLearningVelocity(progress, assessments);
+    const learningVelocity = this.calculateLearningVelocity(progress);
     
     // Calculate retention rate
-    const retentionRate = this.calculateRetentionRate(assessments, analytics);
+    const retentionRate = this.calculateRetentionRate(assessments);
     
     // Analyze engagement patterns
-    const engagementPatterns = this.analyzeEngagementPatterns(emotionalStates, progress);
+    const engagementPatterns = this.analyzeEngagementPatterns(emotionalStates);
 
     return {
       conceptualStrengths,
@@ -201,19 +201,19 @@ export class LearningAnalyticsEngine {
     const bestContentType = this.selectOptimalContentType(learningPattern.preferredContentTypes);
     
     // Determine difficulty based on learning velocity and recent performance
-    const difficulty = this.determineOptimalDifficulty(learningPattern.learningVelocity, neuralPathways);
+    const difficulty = this.determineOptimalDifficulty(learningPattern.learningVelocity);
     
     // Determine pacing based on engagement patterns
     const pacing = this.determineOptimalPacing(learningPattern.engagementPatterns, recentEmotionalState);
     
     // Select modality based on neural pathways
-    const modality = this.selectOptimalModality(neuralPathways, learningDimensions);
+    const modality = this.selectOptimalModality(neuralPathways);
     
     // Determine reinforcement level
     const reinforcement = this.determineReinforcementLevel(learningPattern.retentionRate, learningPattern.commonMistakes);
     
     // Generate emotional support
-    const emotionalSupport = this.generateEmotionalSupport(recentEmotionalState, learningPattern);
+    const emotionalSupport = this.generateEmotionalSupport(recentEmotionalState);
     
     // Find cross-domain connections
     const crossDomainConnections = await this.findCrossDomainConnections(student.id, upcomingLesson);
@@ -278,7 +278,7 @@ export class LearningAnalyticsEngine {
         confidence: this.calculateInterventionConfidence(learningPattern, neuralPathways),
         personalizedContent: await this.generatePersonalizedContent(concept, learningPattern),
         crossDomainConnections: await this.findCrossDomainConnections(student.id, { topic: concept }),
-        emotionalSupport: this.generateEmotionalSupport(recentEmotionalState, learningPattern),
+        emotionalSupport: this.generateEmotionalSupport(recentEmotionalState),
         successMetrics: [`Understanding of ${concept}`, 'Engagement level', 'Retention rate'],
         isActive: true
       };
@@ -381,7 +381,7 @@ export class LearningAnalyticsEngine {
     return strategies;
   }
 
-  private analyzeOptimalStudyTimes(emotionalStates: any[], progress: any[]): string[] {
+  private analyzeOptimalStudyTimes(emotionalStates: any[]): string[] {
     const timePatterns: { [key: string]: { engagement: number; count: number } } = {};
     
     emotionalStates.forEach(state => {
@@ -444,7 +444,7 @@ export class LearningAnalyticsEngine {
     return contentTypes;
   }
 
-  private calculateLearningVelocity(progress: any[], assessments: any[]): number {
+  private calculateLearningVelocity(progress: any[]): number {
     const completedLessons = progress.filter(p => p.status === 'completed');
     const totalTime = completedLessons.reduce((sum, p) => sum + p.timeSpent, 0);
     const totalLessons = completedLessons.length;
@@ -458,7 +458,7 @@ export class LearningAnalyticsEngine {
     return Math.min(1, avgEstimatedTime / avgTimePerLesson);
   }
 
-  private calculateRetentionRate(assessments: any[], analytics: any[]): number {
+  private calculateRetentionRate(assessments: any[]): number {
     if (assessments.length === 0) return 0.5;
     
     const passedAssessments = assessments.filter(a => a.passed);
@@ -467,7 +467,7 @@ export class LearningAnalyticsEngine {
     return retentionRate;
   }
 
-  private analyzeEngagementPatterns(emotionalStates: any[], progress: any[]): EngagementPattern[] {
+  private analyzeEngagementPatterns(emotionalStates: any[]): EngagementPattern[] {
     const patterns: { [key: string]: EngagementPattern } = {};
     
     emotionalStates.forEach(state => {
@@ -505,7 +505,7 @@ export class LearningAnalyticsEngine {
     return bestType.type;
   }
 
-  private determineOptimalDifficulty(learningVelocity: number, neuralPathways: any[]): string {
+  private determineOptimalDifficulty(learningVelocity: number): string {
     if (learningVelocity > 0.8) return 'advanced';
     if (learningVelocity > 0.6) return 'intermediate';
     return 'beginner';
@@ -517,7 +517,7 @@ export class LearningAnalyticsEngine {
     return 'moderate';
   }
 
-  private selectOptimalModality(neuralPathways: any[], learningDimensions: any): string {
+  private selectOptimalModality(neuralPathways: any[]): string {
     // Find strongest neural pathway
     const strongestPathway = neuralPathways.reduce((strongest, current) => 
       current.strength > strongest.strength ? current : strongest
@@ -539,7 +539,7 @@ export class LearningAnalyticsEngine {
     return 'minimal';
   }
 
-  private generateEmotionalSupport(emotionalState: any, learningPattern: LearningPattern): string {
+  private generateEmotionalSupport(emotionalState: any): string {
     if ((emotionalState?.stress || 0) > 0.7) {
       return "Take a deep breath. Learning is a journey, and it's okay to find some concepts challenging. Let's break this down into smaller, manageable steps.";
     }

@@ -10,16 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   CheckCircle, 
   XCircle, 
-  Clock, 
+  //Clock, 
   Brain,
-  FileText,
+  //FileText,
   Loader2,
   AlertCircle,
   RotateCcw,
   TrendingUp,
   Target
 } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
+//import { useTranslations } from "@/lib/useTranslations";
 
 interface QuestionOption {
   id: string;
@@ -85,14 +85,10 @@ export function AssessmentResults({
   onContinue,
   className = "" 
 }: AssessmentResultsProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [attempt, setAttempt] = useState<AssessmentAttempt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchResults();
-  }, [attemptId]);
 
   const fetchResults = async () => {
     try {
@@ -115,6 +111,10 @@ export function AssessmentResults({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchResults();
+  }, [attemptId, fetchResults]);
 
   const getScoreColor = (percentage: number) => {
     if (percentage >= 90) return 'text-green-600';

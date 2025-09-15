@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Brain, 
-  Target, 
+  //Brain, 
+  //Target, 
   TrendingUp, 
   Users,
   BookOpen,
-  Lightbulb,
+  //Lightbulb,
   BarChart3,
   Settings,
   Eye,

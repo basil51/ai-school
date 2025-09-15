@@ -19,7 +19,7 @@ export default function LayoutClient({ children, user, locale }: LayoutClientPro
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   // Use session data if available, fallback to server-side user data
   const currentUser = session?.user || user;
-  
+  console.log(locale);
   // Transform user data for components
   const transformedUser = currentUser ? {
     name: currentUser.name || 'User',

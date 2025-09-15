@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { AdvancedAITeachingEngine, TeachingContext } from "@/lib/advanced-teaching/advanced-ai-engine";
+import { AdvancedAITeachingEngine } from "@/lib/advanced-teaching/advanced-ai-engine";
 
 export async function GET(request: NextRequest) {
   try {

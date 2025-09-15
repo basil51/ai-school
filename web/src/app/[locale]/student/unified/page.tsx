@@ -6,24 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+//import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   BookOpen, 
   GraduationCap, 
   Brain, 
-  CheckCircle,
+  //CheckCircle,
   Play,
-  Clock,
-  Target,
-  TrendingUp,
+  //Clock,
+  //Target,
+  //TrendingUp,
   Loader2,
-  AlertCircle,
+  //AlertCircle,
   ArrowRight,
   BookMarked,
   Users,
-  Calendar,
-  Star,
-  Award
+  //Calendar,
+  //Star,
+  //Award
 } from "lucide-react";
 
 interface Subject {
@@ -149,14 +149,14 @@ export default function UnifiedSmartTeachingPage() {
     setActiveTab('learning'); // Switch to learning tab when lesson is selected
   };
 
-  const getDifficultyColor = (difficulty: string) => {
+  /*const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'bg-green-100 text-green-800';
       case 'intermediate': return 'bg-yellow-100 text-yellow-800';
       case 'advanced': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
-  };
+  };*/
 
   return (
     <div className="flex flex-col">

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
   Brain, 
-  Target, 
+  //Target, 
   TrendingUp, 
   Clock, 
   BookOpen, 
@@ -81,10 +81,6 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
   const [activeTab, setActiveTab] = useState('overview');
   const [demoMode, setDemoMode] = useState(false);
 
-  useEffect(() => {
-    loadPersonalizationData();
-  }, [studentId]);
-
   const loadPersonalizationData = async () => {
     try {
       setLoading(true);
@@ -126,6 +122,10 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadPersonalizationData();
+  }, [studentId, loadPersonalizationData]);
 
   if (loading) {
     return (

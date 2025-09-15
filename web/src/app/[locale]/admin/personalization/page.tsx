@@ -12,7 +12,7 @@ import {
   Target, 
   TrendingUp, 
   Users,
-  User,
+  //User,
   Eye,
   BarChart3,
   Settings,

@@ -23,7 +23,7 @@ const createTestSchema = z.object({
   recommendations: z.record(z.string(), z.any()).optional(),
 });
 
-const updateTestSchema = createTestSchema.partial();
+//const updateTestSchema = createTestSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

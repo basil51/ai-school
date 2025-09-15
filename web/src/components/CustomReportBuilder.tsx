@@ -20,7 +20,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { useTranslations } from '@/lib/useTranslations';
+//import { useTranslations } from '@/lib/useTranslations';
 
 interface ReportMetric {
   id: string;
@@ -165,7 +165,7 @@ const TIME_RANGES = [
 ];
 
 export default function CustomReportBuilder({ organizationId, className = '' }: CustomReportBuilderProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [report, setReport] = useState<CustomReport>({
     id: '',

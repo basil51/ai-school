@@ -1,21 +1,22 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; 
 import { 
-  Brain, BookOpen, Target, Settings, Users, MessageCircle, 
-  FileText, Image, Calculator, Globe, Play, Volume2, VolumeX,
-  Video, VideoOff, Mic, MicOff, Camera, Share2, Award, Zap,
-  Maximize2, Minimize2, Move, X, Plus, Minus, RotateCcw,
-  Download, Save, Eye, EyeOff, MousePointer, Hand, Sparkles,
-  ClipboardCheck, TrendingUp, Clock, BarChart3
+  Brain, Target, Settings, Users, MessageCircle, 
+  FileText, Image, Calculator, Globe, Play, 
+  Video, VideoOff, Mic, MicOff, Camera, Award, Zap,
+  Maximize2, Minimize2, Move, Plus, Minus, RotateCcw,
+  Download, Save, MousePointer,
+  TrendingUp, Clock, BarChart3
 } from 'lucide-react';
 
 // Import existing components
-import SmartLearningCanvas from './SmartLearningCanvas';
+//import SmartLearningCanvas from './SmartLearningCanvas';
 import EnhancedSmartLearningCanvas from './smart-teaching/EnhancedSmartLearningCanvas';
-import LessonSelector from './smart-teaching/LessonSelector';
+import EnhancedVideoPlayer from './smart-teaching/EnhancedVideoPlayer';
+//import LessonSelector from './smart-teaching/LessonSelector';
 import SmartAssessmentInterface from './smart-teaching/SmartAssessmentInterface';
-import AdaptiveTeachingInterface from './smart-teaching/AdaptiveTeachingInterface';
-import AdaptiveQuestionTrigger from './smart-teaching/AdaptiveQuestionTrigger';
+//import AdaptiveTeachingInterface from './smart-teaching/AdaptiveTeachingInterface';
+//import AdaptiveQuestionTrigger from './smart-teaching/AdaptiveQuestionTrigger';
 
 interface UnifiedInterfaceProps {
   studentId?: string;
@@ -24,22 +25,22 @@ interface UnifiedInterfaceProps {
   mode?: 'student' | 'teacher'; // Add mode prop to distinguish between student and teacher interfaces
   onLessonSelect?: (lessonId: string) => void; // Callback for lesson selection
   selectedLessonId?: string; // Currently selected lesson ID
-}
+} 
 
 type UnifiedTab = 'smart-teaching' | 'whiteboard' | 'media' | 'interactive' | 'assessment' | 'ai-tools';
-type CanvasMode = 'smart' | 'whiteboard' | 'overlay';
-
+//type CanvasMode = 'smart' | 'whiteboard' | 'overlay';
+ 
 const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
-  studentId,
+  //studentId,
   initialTab = 'smart-teaching',
-  showLessonSelector = true,
+  //showLessonSelector = true,
   mode = 'student', // Default to student mode
   onLessonSelect,
   selectedLessonId
 }) => {
   // Core state management
   const [activeTab, setActiveTab] = useState<UnifiedTab>(initialTab as UnifiedTab);
-  const [canvasMode, setCanvasMode] = useState<CanvasMode>('smart');
+  //const [canvasMode, setCanvasMode] = useState<CanvasMode>('smart');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
@@ -47,8 +48,8 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   const [lessonData, setLessonData] = useState<any>(null);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const [learningStyle, setLearningStyle] = useState<'visual' | 'audio' | 'kinesthetic' | 'analytical'>('visual');
-  const [showAssessment, setShowAssessment] = useState(false);
-  const [showAdaptiveTeaching, setShowAdaptiveTeaching] = useState(false);
+  //const [showAssessment, setShowAssessment] = useState(false);
+  //const [showAdaptiveTeaching, setShowAdaptiveTeaching] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,17 +88,6 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   const [isDrawing, setIsDrawing] = useState(false);
 
   // Initialize canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.fillStyle = canvasBackground;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      saveToHistory();
-    }
-  }, [canvasBackground]);
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -188,6 +178,17 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       setHistoryStep(newHistory.length - 1);
     }
   };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = canvasBackground;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveToHistory();
+    }
+  }, [canvasBackground, saveToHistory]);
 
   const undo = () => {
     if (historyStep > 0) {
@@ -521,23 +522,58 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     );
   };
 
-  const renderMediaHub = () => (
-    <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Image className="w-6 h-6 text-blue-500 mb-2" />
-          <h4 className="font-medium">Images</h4>
-          <p className="text-sm text-gray-600">Upload & annotate</p>
+  const renderMediaHub = () => {
+    // Check if we have video content available
+    const hasVideoContent = generatedContent?.video;
+    
+    if (hasVideoContent) {
+      return (
+        <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub - Video Content</h3>
+          <div className="h-full">
+            <EnhancedVideoPlayer
+              src={generatedContent.video.src}
+              title={generatedContent.video.title}
+              description={generatedContent.video.description}
+              poster={generatedContent.video.poster}
+              transcript={generatedContent.video.transcript}
+              keyConcepts={generatedContent.video.keyConcepts}
+              duration={generatedContent.video.duration}
+              onProgress={(progress) => console.log('Video progress:', progress)}
+              onComplete={() => console.log('Video completed')}
+              onError={(error) => console.error('Video error:', error)}
+              subject={lessonData?.subject?.name}
+              topic={lessonData?.topic?.name}
+              className="h-full"
+            />
+          </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Play className="w-6 h-6 text-green-500 mb-2" />
-          <h4 className="font-medium">Videos</h4>
-          <p className="text-sm text-gray-600">Educational content</p>
+      );
+    }
+    
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub</h3>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-600 mb-2">No Video Content Available</h4>
+            <p className="text-sm text-gray-500">
+              {lessonData ? 'Video content is being generated...' : 'Select a lesson to view video content'}
+            </p>
+            {!lessonData && (
+              <button
+                onClick={() => setActiveTab('smart-teaching')}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Smart Teaching
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderInteractiveTools = () => (
     <div className="w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
@@ -703,12 +739,12 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                     <span>Time: {Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-600">Learning style:</label>
+                  <div className="flex flex-col items-center px-3 py-2 bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 rounded-lg text-sm font-medium shadow-sm min-w-fit">
+                    <label className="text-xs font-medium mb-1">Learning style:</label>
                     <select
                       value={learningStyle}
                       onChange={(e) => setLearningStyle(e.target.value as any)}
-                      className="border border-gray-200 rounded-md px-2 py-1 text-sm h-8 min-h-8 max-h-8"
+                      className="bg-transparent border-none text-orange-800 font-medium text-xs focus:outline-none focus:ring-0 cursor-pointer text-center min-w-fit"
                     >
                       <option value="visual">Visual</option>
                       <option value="audio">Audio</option>

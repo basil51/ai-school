@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, BookOpen, BarChart3, Settings, MessageSquare, Sparkles, FileText, Shield } from 'lucide-react';
+import { Users, BookOpen, BarChart3, Settings, MessageSquare, FileText, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboard() {

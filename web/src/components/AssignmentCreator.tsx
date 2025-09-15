@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
+//import { useTranslations } from "@/lib/useTranslations";
 import { toast } from "sonner";
 
 interface Assignment {
@@ -42,7 +42,7 @@ export function AssignmentCreator({
   onCancel,
   className = ""
 }: AssignmentCreatorProps) {
-  const dict = useTranslations();
+  //const dict = useTranslations();
   const [formData, setFormData] = useState<Assignment>(
     assignment || {
       title: "",
@@ -103,6 +103,7 @@ export function AssignmentCreator({
       toast.success("AI suggestions generated successfully");
     } catch (_error) {
       toast.error("Error generating AI suggestions");
+      console.error(_error);
     } finally {
       setIsLoading(false);
     }

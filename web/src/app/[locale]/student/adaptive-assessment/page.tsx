@@ -8,22 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+//import { Progress } from '@/components/ui/progress';
 import { 
   Brain, 
   Target, 
   TrendingUp, 
   Clock,
   CheckCircle,
-  AlertCircle,
+  //AlertCircle,
   Play,
   BarChart3,
   BookOpen,
   Award,
-  Sparkles,
+  //Sparkles,
   Zap,
-  Star,
-  Activity,
+  //Star,
+  //Activity,
   ArrowLeft,
   BrainCircuit
 } from 'lucide-react';
@@ -68,17 +68,6 @@ export default function StudentAdaptiveAssessmentPage() {
     { value: 'ENRICHMENT', label: 'Enrichment Assessment', description: 'Assessment for advanced learners' },
   ];
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-
-    loadSubjects();
-    loadRecentAssessments();
-  }, [session, status, router, locale]);
-
   const loadSubjects = async () => {
     try {
       const response = await fetch('/api/curriculum/generate');
@@ -102,6 +91,17 @@ export default function StudentAdaptiveAssessmentPage() {
       console.error('Error loading recent assessments:', error);
     }
   };
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    loadSubjects();
+    loadRecentAssessments();
+  }, [session, status, router, locale, loadSubjects, loadRecentAssessments]);
 
   const startAssessment = async () => {
     if (!selectedSubject || !selectedSessionType) return;

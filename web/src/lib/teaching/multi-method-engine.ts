@@ -111,8 +111,8 @@ export class MultiMethodTeachingEngine {
       const recommendedMethod = this.determineRecommendedMethod(
         studentPreferences,
         subject,
-        topic,
-        explanations
+        //topic,
+        //explanations
       );
 
       // Calculate effectiveness scores
@@ -280,8 +280,8 @@ export class MultiMethodTeachingEngine {
   private determineRecommendedMethod(
     preferences: StudentMethodPreference,
     subject: string,
-    topic: string,
-    explanations: MultiMethodExplanation['methods']
+    //topic: string,
+    //explanations: MultiMethodExplanation['methods']
   ): string {
     // Subject-specific method preferences
     const subjectPreferences: { [subject: string]: string[] } = {

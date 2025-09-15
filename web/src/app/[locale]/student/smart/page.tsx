@@ -6,7 +6,7 @@ import LessonSelector from '@/components/smart-teaching/LessonSelector';
 import SmartAssessmentInterface from '@/components/smart-teaching/SmartAssessmentInterface';
 import AdaptiveQuestionTrigger from '@/components/smart-teaching/AdaptiveQuestionTrigger';
 import AdaptiveTeachingInterface from '@/components/smart-teaching/AdaptiveTeachingInterface';
-import { BookOpen, Settings, Brain, Target, Sparkles, Zap, ClipboardCheck, Users } from 'lucide-react';
+import { BookOpen, Brain, Target, Sparkles, Zap, ClipboardCheck, Users } from 'lucide-react';
 
 type ContentType = 'text' | 'math' | 'diagram' | 'simulation' | 'video' | 'interactive' | '3d' | 'advanced-3d' | 'd3-advanced';
 
@@ -53,12 +53,6 @@ export default function Page() {
   const [adaptiveSession, setAdaptiveSession] = useState<any>(null);
 
   // Load lesson data when a lesson is selected
-  useEffect(() => {
-    if (selectedLessonId) {
-      loadLessonData(selectedLessonId);
-    }
-  }, [selectedLessonId]);
-
   const loadLessonData = async (lessonId: string) => {
     try {
       setLoading(true);
@@ -82,6 +76,12 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedLessonId) {
+      loadLessonData(selectedLessonId);
+    }
+  }, [selectedLessonId, loadLessonData]);
 
   const startSmartTeachingSession = async (lessonId: string) => {
     try {

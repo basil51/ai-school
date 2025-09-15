@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,8 +10,8 @@ import {
   TrendingUp, 
   TrendingDown, 
   Users, 
-  BookOpen, 
-  Award,
+  //BookOpen, 
+  //Award,
   Clock,
   Target,
   AlertTriangle,
@@ -238,7 +238,7 @@ export default function AdminAnalyticsPage() {
               School Analytics
             </h1>
             <p className="text-gray-600 mt-2">
-              Comprehensive analytics and insights for your school's performance
+              Comprehensive analytics and insights for your school&#39;s performance
             </p>
           </div>
           <div className="flex gap-3">

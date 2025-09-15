@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+//import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+//import { Badge } from '@/components/ui/badge';
 import { ThumbsUp, ThumbsDown, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 

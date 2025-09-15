@@ -29,7 +29,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { useTranslations } from '@/lib/useTranslations';
+//import { useTranslations } from '@/lib/useTranslations';
 
 interface AdvancedAnalytics {
   organizationId: string;
@@ -102,7 +102,6 @@ interface AdvancedAnalyticsDashboardProps {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 export default function AdvancedAnalyticsDashboard({ organizationId, className = '' }: AdvancedAnalyticsDashboardProps) {
-  const { dict } = useTranslations();
   const [analytics, setAnalytics] = useState<AdvancedAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');

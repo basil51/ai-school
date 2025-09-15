@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { DemoDataGenerator, DemoStudent } from '@/lib/personalization/demo-data';
+//import { Button } from '@/components/ui/button';
+import { DemoDataGenerator } from '@/lib/personalization/demo-data';
 import { User, Brain, Target, TrendingUp, Clock } from 'lucide-react';
 
 interface DemoStudentSelectorProps {
@@ -145,7 +145,7 @@ export default function DemoStudentSelector({ onStudentSelect, selectedStudentId
           <div>
             <h4 className="font-medium text-blue-900 mb-1">Demo Mode Active</h4>
             <p className="text-sm text-blue-700">
-              You're viewing simulated learning data for demonstration purposes. 
+              You are viewing simulated learning data for demonstration purposes. 
               In a real environment, this data would be collected over time from actual student interactions.
             </p>
           </div>

@@ -17,6 +17,7 @@ import {
   Maximize2,
   RotateCcw
 } from 'lucide-react';
+import MermaidDiagram from '@/components/multimodal/MermaidDiagram';
 
 interface DiagramContent {
   title: string;
@@ -72,35 +73,19 @@ export default function EnhancedDiagramRenderer({
     }
   };
 
-  const renderMermaidDiagram = (chart: string, theme: string) => {
-    // In a real implementation, this would render the actual Mermaid diagram
-    // For now, we'll show a placeholder with the chart syntax
-    return (
-      <div className="bg-white border-2 border-gray-200 rounded-lg p-6">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Mermaid Diagram</h3>
-          <Badge variant="outline" className="mb-4">
-            Theme: {theme}
-          </Badge>
-        </div>
-        
-        <div className="bg-gray-50 p-4 rounded border mb-4">
-          <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-            {chart}
-          </pre>
-        </div>
-        
-        <div className="bg-blue-50 p-4 rounded border">
-          <p className="text-sm text-blue-800 text-center">
-            📊 Interactive Mermaid diagram would render here
-          </p>
-          <p className="text-xs text-blue-600 text-center mt-1">
-            The diagram would be interactive and responsive
-          </p>
-        </div>
+  const renderMermaidDiagram = (chart: string, theme: string) => (
+    <div className="bg-white border-2 border-gray-200 rounded-lg p-6">
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Mermaid Diagram</h3>
+        <Badge variant="outline" className="mb-4">
+          Theme: {theme}
+        </Badge>
       </div>
-    );
-  };
+      <div className="rounded border">
+        <MermaidDiagram chart={chart} theme={(theme as any) || 'default'} />
+      </div>
+    </div>
+  );
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -158,14 +143,19 @@ export default function EnhancedDiagramRenderer({
           Key Points to Remember
         </h3>
         <div className="space-y-3">
-          {content.keyPoints.map((point, index) => (
+          {content.keyPoints && content.keyPoints.length > 0 ? content.keyPoints.map((point, index) => (
             <div key={index} className="flex items-start space-x-3">
               <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                 {index + 1}
               </div>
               <p className="text-purple-800 leading-relaxed">{point}</p>
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-4 text-gray-500">
+              <Target className="w-6 h-6 mx-auto mb-2 opacity-50" />
+              <p>No key points available for this diagram.</p>
+            </div>
+          )}
         </div>
       </div>
       

@@ -20,10 +20,10 @@ import {
   Brain,
   Target,
   ClipboardCheck,
-  Award,
-  TrendingUp,
-  BarChart3,
-  Sparkles
+  //Award,
+  //TrendingUp,
+  //BarChart3,
+  //Sparkles
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
 import { StudentAssessment } from "@/components/StudentAssessment";
@@ -66,7 +66,7 @@ interface AssessmentAttempt {
 export default function AssessmentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { dict, loading: dictLoading } = useTranslations();
+  const { loading: dictLoading } = useTranslations();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -83,13 +83,6 @@ export default function AssessmentsPage() {
       router.push(`/${locale}/login`);
     }
   }, [status, router, locale]);
-
-  useEffect(() => {
-    if (session && status === "authenticated") {
-      fetchAssessments();
-      fetchAttempts();
-    }
-  }, [session, status]);
 
   const fetchAssessments = async () => {
     try {
@@ -153,6 +146,13 @@ export default function AssessmentsPage() {
       console.error('Error fetching attempts:', err);
     }
   };
+
+  useEffect(() => {
+    if (session && status === "authenticated") {
+      fetchAssessments();
+      fetchAttempts();
+    }
+  }, [session, status, fetchAssessments, fetchAttempts]);
 
   const startAssessment = async (assessmentId: string) => {
     try {

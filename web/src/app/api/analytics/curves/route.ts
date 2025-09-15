@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { studentId, subjectId, curveType = 'MASTERY_CURVE' } = body;
+    const { studentId, subjectId = 'MASTERY_CURVE' } = body;
 
     if (!studentId || !subjectId) {
       return NextResponse.json({ 

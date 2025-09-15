@@ -30,7 +30,7 @@ const createFindingSchema = z.object({
   notes: z.string().optional(),
 });
 
-const updateFindingSchema = createFindingSchema.partial().omit({ complianceId: true });
+//const updateFindingSchema = createFindingSchema.partial().omit({ complianceId: true });
 
 export async function GET(request: NextRequest) {
   try {

@@ -26,7 +26,7 @@ const createRecommendationSchema = z.object({
   notes: z.string().optional(),
 });
 
-const updateRecommendationSchema = createRecommendationSchema.partial().omit({ complianceId: true });
+//const updateRecommendationSchema = createRecommendationSchema.partial().omit({ complianceId: true });
 
 export async function GET(request: NextRequest) {
   try {

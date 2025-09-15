@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+//import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,20 +14,20 @@ import {
   Save, 
   Upload, 
   Download, 
-  Trash2, 
+  //Trash2, 
   Plus, 
   Edit, 
   Eye,
   Shield,
   Bell,
-  Users,
-  BookOpen,
-  Globe,
-  Mail,
+  //Users,
+  //BookOpen,
+  //Globe,
+  //Mail,
   Database,
   Zap,
-  Lock,
-  Key,
+  //Lock,
+  //Key,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -38,14 +38,14 @@ import {
   Cpu,
   MemoryStick,
   Network,
-  Building2,
-  Crown,
+  //Building2,
+  //Crown,
   Activity
 } from 'lucide-react';
 
 export default function SuperAdminSettingsPage() {
   const [activeTab, setActiveTab] = useState('system');
-  const [hasChanges, setHasChanges] = useState(false);
+  const hasChanges= false;
 
   // Mock data for system settings
   const systemInfo = {

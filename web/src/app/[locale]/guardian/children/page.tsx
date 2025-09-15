@@ -9,9 +9,9 @@ import {
   BookOpen, 
   Trophy, 
   TrendingUp, 
-  Calendar,
-  Clock,
-  Target,
+  //Calendar,
+  //Clock,
+  //Target,
   Award,
   Activity,
   BarChart3,
@@ -80,7 +80,7 @@ export default function MyChildrenPage() {
         <div>
           <h1 className="text-3xl font-bold">My Children</h1>
           <p className="text-muted-foreground">
-            Monitor your children's learning progress and activities
+            Monitor your children&#39;s learning progress and activities
           </p>
         </div>
         <Button>

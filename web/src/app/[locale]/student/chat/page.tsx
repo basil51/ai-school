@@ -19,13 +19,13 @@ import {
   MessageSquare, 
   Plus, 
   Send, 
-  MoreVertical,
+  //MoreVertical,
   Trash2,
   UserPlus,
   UserMinus,
   Clock,
-  CheckCircle,
-  Sparkles
+  //CheckCircle,
+  //Sparkles
 } from "lucide-react";
 
 

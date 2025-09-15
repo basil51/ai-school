@@ -4,18 +4,18 @@ import {
   Maximize2, 
   Minimize2, 
   Move, 
-  Palette, 
+  //Palette, 
   Type, 
   Square, 
   Circle, 
   Triangle, 
   Eraser, 
   Save, 
-  Upload, 
+  //Upload, 
   Play, 
-  Pause, 
+  //Pause, 
   Volume2, 
-  VolumeX,
+  //VolumeX,
   Users,
   MessageCircle,
   Settings,
@@ -36,18 +36,18 @@ import {
   Clock,
   BarChart3,
   X,
-  Plus,
+  //Plus,
   Minus,
   RotateCcw,
   Download,
   Zap,
   Brain,
   ChevronRight,
-  ChevronLeft,
+  //ChevronLeft,
   Eye,
   EyeOff,
   MousePointer,
-  Hand
+  //Hand
 } from 'lucide-react';
 
 const AITeacher = () => {
@@ -260,7 +260,7 @@ const AITeacher = () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       saveToHistory();
     }
-  }, [canvasBackground]);
+  }, [canvasBackground, saveToHistory]);
 
   // Draw grid
   const drawGrid = () => {
@@ -316,7 +316,7 @@ const AITeacher = () => {
             className="absolute top-0 left-0 pointer-events-none"
             ref={(gridCanvas) => {
               if (gridCanvas) {
-                const ctx = gridCanvas.getContext('2d');
+                //const ctx = gridCanvas.getContext('2d');
                 drawGrid();
               }
             }}

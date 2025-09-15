@@ -235,13 +235,13 @@ async function calculateKPIs(
       return calculateEngagementKPIs(engagementData, progressData);
     
     case 'RETENTION_ANALYSIS':
-      return calculateRetentionKPIs(assessmentData, progressData);
+      return calculateRetentionKPIs();
     
     case 'BEHAVIORAL_INSIGHTS':
       return calculateBehavioralKPIs(attendanceData, progressData);
     
     case 'GROWTH_TRACKING':
-      return calculateGrowthKPIs(progressData, assessmentData);
+      return calculateGrowthKPIs();
     
     default:
       return calculateAcademicKPIs(progressData, assessmentData);
@@ -322,7 +322,7 @@ function calculateEngagementKPIs(engagementData: any[], progressData: any[]) {
   };
 }
 
-function calculateRetentionKPIs(assessmentData: any[], progressData: any[]) {
+function calculateRetentionKPIs() {
   // Calculate retention based on spaced repetition and long-term performance
   const retentionRate = 0.85; // Placeholder - will be calculated from actual retention data
   const transferRate = 0.75; // Placeholder - will be calculated from cross-domain performance
@@ -359,7 +359,7 @@ function calculateBehavioralKPIs(attendanceData: any[], progressData: any[]) {
 
   const punctualityRate = 0.90; // Placeholder - will be calculated from submission times
   const collaborationScore = 0.75; // Placeholder - will be calculated from social interactions
-
+  console.log(attendanceData, progressData);
   return {
     attendanceRate,
     punctualityRate,
@@ -384,7 +384,7 @@ function calculateBehavioralKPIs(attendanceData: any[], progressData: any[]) {
   };
 }
 
-function calculateGrowthKPIs(progressData: any[], assessmentData: any[]) {
+function calculateGrowthKPIs() {
   // Calculate improvement rate over time
   const improvementRate = 0.15; // Placeholder - will be calculated from historical trends
   const goalAchievement = 0.80; // Placeholder - will be calculated from goal completion

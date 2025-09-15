@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+//import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -80,14 +80,10 @@ export function MasteryDashboard({
   subjectId,
   className = "" 
 }: MasteryDashboardProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [masteryData, setMasteryData] = useState<MasteryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchMasteryData();
-  }, [studentId, subjectId]);
 
   const fetchMasteryData = async () => {
     try {
@@ -111,6 +107,10 @@ export function MasteryDashboard({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchMasteryData();
+  }, [studentId, subjectId, fetchMasteryData]);
 
   const getMasteryLevelColor = (level: string) => {
     switch (level) {

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { AccessibilityPreferences } from '@/components/inclusivity/AccessibilityPreferences';
 import { ADHDFriendlyPacing } from '@/components/inclusivity/ADHDFriendlyPacing';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, Settings, Clock } from 'lucide-react';
+import { Settings, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Accessibility & Inclusivity',

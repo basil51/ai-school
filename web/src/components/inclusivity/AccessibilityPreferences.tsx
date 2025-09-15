@@ -11,17 +11,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Brain, 
   Eye, 
-  Ear, 
-  Zap, 
+  //Ear, 
+  //Zap, 
   Globe, 
-  Settings, 
+  //Settings, 
   Save, 
   Clock,
-  Type,
-  Palette,
-  Volume2,
+  //Type,
+  //Palette,
+  //Volume2,
   BookOpen,
-  Users
+  //Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 

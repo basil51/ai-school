@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Maximize2, Minimize2, Split, Volume2, VolumeX,Play, ZoomIn,
+  Maximize2, Minimize2, Split, Volume2, VolumeX, ZoomIn,
   ZoomOut,Image, Video, Code, Calculator, Brain, Sparkles
 } from 'lucide-react';
 import MathRenderer from './multimodal/MathRenderer';
@@ -9,11 +9,13 @@ import MermaidDiagram from './multimodal/MermaidDiagram';
 import AudioNarrator from './multimodal/AudioNarrator';
 import ProjectileSimulator from './multimodal/ProjectileSimulator';
 import CodePlayground from './multimodal/CodePlayground';
-import VideoPlayer from './multimodal/VideoPlayer';
+//import VideoPlayer from './multimodal/VideoPlayer';
+import EnhancedVideoPlayer from './smart-teaching/EnhancedVideoPlayer';
 import InteractiveGraph from './multimodal/InteractiveGraph';
 import ThreeJSVisualizer from './multimodal/ThreeJSVisualizer';
 import BabylonJSVisualizer from './multimodal/BabylonJSVisualizer';
 import AdvancedD3Visualizer from './multimodal/AdvancedD3Visualizer';
+import TextFormatter from './smart-teaching/TextFormatter';
 
 interface SmartLearningCanvasProps {
   content: any;
@@ -27,19 +29,19 @@ type CanvasState = 'compact' | 'expanded' | 'fullscreen' | 'split';
 const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
   content,
   contentType,
-  onContentChange,
+  //onContentChange,
   learningStyle = 'visual'
 }) => {
   const [canvasState, setCanvasState] = useState<CanvasState>('compact');
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
+  //const [isDragging, setIsDragging] = useState(false);
+  //const [isResizing, setIsResizing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showControls, setShowControls] = useState(true);
-  const [isFloating, setIsFloating] = useState(false);
+  //const [isFloating, setIsFloating] = useState(false);
   
   const canvasRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<HTMLDivElement>(null);
+  //const dragRef = useRef<HTMLDivElement>(null);
 
   // Auto-adjust canvas state based on content type
   useEffect(() => {
@@ -47,7 +49,7 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
     if (canvasState === 'compact' && optimalState !== 'compact') {
       setCanvasState(optimalState);
     }
-  }, [contentType]);
+  }, [contentType, canvasState]);
 
   const getOptimalCanvasState = (type: string): CanvasState => {
     switch (type) {
@@ -179,7 +181,31 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
         return (
           <div className="space-y-4">
             {content.title && <h3 className="text-xl font-semibold text-gray-800">{content.title}</h3>}
-            <VideoPlayer src={content.src} captions={content.captions} poster={content.poster} />
+            {content.src ? (
+              <EnhancedVideoPlayer
+                src={content.src}
+                title={content.title}
+                description={content.description}
+                captions={content.captions}
+                poster={content.poster}
+                transcript={content.transcript}
+                keyConcepts={content.keyConcepts}
+                duration={content.duration}
+                subject={content.subject}
+                topic={content.topic}
+                onProgress={(progress) => console.log('Video progress:', progress)}
+                onComplete={() => console.log('Video completed')}
+                onError={(error) => console.error('Video error:', error)}
+              />
+            ) : (
+              <div className="w-full aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                <div className="text-center text-white p-6">
+                  <Video className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Video Not Available</h3>
+                  <p className="text-gray-300">No video source provided for this content.</p>
+                </div>
+              </div>
+            )}
             {audioEnabled && content.narration && (
               <AudioNarrator text={content.narration} />
             )}
@@ -282,6 +308,17 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
           </div>
         );
 
+      case 'text':
+        return (
+          <TextFormatter
+            content={content}
+            learningStyle={learningStyle}
+            onProgress={(progress) => console.log('Reading progress:', progress)}
+            onBookmark={(section) => console.log('Bookmarked section:', section)}
+            onHighlight={(text) => console.log('Highlighted text:', text)}
+          />
+        );
+
       default:
         return (
           <div className="space-y-4">
@@ -291,6 +328,11 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
                 {content.text || 'Welcome to your AI Teacher! This is where your personalized learning content will appear.'}
               </p>
             </div>
+            {audioEnabled && content.narration && (
+              <div className="pt-2">
+                <AudioNarrator text={content.narration} />
+              </div>
+            )}
           </div>
         );
     }

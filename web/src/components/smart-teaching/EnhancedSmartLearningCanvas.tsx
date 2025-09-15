@@ -7,6 +7,8 @@ import EnhancedSimulationRenderer from './EnhancedSimulationRenderer';
 import EnhancedInteractiveRenderer from './EnhancedInteractiveRenderer';
 import Enhanced3DRenderer from './Enhanced3DRenderer';
 import ParticleEffectsRenderer from './ParticleEffectsRenderer';
+import TextFormatter from './TextFormatter';
+import EnhancedVideoPlayer from './EnhancedVideoPlayer';
 import { 
   Brain, 
   Sparkles, 
@@ -14,6 +16,7 @@ import {
   RefreshCw, 
   Settings, 
   Zap,
+  Trash2,
   BookOpen,
   Target,
   Clock,
@@ -76,7 +79,7 @@ interface EnhancedSmartLearningCanvasProps {
   learningStyle: 'visual' | 'audio' | 'kinesthetic' | 'analytical';
   onContentGenerated?: (content: GeneratedContent) => void;
 }
-
+  
 export default function EnhancedSmartLearningCanvas({ 
   lessonData, 
   learningStyle,
@@ -102,7 +105,7 @@ export default function EnhancedSmartLearningCanvas({
       setError(null);
       setIsGenerating(true);
       setGenerationProgress(0);
-
+  
       // Generate comprehensive content
       const response = await fetch('/api/smart-teaching/generate-content', {
         method: 'POST',
@@ -155,23 +158,68 @@ export default function EnhancedSmartLearningCanvas({
   };
 
   const getInitialContentType = (style: string, available: string[]): any => {
+    console.log('🎯 Selecting initial content type for learning style:', style, 'Available types:', available);
+    
     switch (style) {
       case 'visual':
-        if (available.includes('diagram')) return 'diagram';
-        if (available.includes('3d')) return '3d';
-        if (available.includes('math')) return 'math';
+        // Prioritize visual content for visual learners
+        if (available.includes('diagram')) {
+          console.log('✅ Selected diagram for visual learner');
+          return 'diagram';
+        }
+        if (available.includes('3d') || available.includes('3d_model')) {
+          console.log('✅ Selected 3D for visual learner');
+          return available.includes('3d') ? '3d' : '3d_model';
+        }
+        if (available.includes('math')) {
+          console.log('✅ Selected math for visual learner');
+          return 'math';
+        }
         break;
       case 'kinesthetic':
-        if (available.includes('interactive')) return 'interactive';
-        if (available.includes('simulation')) return 'simulation';
+        // Prioritize interactive content for kinesthetic learners
+        if (available.includes('interactive')) {
+          console.log('✅ Selected interactive for kinesthetic learner');
+          return 'interactive';
+        }
+        if (available.includes('simulation')) {
+          console.log('✅ Selected simulation for kinesthetic learner');
+          return 'simulation';
+        }
+        if (available.includes('3d') || available.includes('3d_model')) {
+          console.log('✅ Selected 3D for kinesthetic learner');
+          return available.includes('3d') ? '3d' : '3d_model';
+        }
         break;
       case 'analytical':
-        if (available.includes('math')) return 'math';
-        if (available.includes('interactive')) return 'interactive';
+        // Prioritize structured content for analytical learners
+        if (available.includes('math')) {
+          console.log('✅ Selected math for analytical learner');
+          return 'math';
+        }
+        if (available.includes('interactive')) {
+          console.log('✅ Selected interactive for analytical learner');
+          return 'interactive';
+        }
+        if (available.includes('diagram')) {
+          console.log('✅ Selected diagram for analytical learner');
+          return 'diagram';
+        }
         break;
       case 'audio':
-        return 'text'; // Text with narration
+        // For audio learners, start with text which includes narration
+        console.log('✅ Selected text (with narration) for audio learner');
+        return 'text';
     }
+    
+    // Fallback: prefer non-text content over text
+    const nonTextTypes = available.filter(type => type !== 'text');
+    if (nonTextTypes.length > 0) {
+      console.log('✅ Selected fallback content type:', nonTextTypes[0]);
+      return nonTextTypes[0];
+    }
+    
+    console.log('⚠️ Falling back to text content');
     return 'text';
   };
 
@@ -213,6 +261,39 @@ export default function EnhancedSmartLearningCanvas({
     } finally {
       setIsGenerating(false);
       setGenerationProgress(0);
+    }
+  };
+
+  const clearAllCache = async () => {
+    try {
+      setIsGenerating(true);
+      
+      const response = await fetch(`/api/smart-teaching/generate-content?lessonId=${lessonData.lesson.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to clear cache');
+      }
+
+      const result = await response.json();
+      console.log('Cache cleared:', result);
+      
+      // Clear local state
+      setGeneratedContent(null);
+      setError(null);
+      
+      // Regenerate content immediately after clearing cache
+      await generateSmartContent();
+      
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      setError('Failed to clear cache');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -281,11 +362,16 @@ export default function EnhancedSmartLearningCanvas({
           keyConcepts: generatedContent.video.keyConcepts,
           duration: generatedContent.video.duration,
           narration: generatedContent.video.narration,
-          transcript: generatedContent.video.transcript
+          transcript: generatedContent.video.transcript,
+          src: generatedContent.video.src,
+          poster: generatedContent.video.poster,
+          captions: generatedContent.video.captions
         } : {
           title: generatedContent.baseContent.title,
           text: generatedContent.baseContent.text,
-          narration: `Let's watch a video about ${generatedContent.baseContent.title}.`
+          narration: `Let's watch a video about ${generatedContent.baseContent.title}.`,
+          src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // Fallback video
+          poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg'
         };
 
       case 'interactive':
@@ -348,6 +434,17 @@ export default function EnhancedSmartLearningCanvas({
 
     // Render enhanced content based on type
     switch (currentContentType) {
+      case 'text':
+        return (
+          <TextFormatter
+            content={content}
+            learningStyle={learningStyle}
+            onProgress={(progress) => console.log('Reading progress:', progress)}
+            onBookmark={(section) => console.log('Bookmarked section:', section)}
+            onHighlight={(text) => console.log('Highlighted text:', text)}
+          />
+        );
+
       case 'math':
         if (generatedContent.math) {
           return (
@@ -384,6 +481,30 @@ export default function EnhancedSmartLearningCanvas({
         }
         break;
         
+      case 'video':
+        if (generatedContent.video) {
+          return (
+            <div className="p-6">
+              <EnhancedVideoPlayer
+                src={generatedContent.video.src}
+                title={generatedContent.video.title}
+                description={generatedContent.video.description}
+                captions={generatedContent.video.captions}
+                poster={generatedContent.video.poster}
+                transcript={generatedContent.video.transcript}
+                keyConcepts={generatedContent.video.keyConcepts}
+                duration={generatedContent.video.duration}
+                onProgress={(progress) => console.log('Video progress:', progress)}
+                onComplete={() => console.log('Video completed')}
+                onError={(error) => console.error('Video error:', error)}
+                subject={lessonData?.subject?.name}
+                topic={lessonData?.topic?.name}
+              />
+            </div>
+          );
+        }
+        break;
+
       case 'interactive':
         if (generatedContent.interactive) {
           return (
@@ -524,6 +645,15 @@ export default function EnhancedSmartLearningCanvas({
                 <RefreshCw className="w-4 h-4" />
               )}
               <span className="text-sm">Regenerate</span>
+            </button>
+            
+            <button
+              onClick={clearAllCache}
+              disabled={isGenerating}
+              className="flex items-center space-x-1 px-3 py-1 bg-red-50 border border-red-200 text-red-700 rounded-md hover:bg-red-100 disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="text-sm">Reset Cache</span>
             </button>
           </div>
         </div>

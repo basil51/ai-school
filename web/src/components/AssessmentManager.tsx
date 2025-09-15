@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+//import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Plus, 
@@ -19,15 +19,15 @@ import {
   Eye, 
   Brain, 
   CheckCircle, 
-  XCircle, 
+  //XCircle, 
   Clock, 
   Users,
-  BarChart3,
+  //BarChart3,
   FileText,
   Loader2,
   AlertCircle
 } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
+//import { useTranslations } from "@/lib/useTranslations";
 
 interface Question {
   id?: string;
@@ -84,7 +84,7 @@ export function AssessmentManager({
   onAssessmentCreated,
   className = "" 
 }: AssessmentManagerProps) {
-  const { dict } = useTranslations();
+  //const { dict } = useTranslations();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +94,7 @@ export function AssessmentManager({
   const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
 
   // Form state for creating assessment
+
   const [formData, setFormData] = useState({
     type: 'quiz' as const,
     title: '',
@@ -103,10 +104,6 @@ export function AssessmentManager({
     maxAttempts: 3,
     questions: [] as Question[]
   });
-
-  useEffect(() => {
-    fetchAssessments();
-  }, [lessonId]);
 
   const fetchAssessments = async () => {
     try {
@@ -125,6 +122,10 @@ export function AssessmentManager({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAssessments();
+  }, [lessonId, fetchAssessments]);
 
   const generateQuestions = async () => {
     try {

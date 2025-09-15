@@ -26,11 +26,13 @@ export class UnifiedCacheManager implements CacheInterface {
       this.redisHealthy = health.status === 'healthy';
       this.useRedis = this.redisHealthy;
       
-      if (!this.redisHealthy) {
+      if (!this.redisHealthy && typeof window !== 'undefined') {
         console.warn('Redis not available, falling back to memory cache');
       }
     } catch (error) {
-      console.warn('Redis initialization failed, using memory cache:', error);
+      if (typeof window !== 'undefined') {
+        console.warn('Redis initialization failed, using memory cache:', error);
+      }
       this.useRedis = false;
       this.redisHealthy = false;
     }
@@ -41,7 +43,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.get<T>(key);
       } catch (error) {
-        console.warn('Redis get failed, falling back to memory cache:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis get failed, falling back to memory cache:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -56,7 +60,9 @@ export class UnifiedCacheManager implements CacheInterface {
         const result = await redisCache.set(key, value, ttl);
         if (result) return true;
       } catch (error) {
-        console.warn('Redis set failed, falling back to memory cache:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis set failed, falling back to memory cache:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -70,7 +76,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.del(key);
       } catch (error) {
-        console.warn('Redis delete failed, falling back to memory cache:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis delete failed, falling back to memory cache:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -84,7 +92,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.exists(key);
       } catch (error) {
-        console.warn('Redis exists failed, falling back to memory cache:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis exists failed, falling back to memory cache:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -150,7 +160,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.mget<T>(keys);
       } catch (error) {
-        console.warn('Redis mget failed, falling back to individual gets:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis mget failed, falling back to individual gets:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -169,7 +181,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.mset(keyValuePairs, ttl);
       } catch (error) {
-        console.warn('Redis mset failed, falling back to individual sets:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis mset failed, falling back to individual sets:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }
@@ -188,7 +202,9 @@ export class UnifiedCacheManager implements CacheInterface {
       try {
         return await redisCache.invalidatePattern(pattern);
       } catch (error) {
-        console.warn('Redis pattern invalidation failed:', error);
+        if (typeof window !== 'undefined') {
+          console.warn('Redis pattern invalidation failed:', error);
+        }
         this.redisHealthy = false;
         this.useRedis = false;
       }

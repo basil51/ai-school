@@ -10,20 +10,20 @@ import { Button } from '@/components/ui/button';
 import { 
   BarChart3, 
   TrendingUp, 
-  BookOpen, 
-  Target, 
+  //BookOpen, 
+  //Target, 
   Clock, 
   Award,
-  Brain,
+  //Brain,
   Calendar,
   Activity,
-  Zap,
-  Star,
+  //Star,
   CheckCircle,
-  AlertCircle,
+  //AlertCircle,
   Play,
-  Pause,
-  RotateCcw
+  Zap,
+  //Pause,
+  //RotateCcw
 } from 'lucide-react';
 
 interface SubjectProgress {
@@ -65,8 +65,8 @@ interface WeeklyActivity {
 }
 
 export default function ProgressPage() {
-  const params = useParams();
-  const locale = params.locale as string;
+  //const params = useParams();
+  //const locale = params.locale as string;
   
   const [subjects, setSubjects] = useState<SubjectProgress[]>([]);
   const [streak, setStreak] = useState<LearningStreak>({ current: 0, longest: 0, lastActivity: '' });
@@ -257,7 +257,7 @@ export default function ProgressPage() {
       setWeeklyActivity(mockWeeklyActivity);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [ mockSubjects, mockStreak, mockWeeklyActivity ]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

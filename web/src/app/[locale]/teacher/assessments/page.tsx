@@ -10,22 +10,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  BookOpen, 
+  //BookOpen, 
   Clock, 
-  CheckCircle, 
-  XCircle, 
-  Play,
+  //CheckCircle, 
+  //XCircle, 
+  //Play,
   FileText,
   Loader2,
   AlertCircle,
-  Brain,
+  //Brain,
   Target,
   Users,
   BarChart3,
   Plus,
   Eye,
   Edit,
-  Trash2
+  //Trash2
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
 import { AssessmentManager } from "@/components/AssessmentManager";
@@ -87,7 +87,7 @@ interface Lesson {
 export default function TeacherAssessmentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { dict, loading: dictLoading } = useTranslations();
+  const { loading: dictLoading } = useTranslations();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -102,13 +102,6 @@ export default function TeacherAssessmentsPage() {
       router.push(`/${locale}/login`);
     }
   }, [status, router, locale]);
-
-  useEffect(() => {
-    if (session && status === "authenticated") {
-      fetchLessons();
-      fetchAllAssessments();
-    }
-  }, [session, status]);
 
   const fetchLessons = async () => {
     try {
@@ -149,6 +142,13 @@ export default function TeacherAssessmentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (session && status === "authenticated") {
+      fetchLessons();
+      fetchAllAssessments();
+    }
+  }, [session, status, fetchLessons, fetchAllAssessments ]);
 
   const handleAssessmentCreated = (newAssessment: Assessment) => {
     setAssessments(prev => [newAssessment, ...prev]);
@@ -273,7 +273,7 @@ export default function TeacherAssessmentsPage() {
                   <FileText className="h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No assessments created yet</h3>
                   <p className="text-gray-500 text-center">
-                    Create your first assessment using the "Create Assessments" tab.
+                    Create your first assessment using the &#34;Create Assessments&#34; tab.
                   </p>
                 </CardContent>
               </Card>

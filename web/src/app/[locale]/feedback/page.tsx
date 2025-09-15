@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { FeedbackForm } from '@/components/feedback/FeedbackForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Lightbulb, Bug, Eye, Zap, Users, FileText, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Lightbulb, Bug, Eye, Zap, Users, FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Share Your Feedback',

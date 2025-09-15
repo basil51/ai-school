@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -193,7 +193,7 @@ export default function TeacherProgressPage() {
               Class Progress
             </h1>
             <p className="text-gray-600 mt-2">
-              Monitor and analyze your students' academic progress and performance
+              Monitor and analyze your students&#39; academic progress and performance
             </p>
           </div>
           <div className="flex gap-3">

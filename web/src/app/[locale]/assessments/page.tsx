@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import {
   XCircle, 
   Play,
   FileText,
-  Loader2,
+  //Loader2,
   AlertCircle,
   Brain,
   Target
@@ -79,14 +79,7 @@ export default function AssessmentsPage() {
     }
   }, [status, router, locale]);
 
-  useEffect(() => {
-    if (session) {
-      fetchAssessments();
-      fetchAttempts();
-    }
-  }, [session]);
-
-  const fetchAssessments = async () => {
+  const fetchAssessments = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -116,9 +109,9 @@ export default function AssessmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session]);
 
-  const fetchAttempts = async () => {
+  const fetchAttempts = useCallback(async () => {
     try {
       const response = await fetch('/api/assessments/attempts?includeResponses=false');
       
@@ -131,7 +124,14 @@ export default function AssessmentsPage() {
     } catch (err) {
       console.error('Error fetching attempts:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchAssessments();
+      fetchAttempts();
+    }
+  }, [session, fetchAssessments, fetchAttempts]);
 
   const startAssessment = async (assessmentId: string) => {
     try {

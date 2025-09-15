@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +67,6 @@ function AdminPageContent() {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: "", name: "", role: "student" as const });
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   // Check if user is admin or super_admin
   useEffect(() => {
@@ -78,20 +77,7 @@ function AdminPageContent() {
     }
   }, [session, status, router, locale]);
 
-  // Handle organization context from URL parameters
-  useEffect(() => {
-    const orgId = searchParams.get('org');
-    setSelectedOrgId(orgId);
-  }, [searchParams]);
-
-  useEffect(() => {
-    const userRole = (session as any)?.role;
-    if (session && ["admin", "super_admin"].includes(userRole)) {
-      fetchData();
-    }
-  }, [session, searchParams]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const userRole = (session as any)?.role;
       const isSuperAdmin = userRole === 'super_admin';
@@ -135,7 +121,14 @@ function AdminPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, searchParams]);
+
+  useEffect(() => {
+    const userRole = (session as any)?.role;
+    if (session && ["admin", "super_admin"].includes(userRole)) {
+      fetchData();
+    }
+  }, [session, fetchData]);
 
   const createUser = async () => {
     try {

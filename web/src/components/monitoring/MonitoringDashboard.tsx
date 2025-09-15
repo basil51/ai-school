@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert } from '@/components/ui/alert';
+//import { Progress } from '@/components/ui/progress';
 import { 
   Activity, 
   Plus, 
@@ -26,27 +26,27 @@ import {
   Search,
   Eye,
   Edit,
-  Trash2,
-  Download,
-  Upload,
+  //Trash2,
+  //Download,
+  //Upload,
   Target,
   Gauge,
   TrendingUp,
-  TrendingDown,
-  Server,
-  Globe,
-  Zap,
-  Shield,
+  //TrendingDown,
+  //Server,
+  //Globe,
+  //Zap,
+  //Shield,
   Heart,
   Bell,
   BellRing,
   AlertCircle,
   Info,
-  Wifi,
-  WifiOff,
-  Cpu,
-  HardDrive,
-  MemoryStick
+  //Wifi,
+  //WifiOff,
+  //Cpu,
+  //HardDrive,
+  //MemoryStick
 } from 'lucide-react';
 
 interface MonitoringDashboard {
@@ -131,7 +131,7 @@ const dashboardTypeIcons = {
   custom: Settings,
 } as const;
 
-const widgetTypeIcons = {
+/*const widgetTypeIcons = {
   metric_chart: BarChart3,
   line_chart: TrendingUp,
   bar_chart: BarChart3,
@@ -141,7 +141,7 @@ const widgetTypeIcons = {
   alert_list: Bell,
   health_status: Heart,
   custom: Settings,
-} as const;
+} as const;*/
 
 const healthStatusIcons = {
   healthy: CheckCircle,
@@ -243,9 +243,9 @@ export default function MonitoringDashboard() {
     }
   };
 
-  const handleDashboardSelect = (dashboard: MonitoringDashboard) => {
+  /*const handleDashboardSelect = (dashboard: MonitoringDashboard) => {
     setSelectedDashboard(dashboard);
-  };
+  };*/
 
   const handleCreateDashboard = async () => {
     try {

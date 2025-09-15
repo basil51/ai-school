@@ -7,19 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+//import { Progress } from "@/components/ui/progress";
+//import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   BookOpen, 
   Plus, 
-  Users, 
-  TrendingUp, 
+  //Users, 
+  //TrendingUp, 
   Clock,
-  CheckCircle,
-  AlertCircle,
+  //CheckCircle,
+  //AlertCircle,
   Loader2,
-  Edit,
-  Trash2,
+  //Edit,
+  //Trash2,
   Eye,
   BarChart3,
   Target

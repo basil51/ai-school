@@ -20,7 +20,7 @@ const createTestSchema = z.object({
   testConfiguration: z.record(z.string(), z.any()),
 });
 
-const updateTestSchema = createTestSchema.partial();
+//const updateTestSchema = createTestSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

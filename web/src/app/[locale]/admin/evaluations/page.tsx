@@ -15,12 +15,12 @@ import {
   XCircle, 
   Users,
   FileText,
-  Loader2,
+  //Loader2,
   AlertCircle,
-  Brain,
+  //Brain,
   Target,
-  BarChart3,
-  Plus
+  //BarChart3,
+  //Plus
 } from "lucide-react";
 import { useTranslations } from "@/lib/useTranslations";
 import { AssessmentManager } from "@/components/AssessmentManager";
@@ -159,7 +159,7 @@ export default function AdminEvaluationsPage() {
     return null;
   }
 
-  const userRole = (session as any).role;
+  //const userRole = (session as any).role;
 
   return (
     <div className="min-h-screen p-6">
