@@ -72,8 +72,8 @@ export default function Aside({ currentUser, sidebarOpen, sidebarExpanded, onSid
         { icon: Users, label: 'Accessibility', path: `/${locale}/accessibility`, gradient: 'from-purple-500 to-pink-500' },
       ],
       'student': [
-        { icon: Home, label: 'Dashboard', path: `/${locale}/student/dashboard`, gradient: 'from-blue-500 to-cyan-500' },
-        { icon: Brain, label: 'AI Learning Hub', path: `/${locale}/student/unified`, gradient: 'from-violet-600 to-indigo-600', glow: true },
+        { icon: Home, label: 'Dashboard', path: `/${locale}/student`, gradient: 'from-blue-500 to-cyan-500' },
+        { icon: Brain, label: 'AI Teacher', path: `/${locale}/student/ai-teacher`, gradient: 'from-violet-600 to-indigo-600', glow: true },
         { icon: UserCheck, label: 'My Learning', path: `/${locale}/student/personalization`, gradient: 'from-pink-500 to-rose-500' },
         { icon: BrainCircuit, label: 'AI Assessments', path: `/${locale}/student/adaptive-assessment`, gradient: 'from-emerald-500 to-teal-500' },
         { icon: ClipboardCheck, label: 'My Assessments', path: `/${locale}/student/assessments`, gradient: 'from-green-500 to-emerald-500' },

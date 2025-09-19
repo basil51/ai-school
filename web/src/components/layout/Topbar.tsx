@@ -227,7 +227,7 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
                     {userRole === 'student' && (
                       <>
                         <Link 
-                          href={`/${currentLocale}/student/unified`}
+                          href={`/${currentLocale}/student/ai-teacher`}
                           className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >

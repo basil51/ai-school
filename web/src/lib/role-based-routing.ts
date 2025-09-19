@@ -9,12 +9,12 @@ export type UserRole = 'student' | 'teacher' | 'admin' | 'super_admin' | 'guardi
  */
 export function getRoleDashboard(role: UserRole, locale: string = 'en'): string {
   switch (role) {
-    case 'student': return `/${locale}/student/dashboard`;
+    case 'student': return `/${locale}/student`;
     case 'teacher': return `/${locale}/teacher/dashboard`;
     case 'admin': return `/${locale}/admin/dashboard`;
     case 'super_admin': return `/${locale}/super-admin/dashboard`;
     case 'guardian': return `/${locale}/guardian/dashboard`;
-    default: return `/${locale}/student/dashboard`;
+    default: return `/${locale}/student`;
   }
 }
 
@@ -43,7 +43,7 @@ export function hasRoleAccess(userRole: UserRole, pathname: string): boolean {
 export function getRoleNavigationItems(role: UserRole) {
   const baseItems = {
     student: [
-      { label: 'Dashboard', path: '/student/dashboard' },
+      { label: 'Dashboard', path: '/student' },
       { label: 'AI Teacher', path: '/student/ai-teacher' },
       { label: 'My Courses', path: '/student/courses' },
       { label: 'Assessments', path: '/student/assessments' },

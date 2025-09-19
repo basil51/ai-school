@@ -5,16 +5,20 @@ import { locales } from "./lib/i18n";
 
 // Get the preferred locale from Accept-Language header
 function getLocale(request: NextRequest): string {
-  // Default to English to prevent unwanted language switching
-  // Only use Arabic if explicitly requested via Accept-Language header
-  // and this is an initial page load (no referer or root path)
+  // Always default to English
+  // Only use Arabic if it's explicitly the first/preferred language
   const acceptLanguage = request.headers.get('accept-language');
   const referer = request.headers.get('referer');
   const pathname = request.nextUrl.pathname;
   
-  // If this is an initial page load (no referer or root path)
-  if (!referer || pathname === '/' || pathname === '') {
-    if (acceptLanguage?.includes('ar')) {
+  // Only check for Arabic preference on initial page loads
+  if ((!referer || pathname === '/' || pathname === '') && acceptLanguage) {
+    // Parse Accept-Language header to get the first language
+    const languages = acceptLanguage.split(',').map(lang => lang.split(';')[0].trim());
+    const firstLanguage = languages[0];
+    
+    // Only use Arabic if it's explicitly the first language
+    if (firstLanguage === 'ar') {
       return 'ar';
     }
   }
@@ -34,12 +38,12 @@ const roleBasedRoutes = {
 // Get role-specific dashboard path
 function getRoleDashboard(role: string, locale: string): string {
   switch (role) {
-    case 'student': return `/${locale}/student/dashboard`;
+    case 'student': return `/${locale}/student`;
     case 'teacher': return `/${locale}/teacher/dashboard`;
     case 'admin': return `/${locale}/admin/dashboard`;
     case 'super_admin': return `/${locale}/super-admin/dashboard`;
     case 'guardian': return `/${locale}/guardian/dashboard`;
-    default: return `/${locale}/student/dashboard`;
+    default: return `/${locale}/student`;
   }
 }
 

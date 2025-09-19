@@ -218,10 +218,10 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {learningPattern?.optimalStudyTimes.length || 0}
+                  {learningPattern?.optimalStudyTimes?.length || 0}
                 </div>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {learningPattern?.optimalStudyTimes.slice(0, 2).map((time, index) => (
+                  {learningPattern?.optimalStudyTimes?.slice(0, 2).map((time, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {time}
                     </Badge>
@@ -241,10 +241,10 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {learningPattern?.preferredContentTypes[0]?.type || 'N/A'}
+                  {learningPattern?.preferredContentTypes?.[0]?.type || 'N/A'}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {learningPattern?.preferredContentTypes[0] ? 
+                  {learningPattern?.preferredContentTypes?.[0] ? 
                     Math.round(learningPattern.preferredContentTypes[0].effectiveness * 100) + '% effective' : 
                     'No data'
                   }
@@ -313,7 +313,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {learningPattern?.effectiveStrategies.slice(0, 3).map((strategy, index) => (
+                  {learningPattern?.effectiveStrategies?.slice(0, 3).map((strategy, index) => (
                     <div key={index} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant="outline">{strategy.approach}</Badge>
@@ -343,7 +343,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {learningPattern?.engagementPatterns.slice(0, 3).map((pattern, index) => (
+                  {learningPattern?.engagementPatterns?.slice(0, 3).map((pattern, index) => (
                     <div key={index} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant="outline">{pattern.timeOfDay}</Badge>
@@ -373,7 +373,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {learningPattern?.preferredContentTypes.map((contentType, index) => (
+                {learningPattern?.preferredContentTypes?.map((contentType, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="secondary">{contentType.type}</Badge>
