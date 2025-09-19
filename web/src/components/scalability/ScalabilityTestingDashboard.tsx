@@ -9,18 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+//import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { 
   Zap, 
   Play, 
-  Pause, 
-  Square, 
+  //Pause, 
   BarChart3, 
   TrendingUp, 
-  TrendingDown,
-  AlertTriangle,
+  //TrendingDown,
+  //AlertTriangle,
   CheckCircle,
   Clock,
   Users,
@@ -31,15 +30,15 @@ import {
   HardDrive,
   Wifi,
   Plus,
-  Filter,
+  //Filter,
   Search,
   Eye,
   Edit,
-  Trash2,
-  Download,
-  Upload,
+  //Trash2,
+  //Download,
+  //Upload,
   Target,
-  Gauge
+  //Gauge
 } from 'lucide-react';
 
 interface ScalabilityTest {
@@ -187,6 +186,8 @@ export default function ScalabilityTestingDashboard() {
     testDuration: 30,
     testConfiguration: {},
   });
+
+  console.log(benchmarks);
 
   useEffect(() => {
     fetchTests();

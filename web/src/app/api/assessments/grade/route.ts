@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       attemptId,
       questionId,
       studentResponse,
-      gradingCriteria
+      //gradingCriteria
     } = data;
 
     if (!attemptId || !questionId || !studentResponse) {
@@ -200,7 +200,7 @@ export async function PUT(request: NextRequest) {
       isCorrect,
       pointsEarned,
       feedback,
-      confidence
+      //confidence
     } = data;
 
     if (!responseId) {

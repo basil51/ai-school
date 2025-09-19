@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import AdaptiveAssessmentInterface from '@/components/AdaptiveAssessmentInterface';
@@ -68,7 +68,7 @@ export default function StudentAdaptiveAssessmentPage() {
     { value: 'ENRICHMENT', label: 'Enrichment Assessment', description: 'Assessment for advanced learners' },
   ];
 
-  const loadSubjects = async () => {
+  const loadSubjects = useCallback(async () => {
     try {
       const response = await fetch('/api/curriculum/generate');
       if (response.ok) {
@@ -78,9 +78,9 @@ export default function StudentAdaptiveAssessmentPage() {
     } catch (error) {
       console.error('Error loading subjects:', error);
     }
-  };
+  }, []);
 
-  const loadRecentAssessments = async () => {
+  const loadRecentAssessments = useCallback(async () => {
     try {
       const response = await fetch(`/api/adaptive-assessment/session?studentId=${(session?.user as any)?.id}`);
       if (response.ok) {
@@ -90,7 +90,7 @@ export default function StudentAdaptiveAssessmentPage() {
     } catch (error) {
       console.error('Error loading recent assessments:', error);
     }
-  };
+  }, [session?.user]);
 
   useEffect(() => {
     if (status === 'loading') return;

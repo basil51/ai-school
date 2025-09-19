@@ -129,11 +129,11 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
               </p>
             )}
             {(content.graphExpression || content.points) && (
-              <div className="mt-2 flex justify-center">
+              <div className="mt-2 w-full">
                 <InteractiveGraph
-                  expression={content.graphExpression}
+                  graphExpression={content.graphExpression}
                   points={content.points}
-                  title={content.graphTitle || 'Function Plot'}
+                  height={canvasState === 'fullscreen' ? 600 : 400}
                 />
               </div>
             )}
@@ -221,9 +221,13 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
                 <h4 className="font-medium text-gray-800 mb-2">Code Playground</h4>
                 <CodePlayground initialCode={content.initialCode} />
               </div>
-              <div>
+              <div className="w-full">
                 <h4 className="font-medium text-gray-800 mb-2">Visualization</h4>
-                <InteractiveGraph expression={content.graphExpression} points={content.points} />
+                <InteractiveGraph 
+                  graphExpression={content.graphExpression} 
+                  points={content.points} 
+                  height={400}
+                />
               </div>
             </div>
             {audioEnabled && content.narration && (
@@ -349,7 +353,7 @@ const SmartLearningCanvas: React.FC<SmartLearningCanvasProps> = ({
             <Calculator className="w-4 h-4" />
           </button>
           <button className={`p-2 rounded ${contentType === 'diagram' ? 'bg-green-100 text-green-600' : 'text-gray-500'}`}>
-            <Image className="w-4 h-4" />
+            <Image className="w-4 h-4" aria-label="Image icon" />
           </button>
           <button className={`p-2 rounded ${contentType === 'video' ? 'bg-red-100 text-red-600' : 'text-gray-500'}`}>
             <Video className="w-4 h-4" />

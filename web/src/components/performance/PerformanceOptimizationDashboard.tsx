@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -11,18 +11,18 @@ import {
   Activity, 
   AlertTriangle, 
   CheckCircle, 
-  Clock, 
+  //Clock, 
   Database, 
-  Globe, 
-  Image, 
+  //Globe, 
+  //Image, 
   Monitor, 
-  Settings, 
+  //Settings, 
   TrendingUp,
   Zap,
-  Server,
-  HardDrive,
-  Cpu,
-  MemoryStick
+  //Server,
+  //HardDrive,
+  //Cpu,
+  //MemoryStick
 } from 'lucide-react';
 
 interface PerformanceMetrics {
@@ -103,6 +103,7 @@ export default function PerformanceOptimizationDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
 
+  setRefreshInterval(30000);
   // Fetch performance metrics
   const fetchMetrics = async () => {
     try {

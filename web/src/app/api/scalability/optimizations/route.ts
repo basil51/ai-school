@@ -29,7 +29,7 @@ const createOptimizationSchema = z.object({
   notes: z.string().optional(),
 });
 
-const updateOptimizationSchema = createOptimizationSchema.partial().omit({ currentPerformance: true, expectedImprovement: true });
+//const updateOptimizationSchema = createOptimizationSchema.partial().omit({ currentPerformance: true, expectedImprovement: true });
 
 export async function GET(request: NextRequest) {
   try {

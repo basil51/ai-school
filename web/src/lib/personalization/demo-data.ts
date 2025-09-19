@@ -1,4 +1,4 @@
-import { LearningPattern, TeachingStrategy, ContentType, EngagementPattern } from './learning-analytics';
+import { LearningPattern} from './learning-analytics';
 
 export interface DemoStudent {
   id: string;

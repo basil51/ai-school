@@ -36,7 +36,7 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
   const { dict } = useTranslations();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [_searchOpen, _setSearchOpen] = useState(false);
 
   const getRoleDisplay = (role: string) => {
     switch (role) {
@@ -99,8 +99,8 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
                 type="search"
                 placeholder="Search lessons, topics, assessments..."
                 className="pl-10 pr-4 w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-700 transition-colors"
-                onFocus={() => setSearchOpen(true)}
-                onBlur={() => setSearchOpen(false)}
+                onFocus={() => _setSearchOpen(true)}
+                onBlur={() => _setSearchOpen(false)}
               />
             </div>
           </div>

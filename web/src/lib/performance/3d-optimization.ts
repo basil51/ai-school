@@ -145,7 +145,7 @@ export class ThreeDOptimizationManager {
     if (!this.renderingConfig.adaptiveQuality) return;
 
     const currentFPS = this.performanceMetrics.fps;
-    const targetFPS = this.renderingConfig.targetFPS;
+    //const targetFPS = this.renderingConfig.targetFPS;
 
     if (currentFPS < this.lodConfig.minFPS) {
       // Performance is poor, reduce quality
@@ -189,8 +189,8 @@ export class ThreeDOptimizationManager {
   // Frustum culling - remove objects outside camera view
   performFrustumCulling(objects: any[], camera: any): any[] {
     if (!this.renderingConfig.enableFrustumCulling) return objects;
-
-    return objects.filter(object => {
+    console.log(camera);
+    return objects.filter(() => {
       // This would contain actual frustum culling logic
       // For now, return all objects
       return true;
@@ -200,7 +200,7 @@ export class ThreeDOptimizationManager {
   // Occlusion culling - remove objects hidden behind others
   performOcclusionCulling(objects: any[], camera: any): any[] {
     if (!this.renderingConfig.enableOcclusionCulling) return objects;
-
+    console.log(camera);
     // This would contain actual occlusion culling logic
     // For now, return all objects
     return objects;
@@ -208,6 +208,7 @@ export class ThreeDOptimizationManager {
 
   // Instance rendering for repeated objects
   createInstancedMesh(objects: any[]): any {
+    console.log(objects);
     if (!this.renderingConfig.enableInstancing) return null;
 
     // This would create an instanced mesh for repeated objects

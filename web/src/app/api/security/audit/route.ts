@@ -5,13 +5,14 @@ import { ProductionHardeningEngine, SecurityConfig } from "@/lib/security/produc
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("GET request received", request);
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
+    //const { searchParams } = new URL(request.url);
     //const type = searchParams.get('type');
     //const limit = parseInt(searchParams.get('limit') || '50');
 

@@ -25,7 +25,7 @@ const createLMSIntegrationSchema = z.object({
   autoSync: z.boolean().default(false),
 });
 
-const updateLMSIntegrationSchema = createLMSIntegrationSchema.partial();
+//const updateLMSIntegrationSchema = createLMSIntegrationSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

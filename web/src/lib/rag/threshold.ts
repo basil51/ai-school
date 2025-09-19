@@ -36,7 +36,7 @@ export function reRankResults(results: HybridResult[]): HybridResult[] {
       finalScore: result.score * 0.7 + result.similarity * 0.3,
     }))
     .sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0))
-    .map(({ finalScore, ...result }) => result); // Remove finalScore from output
+    .map(({ finalScore: _finalScore, ...result }) => result); // Remove finalScore from output
 }
 
 /**

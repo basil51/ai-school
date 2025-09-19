@@ -14,7 +14,6 @@ import {
   Lightbulb,
   Target,
   CheckCircle,
-  ArrowRight,
   Zap,
   Activity
 } from 'lucide-react';

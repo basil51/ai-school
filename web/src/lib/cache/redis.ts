@@ -4,7 +4,7 @@ import { Redis } from 'ioredis';
 let redis: Redis | null = null;
 
 // Only initialize Redis if we're not in build mode and Redis is configured
-const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.REDIS_URL && !process.env.REDIS_HOST;
+const isBuildTime = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build';
 if (!isBuildTime && (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.NODE_ENV === 'development')) {
   try {
     redis = new Redis({
@@ -230,6 +230,7 @@ export class CacheManager {
       const latency = Date.now() - start;
       return { status: 'healthy', latency };
     } catch (error) {
+      console.error('Redis health check error:', error);
       return { status: 'unhealthy', latency: Date.now() - start };
     }
   }

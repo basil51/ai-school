@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 
 type AdvancedD3VisualizerProps = {
   type: 'network' | 'hierarchy' | 'force-directed' | 'heatmap' | 'sankey' | 'contour';
@@ -41,91 +41,7 @@ export default function AdvancedD3Visualizer({
 }: AdvancedD3VisualizerProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
-  useEffect(() => {
-    if (!svgRef.current) return;
-
-    // Dynamic import of D3 to avoid SSR issues
-    import('d3').then((d3) => {
-      const svg = d3.select(svgRef.current);
-      svg.selectAll('*').remove(); // Clear previous content
-
-      switch (type) {
-        case 'network':
-          createNetworkVisualization(svg, config.network || { nodes: 20, links: 30 }, d3);
-          break;
-        case 'hierarchy':
-          createHierarchyVisualization(svg, config.hierarchy, d3);
-          break;
-        case 'force-directed':
-          createForceDirectedGraph(svg, config.force, d3);
-          break;
-        case 'heatmap':
-          createHeatmap(svg, config.heatmap || { rows: 10, cols: 10 }, d3);
-          break;
-        case 'sankey':
-          createSankeyDiagram(svg, config.sankey || { nodes: 5, links: 8 }, d3);
-          break;
-        case 'contour':
-          createContourPlot(svg, config.contour || { function: 'sin(x)*cos(y)', levels: 5 }, d3);
-          break;
-        default:
-          createBasicVisualization(svg, d3);
-      }
-    }).catch((error) => {
-      console.error('Failed to load D3:', error);
-      // Fallback to basic visualization
-      if (svgRef.current) {
-        svgRef.current.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#666">D3.js visualization loading...</text>';
-      }
-    });
-  }, [type, config, width, height]);
-
-  const createNetworkVisualization = (svg: any, config: any, d3: any) => {
-    const { nodes: nodeCount = 20, links: linkCount = 30 } = config;
-    
-    // Generate random data
-    const nodes = Array.from({ length: nodeCount }, (_, i) => ({
-      id: i,
-      group: Math.floor(Math.random() * 3),
-      x: Math.random() * width,
-      y: Math.random() * height
-    }));
-
-    const links = Array.from({ length: linkCount }, () => ({
-      source: Math.floor(Math.random() * nodeCount),
-      target: Math.floor(Math.random() * nodeCount),
-      value: Math.random()
-    }));
-
-    // Create links
-    svg.append('g')
-      .selectAll('line')
-      .data(links)
-      .enter()
-      .append('line')
-      .attr('stroke', '#999')
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', (d: any) => Math.sqrt(d.value) * 2)
-      .attr('x1', (d: any) => nodes[d.source].x)
-      .attr('y1', (d: any) => nodes[d.source].y)
-      .attr('x2', (d: any) => nodes[d.target].x)
-      .attr('y2', (d: any) => nodes[d.target].y);
-
-    // Create nodes
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
-    
-    svg.append('g')
-      .selectAll('circle')
-      .data(nodes)
-      .enter()
-      .append('circle')
-      .attr('r', 5)
-      .attr('fill', (d: any) => color(d.group.toString()))
-      .attr('cx', (d: any) => d.x)
-      .attr('cy', (d: any) => d.y);
-  };
-
-  const createHierarchyVisualization = (svg: any, config: any, d3: any) => {
+  const createHierarchyVisualization = useCallback((svg: any, config: any, d3: any) => {
     const { type: hierarchyType = 'tree' } = config || {};
     
     // Sample hierarchical data
@@ -190,9 +106,9 @@ export default function AdvancedD3Visualizer({
         .style('font-size', '12px')
         .style('fill', '#374151');
     }
-  };
+  }, [width, height]);
 
-  const createForceDirectedGraph = (svg: any, config: any, d3: any) => {
+  const createForceDirectedGraph = useCallback((svg: any, config: any, d3: any) => {
     const { charge = -300, linkDistance = 30 } = config || {};
     
     const nodes = Array.from({ length: 15 }, (_, i) => ({ id: i }));
@@ -257,9 +173,9 @@ export default function AdvancedD3Visualizer({
       d.fx = null;
       d.fy = null;
     }
-  };
+  }, [width, height]);
 
-  const createHeatmap = (svg: any, config: any, d3: any) => {
+  const createHeatmap = useCallback((svg: any, config: any, d3: any) => {
     const { rows = 10, cols = 10 } = config;
     
     const data = Array.from({ length: rows }, (_, i) =>
@@ -287,9 +203,10 @@ export default function AdvancedD3Visualizer({
       .attr('fill', (d: any) => colorScale(d.value))
       .attr('stroke', '#fff')
       .attr('stroke-width', 1);
-  };
+  }, [width, height]);
 
-  const createSankeyDiagram = (svg: any, config: any, d3: any) => {
+  const createSankeyDiagram = useCallback((svg: any, config: any, d3: any) => {
+    console.log(d3);
     const { nodes: nodeCount = 5, links: linkCount = 8 } = config;
     
     // Simple Sankey-like visualization
@@ -329,10 +246,10 @@ export default function AdvancedD3Visualizer({
         .attr('fill', 'none')
         .attr('opacity', 0.6);
     }
-  };
+  }, [width, height]);
 
-  const createContourPlot = (svg: any, config: any, d3: any) => {
-    const { function: func = 'sin(x)*cos(y)', levels = 5 } = config;
+  const createContourPlot = useCallback((svg: any, config: any, d3: any) => {
+    const { function: func = 'sin(x)*cos(y)'} = config;
     
     const n = 100;
     const data = [];
@@ -353,6 +270,7 @@ export default function AdvancedD3Visualizer({
             z = Math.sin(x) * Math.cos(y); // fallback
           }
         } catch (e) {
+          console.error(e);
           z = 0;
         }
         
@@ -360,8 +278,8 @@ export default function AdvancedD3Visualizer({
       }
     }
 
-    const xScale = d3.scaleLinear().domain([-2, 2]).range([0, width]);
-    const yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
+    //const xScale = d3.scaleLinear().domain([-2, 2]).range([0, width]);
+    //const yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
     const colorScale = d3.scaleSequential(d3.interpolateRdYlBu).domain([-1, 1]);
 
     // Create simplified contour visualization
@@ -379,9 +297,9 @@ export default function AdvancedD3Visualizer({
       .attr('fill', (d: any) => colorScale(d[2]))
       .attr('stroke', '#fff')
       .attr('stroke-width', 0.5);
-  };
+  }, [width, height]);
 
-  const createBasicVisualization = (svg: any, d3: any) => {
+  const createBasicVisualization = useCallback((svg: any, d3: any) => {
     // Simple bar chart as fallback
     const data = [10, 20, 15, 25, 30, 20, 15];
     const xScale = d3.scaleBand().domain(data.map((_, i) => i.toString())).range([0, width]).padding(0.1);
@@ -396,7 +314,91 @@ export default function AdvancedD3Visualizer({
       .attr('width', xScale.bandwidth())
       .attr('height', (d: any) => height - yScale(d))
       .attr('fill', '#3b82f6');
-  };
+  }, [width, height]);
+
+  useEffect(() => {
+    const createNetworkVisualization = (svg: any, config: any, d3: any) => {
+      const { nodes: nodeCount = 20, links: linkCount = 30 } = config;
+      
+      // Generate random data
+      const nodes = Array.from({ length: nodeCount }, (_, i) => ({
+        id: i,
+        group: Math.floor(Math.random() * 3),
+        x: Math.random() * width,
+        y: Math.random() * height
+      }));
+  
+      const links = Array.from({ length: linkCount }, () => ({
+        source: Math.floor(Math.random() * nodeCount),
+        target: Math.floor(Math.random() * nodeCount),
+        value: Math.random()
+      }));
+  
+      // Create links
+      svg.append('g')
+        .selectAll('line')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('stroke', '#999')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', (d: any) => Math.sqrt(d.value) * 2)
+        .attr('x1', (d: any) => nodes[d.source].x)
+        .attr('y1', (d: any) => nodes[d.source].y)
+        .attr('x2', (d: any) => nodes[d.target].x)
+        .attr('y2', (d: any) => nodes[d.target].y);
+  
+      // Create nodes
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+      
+      svg.append('g')
+        .selectAll('circle')
+        .data(nodes)
+        .enter()
+        .append('circle')
+        .attr('r', 5)
+        .attr('fill', (d: any) => color(d.group.toString()))
+        .attr('cx', (d: any) => d.x)
+        .attr('cy', (d: any) => d.y);
+    };
+
+    if (!svgRef.current) return;
+
+    // Dynamic import of D3 to avoid SSR issues
+    import('d3').then((d3) => {
+      const svg = d3.select(svgRef.current);
+      svg.selectAll('*').remove(); // Clear previous content
+
+      switch (type) {
+        case 'network':
+          createNetworkVisualization(svg, config.network || { nodes: 20, links: 30 }, d3);
+          break;
+        case 'hierarchy':
+          createHierarchyVisualization(svg, config.hierarchy, d3);
+          break;
+        case 'force-directed':
+          createForceDirectedGraph(svg, config.force, d3);
+          break;
+        case 'heatmap':
+          createHeatmap(svg, config.heatmap || { rows: 10, cols: 10 }, d3);
+          break;
+        case 'sankey':
+          createSankeyDiagram(svg, config.sankey || { nodes: 5, links: 8 }, d3);
+          break;
+        case 'contour':
+          createContourPlot(svg, config.contour || { function: 'sin(x)*cos(y)', levels: 5 }, d3);
+          break;
+        default:
+          createBasicVisualization(svg, d3);
+      }
+    }).catch((error) => {
+      console.error('Failed to load D3:', error);
+      // Fallback to basic visualization
+      if (svgRef.current) {
+        svgRef.current.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#666">D3.js visualization loading...</text>';
+      }
+    });
+  }, [type, config, width, height, createHierarchyVisualization, createForceDirectedGraph, createHeatmap, createSankeyDiagram, createContourPlot, createBasicVisualization]);
 
   return (
     <div className="w-full">

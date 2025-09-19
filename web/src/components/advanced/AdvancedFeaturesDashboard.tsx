@@ -9,12 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Brain, 
   Zap, 
-  Target, 
+  //Target, 
   TrendingUp, 
   Settings, 
   BarChart3, 
-  Users, 
-  BookOpen,
+  //Users, 
+  //BookOpen,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -56,6 +56,8 @@ export default function AdvancedFeaturesDashboard({ userRole }: AdvancedFeatures
   const [performanceOptimization, setPerformanceOptimization] = useState<PerformanceOptimization | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+
+  console.log("userRole", userRole);
 
   useEffect(() => {
     loadDashboardData();

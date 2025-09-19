@@ -1,31 +1,31 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+//import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
   Brain, 
   Globe, 
   Eye, 
-  Ear, 
-  Zap, 
+  //Ear, 
+  //Zap, 
   Clock, 
   AlertTriangle,
   CheckCircle,
   Plus,
   Filter,
   Search,
-  Calendar,
+  //Calendar,
   Target,
   TrendingUp,
   FileText,
-  Settings
+  //Settings
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -115,49 +115,48 @@ export function InclusivityAuditDashboard() {
     severity: 'all',
     search: '',
   });
-  const [selectedAudit, setSelectedAudit] = useState<InclusivityAudit | null>(null);
-  const [isCreatingAudit, setIsCreatingAudit] = useState(false);
-  const [isCreatingFinding, setIsCreatingFinding] = useState(false);
+  const [_selectedAudit, _setSelectedAudit] = useState<InclusivityAudit | null>(null);
+  const [_isCreatingAudit, _setIsCreatingAudit] = useState(false);
+  const [_isCreatingFinding, _setIsCreatingFinding] = useState(false);
 
   useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (filters.severity !== 'all') params.append('severity', filters.severity);
+  
+        const response = await fetch(`/api/inclusivity/findings?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch findings');
+        
+        const data = await response.json();
+        setFindings(data.findings || []);
+      } catch (error) {
+        console.error('Error fetching findings:', error);
+        toast.error('Failed to load findings');
+      }
+    };
+    const fetchAudits = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (filters.auditType !== 'all') params.append('auditType', filters.auditType);
+        if (filters.status !== 'all') params.append('status', filters.status);
+  
+        const response = await fetch(`/api/inclusivity/audits?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch audits');
+        
+        const data = await response.json();
+        setAudits(data.audits || []);
+      } catch (error) {
+        console.error('Error fetching audits:', error);
+        toast.error('Failed to load audits');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAudits();
     fetchFindings();
   }, [filters]);
-
-  const fetchAudits = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.auditType !== 'all') params.append('auditType', filters.auditType);
-      if (filters.status !== 'all') params.append('status', filters.status);
-
-      const response = await fetch(`/api/inclusivity/audits?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch audits');
-      
-      const data = await response.json();
-      setAudits(data.audits || []);
-    } catch (error) {
-      console.error('Error fetching audits:', error);
-      toast.error('Failed to load audits');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFindings = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.severity !== 'all') params.append('severity', filters.severity);
-
-      const response = await fetch(`/api/inclusivity/findings?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch findings');
-      
-      const data = await response.json();
-      setFindings(data.findings || []);
-    } catch (error) {
-      console.error('Error fetching findings:', error);
-      toast.error('Failed to load findings');
-    }
-  };
 
   const handleStatusUpdate = async (auditId: string, status: string) => {
     try {
@@ -383,7 +382,7 @@ export function InclusivityAuditDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Inclusivity Audits ({filteredAudits.length})</CardTitle>
-                <Button onClick={() => setIsCreatingAudit(true)}>
+                <Button onClick={() => _setIsCreatingAudit(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   New Audit
                 </Button>
@@ -397,7 +396,7 @@ export function InclusivityAuditDashboard() {
                     <div
                       key={audit.id}
                       className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => setSelectedAudit(audit)}
+                      onClick={() => _setSelectedAudit(audit)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -454,7 +453,7 @@ export function InclusivityAuditDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Findings ({findings.length})</CardTitle>
-                <Button onClick={() => setIsCreatingFinding(true)}>
+                <Button onClick={() => _setIsCreatingFinding(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   New Finding
                 </Button>

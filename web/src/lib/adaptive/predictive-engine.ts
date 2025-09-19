@@ -156,7 +156,7 @@ export class PredictiveLearningEngine {
         const intervention = await this.createIntervention(
           studentId, 
           prediction, 
-          pathways, 
+          //pathways,
           dimensions
         );
         interventions.push(intervention);
@@ -671,13 +671,13 @@ export class PredictiveLearningEngine {
   private async createIntervention(
     _studentId: string,
     prediction: LearningPrediction,
-    pathways: NeuralPathway[],
+    //pathways: NeuralPathway[],
     _dimensions: LearningDimensions | null
   ): Promise<LearningIntervention> {
     
-    const strongestPathway = pathways.reduce((prev, current) => 
+    /*const strongestPathway = pathways.reduce((prev, current) => 
       prev.strength > current.strength ? prev : current
-    );
+    );*/
 
     return {
       id: `intervention_${Date.now()}`,
@@ -701,10 +701,10 @@ export class PredictiveLearningEngine {
     pathways: NeuralPathway[],
     _dimensions: LearningDimensions | null
   ): Promise<LearningIntervention> {
-    
-    const strongestPathway = pathways.reduce((prev, current) => 
+    console.log('pathways', pathways);
+    /*const strongestPathway = pathways.reduce((prev, current) => 
       prev.strength > current.strength ? prev : current
-    );
+    );*/
 
     return {
       id: `warning_intervention_${Date.now()}`,
@@ -728,10 +728,10 @@ export class PredictiveLearningEngine {
   ): Promise<LearningIntervention> {
     
     // Generate intervention based on prediction
-    const pathways = await this.getNeuralPathways(studentId);
+    //const pathways = await this.getNeuralPathways(studentId);
     const dimensions = await this.getLearningDimensions(studentId);
     
-    return await this.createIntervention(studentId, prediction, pathways, dimensions);
+    return await this.createIntervention(studentId, prediction, /*pathways,*/ dimensions);
   }
 }
 

@@ -1,163 +1,268 @@
-"use client";
-import React, { useMemo, useState } from 'react';
+// InteractiveGraph.tsx — GeoGebra-backed
+import { useEffect, useRef } from "react";
 
-type Point = { x: number; y: number };
-
-type InteractiveGraphProps = {
-  width?: number;
-  height?: number;
-  points?: Point[];
-  expression?: string; // e.g., "Math.sin(x)" or "x*x - 4*x + 3"
-  xRange?: [number, number];
-  samples?: number;
-  title?: string;
-};
-
-function generatePoints(expression: string, xRange: [number, number], samples: number): Point[] {
-  const [minX, maxX] = xRange;
-  const step = (maxX - minX) / (samples - 1);
-  
-  // Track if we've already logged an error for this expression
-  let errorLogged = false;
-  
-  // Create a safer function evaluator
-  const evaluateExpression = (x: number): number => {
-    try {
-      // Clean and validate the expression
-      let cleanExpression = expression
-        .replace(/[^x0-9+\-*/().\s]/g, '') // Remove potentially dangerous characters
-        .replace(/\s+/g, '') // Remove all whitespace
-        .trim();
-      
-      // Handle implicit multiplication (e.g., 2x -> 2*x, (x+1)(x-1) -> (x+1)*(x-1))
-      cleanExpression = cleanExpression
-        // Add multiplication between decimal/number and x: 2x -> 2*x, 3.14x -> 3.14*x
-        .replace(/(\d(?:\.\d+)?)([x])/g, '$1*$2')
-        // Add multiplication between x and decimal/number: x2 -> x*2, x3.14 -> x*3.14
-        .replace(/([x])(\d(?:\.\d+)?)/g, '$1*$2')
-        // Add multiplication between ) and (: )(  -> )*(
-        .replace(/\)\(/g, ')*(')
-        // Add multiplication between ) and x: )x -> )*x
-        .replace(/\)([x])/g, ')*$1')
-        // Add multiplication between x and (: x( -> x*(
-        .replace(/([x])\(/g, '$1*(')
-        // Add multiplication between decimal/number and (: 2( -> 2*(, 3.14( -> 3.14*(
-        .replace(/(\d(?:\.\d+)?)\(/g, '$1*(')
-        // Add multiplication between ) and decimal/number: )2 -> )*2, )3.14 -> )*3.14
-        .replace(/\)(\d(?:\.\d+)?)/g, ')*$1');
-
-      // Handle common mathematical functions and constants
-      const safeExpression = cleanExpression
-        .replace(/\bMath\.sin\b/g, 'Math.sin')
-        .replace(/\bMath\.cos\b/g, 'Math.cos')
-        .replace(/\bMath\.tan\b/g, 'Math.tan')
-        .replace(/\bMath\.sqrt\b/g, 'Math.sqrt')
-        .replace(/\bMath\.abs\b/g, 'Math.abs')
-        .replace(/\bMath\.pow\b/g, 'Math.pow')
-        .replace(/\bMath\.exp\b/g, 'Math.exp')
-        .replace(/\bMath\.log\b/g, 'Math.log')
-        .replace(/\bMath\.PI\b/g, 'Math.PI')
-        .replace(/\bMath\.E\b/g, 'Math.E')
-        .replace(/\^/g, '**') // Convert ^ to ** for exponentiation
-        .replace(/\bx\b/g, `(${x})`); // Replace x with the actual value
-      
-      // Validate that the expression doesn't contain assignment operators
-      if (safeExpression.includes('=') || safeExpression.includes('let') || safeExpression.includes('var') || safeExpression.includes('const')) {
-        throw new Error('Invalid expression: contains assignment operators');
-      }
-      
-      // Use Function constructor with safer approach
-      const func = new Function('Math', 'x', `return ${safeExpression}`);
-      return func(Math, x);
-    } catch (error) {
-      // Only log the error once per expression, not for every point
-      if (!errorLogged) {
-        console.warn('Expression evaluation error:', error);
-        errorLogged = true;
-      }
-      return NaN;
-    }
-  };
-  
-  const pts: Point[] = [];
-  for (let i = 0; i < samples; i++) {
-    const x = minX + i * step;
-    const y = evaluateExpression(x);
-    if (!Number.isFinite(y)) continue;
-    pts.push({ x, y });
-  }
-  return pts;
+declare global {
+  interface Window { GGBApplet?: any }
 }
 
+type Props = {
+  graphExpression?: string;             // e.g. "f(x)=x^2"
+  expressions?: string[];               // optional multiple
+  title?: string;
+
+  // Legacy support: points array (will be converted to GeoGebra commands)
+  points?: Array<{ x: number; y: number }>;
+
+  // viewport (only used to set initial view)
+  xMin?: number; xMax?: number;
+  yMin?: number; yMax?: number;
+  height?: number;
+
+  // GeoGebra app choice
+  app?: "graphing" | "geometry" | "3d" | "cas";
+
+  // Advanced: direct GeoGebra commands (run after load)
+  ggbCommands?: string[];               // e.g. ["a=2", "f(x)=a*sin(x)"]
+  showToolbar?: boolean;
+  showAlgebraInput?: boolean;
+  allowZoom?: boolean;
+};
+
 export default function InteractiveGraph({
-  width = 600,
-  height = 320,
+  graphExpression = "f(x)=x",
+  expressions,
+  title,
   points,
-  expression,
-  xRange = [-10, 10],
-  samples = 200,
-  title
-}: InteractiveGraphProps) {
-  const computed = useMemo(() => {
-    if (points && points.length > 0) return points;
-    if (expression && expression.trim()) {
-      try {
-        return generatePoints(expression, xRange, samples);
-      } catch (error) {
-        console.warn('Failed to generate points from expression:', error);
-        return [];
+  xMin = -10, xMax = 10,
+  yMin = -10, yMax = 10,
+  height = 420,
+  app = "graphing",
+  ggbCommands = [],
+  showToolbar = true,
+  showAlgebraInput = true,
+  allowZoom = true,
+}: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const appletRef = useRef<any>(null);
+  const ggbRef = useRef<any>(null);
+
+  // Convert JavaScript expression to GeoGebra syntax
+  const convertToGeoGebraExpression = (expression: string): string => {
+    if (!expression) return '';
+    
+    console.log('Converting expression:', expression);
+    
+    // Convert JavaScript syntax to GeoGebra syntax
+    let ggbExpression = expression
+      .replace(/\*/g, '') // Remove * for multiplication (GeoGebra uses implicit multiplication)
+      .replace(/Math\.sin/g, 'sin')
+      .replace(/Math\.cos/g, 'cos')
+      .replace(/Math\.tan/g, 'tan')
+      .replace(/Math\.sqrt/g, 'sqrt')
+      .replace(/Math\.log/g, 'log')
+      .replace(/Math\.exp/g, 'exp')
+      .replace(/\^/g, '^'); // Keep ^ for exponentiation
+    
+    // If it doesn't start with f(x)= or y=, assume it's a function
+    if (!ggbExpression.includes('=') && !ggbExpression.includes('f(')) {
+      ggbExpression = `f(x) = ${ggbExpression}`;
+    }
+    
+    console.log('Converted to:', ggbExpression);
+    return ggbExpression;
+  };
+
+  // Convert points array to GeoGebra commands
+  const convertPointsToCommands = (points: Array<{ x: number; y: number }>): string[] => {
+    if (!points || points.length === 0) return [];
+    
+    const commands: string[] = [];
+    
+    // Create individual points
+    points.forEach((point, index) => {
+      commands.push(`P${index + 1} = (${point.x}, ${point.y})`);
+    });
+    
+    // If we have multiple points, create a polygon or line
+    if (points.length > 1) {
+      const pointNames = points.map((_, index) => `P${index + 1}`).join(', ');
+      if (points.length === 2) {
+        commands.push(`line = Line(${pointNames})`);
+      } else {
+        commands.push(`polygon = Polygon(${pointNames})`);
       }
     }
-    return [];
-  }, [points, expression, xRange, samples]);
+    
+    return commands;
+  };
 
-  const minX = xRange[0];
-  const maxX = xRange[1];
-  const ys = computed.map(p => p.y);
-  const minY = ys.length ? Math.min(...ys) : -1;
-  const maxY = ys.length ? Math.max(...ys) : 1;
-  const pad = 20;
+  // create / re-create applet when app or container changes
+  useEffect(() => {
+    console.log('InteractiveGraph useEffect triggered');
+    console.log('Container ref:', !!containerRef.current);
+    console.log('GGBApplet available:', !!window.GGBApplet);
+    
+    if (!containerRef.current) {
+      console.log('No container ref available');
+      return;
+    }
+    
+    if (!window.GGBApplet) {
+      console.log('GGBApplet not available, waiting...');
+      return;
+    }
 
-  const scaleX = (x: number) => pad + ((x - minX) / (maxX - minX)) * (width - 2 * pad);
-  const scaleY = (y: number) => pad + (1 - (y - minY) / (maxY - minY || 1)) * (height - 2 * pad);
+    // destroy previous
+    if (appletRef.current && appletRef.current.remove) {
+      try { appletRef.current.remove(); } catch {}
+      appletRef.current = null;
+      ggbRef.current = null;
+    }
 
-  const path = computed
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${scaleX(p.x)} ${scaleY(p.y)}`)
-    .join(' ');
+    // base config (see official API)
+    const params = {
+      appName: app,                         // "graphing" | "geometry" | "3d" | "cas"
+      width: containerRef.current.clientWidth || 800,
+      height,
+      showToolBar: showToolbar,
+      showAlgebraInput,
+      showMenuBar: true,                    // Enable menu bar for settings
+      showResetIcon: true,                  // Enable reset icon
+      enableRightClick: true,               // Enable right-click context menu
+      enableLabelDrags: true,               // Enable label dragging
+      allowStyleBar: true,                  // Enable style bar
+      allowUpscale: true,
+      allowZoom,
+      perspective: undefined,               // let app choose sensible default
+      useBrowserForJS: true,                // allow JS API from page
+      // pre-load material (none; we'll inject commands below)
+    };
 
-  // Show error message if no valid points
-  if (computed.length === 0) {
-    return (
-      <div className="w-full">
-        {title && <div className="mb-2 text-sm text-gray-700">{title}</div>}
-        <div className="flex items-center justify-center h-80 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-center text-gray-500">
-            <div className="text-sm mb-1">Unable to generate graph</div>
-            <div className="text-xs">
-              {expression ? 'Invalid mathematical expression' : 'No data points provided'}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    // mount
+    const applet = new window.GGBApplet(params, /* useBrowserForJS */ true);
+    applet.inject(containerRef.current);
+    appletRef.current = applet;
 
-  return (
-    <div className="w-full">
-      {title && <div className="mb-2 text-sm text-gray-700">{title}</div>}
-      <svg width={width} height={height} className="rounded-lg border border-gray-200 bg-white">
-        {/* Axes */}
-        <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#e5e7eb" />
-        <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e5e7eb" />
-        {/* Path */}
-        <path d={path} fill="none" stroke="url(#g)" strokeWidth={2} />
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#8B5CF6" />
-            <stop offset="100%" stopColor="#3B82F6" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  );
+    // wait until API is ready
+    const onLoad = () => {
+      console.log('GeoGebra applet onLoad called');
+      // store API handle
+      ggbRef.current = applet.getAppletObject();
+      console.log('GGB API handle:', !!ggbRef.current);
+
+      // set axes range (graphing & 3D apps honor this via SetCoordSystem)
+      try {
+        // 2D view id=1
+        ggbRef.current.setCoordSystem(xMin, xMax, yMin, yMax);
+      } catch {}
+
+      // title as a text object (optional)
+      if (title) {
+        try {
+          ggbRef.current.evalCommand(`Text("${title}", (${xMin}+${xMax})/2, ${yMax} - 0.5)`);
+        } catch {}
+      }
+
+      // primary expression(s)
+      const list = (expressions && expressions.length > 0) ? expressions : [graphExpression];
+      console.log('Original expressions:', list);
+      
+      // Convert expressions to GeoGebra syntax
+      const convertedList = list.map(expr => convertToGeoGebraExpression(expr));
+      console.log('Converted expressions:', convertedList);
+      
+      convertedList.forEach((cmd, index) => {
+        if (cmd) {
+          console.log('Executing command:', cmd);
+          try {
+            ggbRef.current.evalCommand(cmd);
+            console.log('Command executed successfully');
+          } catch (error) {
+            console.error('Error executing converted command:', cmd, error);
+            // Try original expression as fallback
+            const originalCmd = list[index];
+            if (originalCmd && originalCmd !== cmd) {
+              console.log('Trying original expression as fallback:', originalCmd);
+              try {
+                ggbRef.current.evalCommand(originalCmd);
+                console.log('Original command executed successfully');
+              } catch (fallbackError) {
+                console.error('Fallback command also failed:', originalCmd, fallbackError);
+              }
+            }
+          }
+        }
+      });
+
+      // convert points to GeoGebra commands (legacy support)
+      if (points && points.length > 0) {
+        const pointsCommands = convertPointsToCommands(points);
+        pointsCommands.forEach((cmd) => ggbRef.current.evalCommand(cmd));
+      }
+
+      // extra scripted commands (sliders, points, derivatives, etc.)
+      ggbCommands.forEach((cmd) => ggbRef.current.evalCommand(cmd));
+
+      // example: listen for object updates (teacher analytics later)
+      try {
+        ggbRef.current.registerUpdateListener((name: string) => {
+          console.log("Updated:", name, ggbRef.current.getValueString(name));
+          // e.g., capture point movement or slider changes
+          // console.log("Updated:", name, ggbRef.current.getValueString(name));
+        });
+      } catch {}
+    };
+
+    // GeoGebra calls this when ready
+    (window as any).ggbOnInit = onLoad;
+
+    return () => {
+      if (appletRef.current && appletRef.current.remove) {
+        try { appletRef.current.remove(); } catch {}
+      }
+      appletRef.current = null;
+      ggbRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [app, height]);
+
+  // update expressions / view when props change at runtime
+  useEffect(() => {
+    const api = ggbRef.current;
+    if (!api) return;
+
+    try { api.setCoordSystem(xMin, xMax, yMin, yMax); } catch {}
+
+    // clear previous functions (optional: refine to only replace known ids)
+    try { api.reset(); } catch {}
+
+    const list = (expressions && expressions.length > 0) ? expressions : [graphExpression];
+    const convertedList = list.map(expr => convertToGeoGebraExpression(expr));
+    convertedList.forEach((cmd) => {
+      if (cmd) {
+        api.evalCommand(cmd);
+      }
+    });
+    
+    // convert points to GeoGebra commands (legacy support)
+    if (points && points.length > 0) {
+      const pointsCommands = convertPointsToCommands(points);
+      pointsCommands.forEach((cmd) => api.evalCommand(cmd));
+    }
+    
+    ggbCommands.forEach((cmd) => api.evalCommand(cmd));
+    // title
+    if (title) { try { api.evalCommand(`Text("${title}", (${xMin}+${xMax})/2, ${yMax} - 0.5)`); } catch {} }
+}, [
+  graphExpression,
+  expressions, // Added missing dependency
+  points,      // Added missing dependency
+  ggbCommands, // Added missing dependency
+  xMin,
+  xMax,
+  yMin,
+  yMax,
+  title
+]);
+  return <div ref={containerRef} style={{ width: "100%", height }} />;
 }

@@ -283,7 +283,7 @@ export class MediaOptimizationManager {
     file: File | string,
     customConfig?: Partial<MediaOptimizationConfig>
   ): Promise<MediaOptimizationResult> {
-    const config = { ...this.config, ...customConfig };
+    //const config = { ...this.config, ...customConfig };
     
     let mediaFile: File;
     if (typeof file === 'string') {

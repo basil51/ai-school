@@ -21,7 +21,7 @@ const createDashboardSchema = z.object({
   autoRefresh: z.boolean().default(true),
 });
 
-const updateDashboardSchema = createDashboardSchema.partial();
+//const updateDashboardSchema = createDashboardSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, MeshBuilder, StandardMaterial, Color3, Color4, Mesh } from '@babylonjs/core';
 
 type BabylonJSVisualizerProps = {
@@ -37,6 +37,25 @@ export default function BabylonJSVisualizer({
   const sceneRef = useRef<Scene | null>(null);
 
   useEffect(() => {
+    const createContent = (scene: Scene, type: string, config: any) => {
+      switch (type) {
+        case 'advanced-3d':
+          createAdvanced3DScene(scene, config);
+          break;
+        case 'physics-engine':
+          createPhysicsScene(scene, config);
+          break;
+        case 'materials':
+          createMaterialsScene(scene, config);
+          break;
+        case 'animations':
+          createAnimationScene(scene, config);
+          break;
+        default:
+          createBasicScene(scene, config);
+      }
+    };
+
     if (!canvasRef.current) return;
 
     // Create Babylon.js engine
@@ -48,7 +67,7 @@ export default function BabylonJSVisualizer({
     sceneRef.current = scene;
 
     // Set background color
-    const { backgroundColor = '#f8fafc' } = config.scene || {};
+    //const { backgroundColor = '#f8fafc' } = config.scene || {};
     scene.clearColor = new Color4(0.97, 0.98, 0.99, 1.0); // #f8fafc
 
     // Create camera
@@ -86,25 +105,6 @@ export default function BabylonJSVisualizer({
     };
   }, [type, config, width, height]);
 
-  const createContent = (scene: Scene, type: string, config: any) => {
-    switch (type) {
-      case 'advanced-3d':
-        createAdvanced3DScene(scene, config);
-        break;
-      case 'physics-engine':
-        createPhysicsScene(scene, config);
-        break;
-      case 'materials':
-        createMaterialsScene(scene, config);
-        break;
-      case 'animations':
-        createAnimationScene(scene, config);
-        break;
-      default:
-        createBasicScene(scene, config);
-    }
-  };
-
   const createBasicScene = (scene: Scene, config: any) => {
     const { shape = 'box' } = config.object || {};
     
@@ -134,6 +134,7 @@ export default function BabylonJSVisualizer({
 
   const createAdvanced3DScene = (scene: Scene, config: any) => {
     // Create multiple objects with different materials
+    console.log(config);
     const box = MeshBuilder.CreateBox('box', { size: 1 }, scene);
     box.position.x = -2;
     const boxMaterial = new StandardMaterial('boxMaterial', scene);
@@ -162,6 +163,7 @@ export default function BabylonJSVisualizer({
 
   const createPhysicsScene = (scene: Scene, config: any) => {
     // Create ground
+    console.log(config);
     const ground = MeshBuilder.CreateGround('ground', { width: 10, height: 10 }, scene);
     const groundMaterial = new StandardMaterial('groundMaterial', scene);
     groundMaterial.diffuseColor = Color3.FromHexString('#6b7280');
@@ -182,7 +184,7 @@ export default function BabylonJSVisualizer({
 
   const createMaterialsScene = (scene: Scene, config: any) => {
     const { metallic = false, roughness = 0.5 } = config.object?.material || {};
-    
+    console.log(roughness);
     const sphere = MeshBuilder.CreateSphere('sphere', { diameter: 2 }, scene);
     const material = new StandardMaterial('material', scene);
     material.diffuseColor = Color3.FromHexString(config.object?.material?.color || '#3b82f6');
@@ -196,7 +198,9 @@ export default function BabylonJSVisualizer({
   };
 
   const createAnimationScene = (scene: Scene, config: any) => {
+    console.log(config);
     const torus = MeshBuilder.CreateTorus('torus', { diameter: 2, thickness: 0.5 }, scene);
+    console.log(torus);
     const material = new StandardMaterial('material', scene);
     material.diffuseColor = Color3.FromHexString('#8b5cf6');
     torus.material = material;

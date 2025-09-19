@@ -27,7 +27,7 @@ const createSSOIntegrationSchema = z.object({
   autoProvision: z.boolean().default(false),
 });
 
-const updateSSOIntegrationSchema = createSSOIntegrationSchema.partial();
+//const updateSSOIntegrationSchema = createSSOIntegrationSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

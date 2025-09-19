@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
-import { smartTeachingContentGenerator } from "@/lib/smart-teaching/ai-content-generator";
+import { smartTeachingContentGenerator } from "@/lib/smart-teaching/ai-content-generator"; 
 
 export const runtime = "nodejs";
 
@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
         lesson.content,
         contentType as any,
         {
+          title: lesson.title,
           subject: lesson.topic.subject.name,
           topic: lesson.topic.name,
           difficulty: lesson.difficulty,

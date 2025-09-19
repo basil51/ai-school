@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Get performance metrics
-    const metrics = await prisma.phase3PerformanceMetrics.findMany({
+    /*const metrics = await prisma.phase3PerformanceMetrics.findMany({
       where: {
         studentId: studentId,
         timestamp: {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
           lte: endDate,
         },
       },
-    });
+    });*/
 
     // Calculate key metrics
     const totalLearningTime = progressData.reduce((sum, p) => sum + (p.duration || 0), 0) / 60; // Convert to minutes

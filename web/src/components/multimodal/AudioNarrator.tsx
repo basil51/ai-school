@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 type AudioNarratorProps = {
   text: string;
@@ -40,16 +40,17 @@ export default function AudioNarrator({ text, lang = 'en-US', rate = 1, pitch = 
     setIsPaused(true);
   };
 
-  const stop = () => {
-    if (!supportsTTS) return;
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    setIsPaused(false);
-  };
 
   useEffect(() => {
+    const stop = () => {
+      if (!supportsTTS) return;
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+    };
+    
     return () => stop();
-  }, []);
+  }, [supportsTTS]);
 
   if (!supportsTTS) {
     return <div className="text-sm text-gray-500">Text-to-speech is not supported in this browser.</div>;

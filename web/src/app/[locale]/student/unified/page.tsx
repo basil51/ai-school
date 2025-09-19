@@ -1,30 +1,15 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Script from 'next/script';
 import UnifiedSmartTeachingInterface from '@/components/UnifiedSmartTeachingInterface';
 import LessonSelector from '@/components/smart-teaching/LessonSelector';
+//import InteractiveGraph from '@/components/multimodal/InteractiveGraph';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from  "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-//import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Brain, 
-  //CheckCircle,
-  Play,
-  //Clock,
-  //Target,
-  //TrendingUp,
-  Loader2,
-  //AlertCircle,
-  ArrowRight,
-  BookMarked,
-  Users,
-  //Calendar,
-  //Star,
-  //Award
-} from "lucide-react";
+import { BookOpen, GraduationCap, Brain, Play, Loader2, ArrowRight, BookMarked, Users} from "lucide-react";
 
 interface Subject {
   id: string;
@@ -84,6 +69,9 @@ export default function UnifiedSmartTeachingPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(false);
   const [enrolling, setEnrolling] = useState<string | null>(null);
+  
+  // GeoGebra API state
+  const [geogebraLoaded, setGeogebraLoaded] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'courses') {
@@ -149,17 +137,23 @@ export default function UnifiedSmartTeachingPage() {
     setActiveTab('learning'); // Switch to learning tab when lesson is selected
   };
 
-  /*const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };*/
-
   return (
-    <div className="flex flex-col">
+    <>
+      {/* Load GeoGebra API */}
+      <Script
+        src="https://www.geogebra.org/apps/deployggb.js"
+        onLoad={() => {
+          setGeogebraLoaded(true);
+          console.log('GeoGebra API loaded successfully');
+          console.log('GGBApplet available:', !!window.GGBApplet);
+        }}
+        onError={(e) => {
+          console.error('Failed to load GeoGebra API:', e);
+        }}
+        strategy="afterInteractive"
+      />
+      
+      <div className="flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -170,6 +164,12 @@ export default function UnifiedSmartTeachingPage() {
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
               Phase 2.5 - Unified Interface
             </span>
+            {!geogebraLoaded && (
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Loading GeoGebra...
+              </span>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -200,12 +200,14 @@ export default function UnifiedSmartTeachingPage() {
             </div>
             
             {activeTab === 'learning' && (
-              <button
-                onClick={() => setShowLessonSelector(!showLessonSelector)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                {showLessonSelector ? 'Hide' : 'Show'} Lessons
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowLessonSelector(!showLessonSelector)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  {showLessonSelector ? 'Hide' : 'Show'} Lessons
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -390,6 +392,7 @@ export default function UnifiedSmartTeachingPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

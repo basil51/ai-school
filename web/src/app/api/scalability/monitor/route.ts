@@ -5,6 +5,7 @@ import { ScalabilityEngine, ScalabilityConfig } from "@/lib/scalability/scalabil
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("GET request received", request);
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -83,8 +84,7 @@ export async function POST(request: NextRequest) {
         result = await engine.implementHorizontalScaling(instances || 2);
         break;
       case 'database_sharding':
-        const { shardKey } = params;
-        result = await engine.implementDatabaseSharding(shardKey || 'userId');
+        result = await engine.implementDatabaseSharding();
         break;
       case 'optimize_caching':
         result = await engine.optimizeCachingStrategy();

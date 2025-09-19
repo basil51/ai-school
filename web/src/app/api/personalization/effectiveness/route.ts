@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId') || (session?.user as any)?.id;
     
     // Check if user has permission to analyze effectiveness for this student
-    if ((session?.user as any)?.role !== 'admin' && (session?.user as any)?.role !== 'teacher' && (session?.user as any)?.id !== studentId) {
+    // Allow demo students for demonstration purposes
+    const isDemoStudent = studentId.startsWith('demo-student-');
+    if (!isDemoStudent && (session?.user as any)?.role !== 'admin' && (session?.user as any)?.role !== 'teacher' && (session?.user as any)?.id !== studentId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   MessageSquare, 
   Bug, 
@@ -96,28 +96,30 @@ export function FeedbackDashboard() {
   const [isResponding, setIsResponding] = useState(false);
 
   useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+        if (filters.priority && filters.priority !== 'all') params.append('priority', filters.priority);
+        if (filters.feedbackType && filters.feedbackType !== 'all') params.append('feedbackType', filters.feedbackType);
+  
+        const response = await fetch(`/api/feedback?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch feedback');
+        
+        const data = await response.json();
+        setFeedback(data.feedback || []);
+      } catch (error) {
+        console.error('Error fetching feedback:', error);
+        toast.error('Failed to load feedback');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     fetchFeedback();
   }, [filters]);
 
-  const fetchFeedback = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.status && filters.status !== 'all') params.append('status', filters.status);
-      if (filters.priority && filters.priority !== 'all') params.append('priority', filters.priority);
-      if (filters.feedbackType && filters.feedbackType !== 'all') params.append('feedbackType', filters.feedbackType);
 
-      const response = await fetch(`/api/feedback?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch feedback');
-      
-      const data = await response.json();
-      setFeedback(data.feedback || []);
-    } catch (error) {
-      console.error('Error fetching feedback:', error);
-      toast.error('Failed to load feedback');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStatusUpdate = async (feedbackId: string, status: string) => {
     try {

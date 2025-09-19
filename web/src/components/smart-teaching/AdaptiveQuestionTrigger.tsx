@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+//import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Brain, 
   Clock, 
@@ -12,7 +12,6 @@ import {
   Lightbulb, 
   CheckCircle, 
   AlertTriangle,
-  BookOpen,
   Zap
 } from 'lucide-react';
 
@@ -27,8 +26,8 @@ interface AdaptiveQuestionTriggerProps {
 }
 
 export default function AdaptiveQuestionTrigger({
-  sessionId,
-  lessonId,
+  //sessionId,
+  //lessonId,
   onTriggerAssessment,
   studentEngagement = 0.7,
   timeSpent = 0,

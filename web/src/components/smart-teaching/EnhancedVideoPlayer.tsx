@@ -2,8 +2,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, 
-  RotateCcw, Settings, Download, Share2, Captions, 
-  AlertCircle, Loader2, CheckCircle, ExternalLink
+  Settings, Captions, 
+  AlertCircle, Loader2, ExternalLink
 } from 'lucide-react';
 
 interface EnhancedVideoPlayerProps {
@@ -45,11 +45,11 @@ const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   src,
   title,
   description,
-  captions,
+  //captions,
   poster,
   transcript,
   keyConcepts = [],
-  duration,
+  //duration,
   subject,
   topic,
   onProgress,
@@ -275,6 +275,7 @@ const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
 
   // Check if it's a YouTube URL
   const isYouTubeUrl = (url: string) => {
+    console.log('=====> isYouTubeUrl:', url);
     return url.includes('youtube.com') || url.includes('youtu.be');
   };
 

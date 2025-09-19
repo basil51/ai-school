@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 //import { Input } from "@/components/ui/input";
@@ -96,6 +96,59 @@ export function StudentAssessment({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const questionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const updateQuestionTimeSpent = useCallback((questionIndex: number, timeSpent: number) => {
+    setResponses(prev => {
+      const newResponses = [...prev];
+      if (newResponses[questionIndex]) {
+        newResponses[questionIndex].timeSpent = timeSpent;
+      }
+      return newResponses;
+    });
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!attemptId) return;
+
+    try {
+      setIsSubmitting(true);
+      
+      // Record final time for current question
+      if (questionStartTime) {
+        const timeSpent = Math.floor((Date.now() - questionStartTime.getTime()) / 1000);
+        updateQuestionTimeSpent(currentQuestionIndex, timeSpent);
+      }
+
+      const response = await fetch('/api/assessments/attempts', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          attemptId,
+          responses
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit assessment');
+      }
+
+      //const result = await response.json();
+      
+      if (onComplete) {
+        onComplete(attemptId);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit assessment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [attemptId, questionStartTime, currentQuestionIndex, updateQuestionTimeSpent, responses, onComplete]);
+
+  const handleTimeUp = useCallback(() => {
+    handleSubmit();
+  }, [handleSubmit]);
+
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0) {
       timerRef.current = setInterval(() => {
@@ -112,7 +165,7 @@ export function StudentAssessment({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [timeRemaining]);
+  }, [timeRemaining, handleTimeUp]);
 
   useEffect(() => {
     if (questionStartTime) {
@@ -126,9 +179,9 @@ export function StudentAssessment({
     return () => {
       if (questionTimerRef.current) clearInterval(questionTimerRef.current);
     };
-  }, [questionStartTime, currentQuestionIndex]);
+  }, [questionStartTime, currentQuestionIndex, updateQuestionTimeSpent]);
 
-  const startAssessment = async () => {
+  const startAssessment = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -168,7 +221,7 @@ export function StudentAssessment({
     } finally {
       setLoading(false);
     }
-  };
+  }, [assessmentId]);
 
   useEffect(() => {
     startAssessment();
@@ -177,16 +230,6 @@ export function StudentAssessment({
       if (questionTimerRef.current) clearInterval(questionTimerRef.current);
     };
   }, [assessmentId, startAssessment]);
-
-  const updateQuestionTimeSpent = (questionIndex: number, timeSpent: number) => {
-    setResponses(prev => {
-      const newResponses = [...prev];
-      if (newResponses[questionIndex]) {
-        newResponses[questionIndex].timeSpent = timeSpent;
-      }
-      return newResponses;
-    });
-  };
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setResponses(prev => {
@@ -223,49 +266,6 @@ export function StudentAssessment({
       setCurrentQuestionIndex(prev => prev - 1);
       setQuestionStartTime(new Date());
     }
-  };
-
-  const handleSubmit = async () => {
-    if (!attemptId) return;
-
-    try {
-      setIsSubmitting(true);
-      
-      // Record final time for current question
-      if (questionStartTime) {
-        const timeSpent = Math.floor((Date.now() - questionStartTime.getTime()) / 1000);
-        updateQuestionTimeSpent(currentQuestionIndex, timeSpent);
-      }
-
-      const response = await fetch('/api/assessments/attempts', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          attemptId,
-          responses
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit assessment');
-      }
-
-      const result = await response.json();
-      
-      if (onComplete) {
-        onComplete(attemptId);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit assessment');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleTimeUp = () => {
-    handleSubmit();
   };
 
   const formatTime = (seconds: number) => {

@@ -25,7 +25,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           APP_URL: ${{ secrets.APP_URL }}
-          MODEL_NAME: gpt-4o-mini
+          MODEL_NAME: gpt-4o
         run: |
           python tools/evals/ragas_eval.py
           

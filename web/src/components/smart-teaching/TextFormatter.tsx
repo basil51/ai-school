@@ -5,8 +5,11 @@ import {
   Minimize2, RotateCcw, Settings, Type, AlignLeft, 
   AlignCenter, AlignRight, Plus, Minus, Sun, Moon,
   Bookmark, BookmarkCheck, ArrowRight, 
-  Target, Clock, Brain, Sparkles, CheckCircle
+  Target, Clock, Brain, Sparkles, CheckCircle,
+  Calculator, Lightbulb, AlertCircle
 } from 'lucide-react';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
 interface TextFormatterProps {
   content: {
@@ -65,7 +68,7 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Parse and structure the text content
+  // Parse and structure the text content with enhanced formatting
   const parseTextContent = (text: string) => {
     if (!text) return [];
     
@@ -83,15 +86,33 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
       // Detect lists
       const isList = trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('*') || /^\d+\./.test(trimmed);
       
+      // Detect examples (lines starting with "Example:" or "For example:")
+      const isExample = /^(Example|For example|Example:)/i.test(trimmed);
+      
+      // Detect important notes (lines starting with "Note:" or "Important:")
+      const isNote = /^(Note|Important|Remember|Tip):/i.test(trimmed);
+      
+      // Detect step-by-step instructions
+      const isSteps = /^(Step \d+|Step \d+:|First|Second|Third|Finally)/i.test(trimmed);
+      
       // Detect key concepts (words in quotes or bold indicators)
       const keyConcepts = trimmed.match(/"[^"]*"/g) || [];
       
+      // Detect math expressions (LaTeX format)
+      const hasMath = /\\\(.*?\\\)|\\\[.*?\\\]|\$.*?\$/.test(trimmed);
+      
       return {
         id: index,
-        type: isHeading ? 'heading' : isList ? 'list' : 'paragraph',
+        type: isHeading ? 'heading' : 
+              isList ? 'list' : 
+              isExample ? 'example' :
+              isNote ? 'note' :
+              isSteps ? 'steps' :
+              hasMath ? 'math' : 'paragraph',
         content: trimmed,
         keyConcepts,
-        wordCount: trimmed.split(/\s+/).length
+        wordCount: trimmed.split(/\s+/).length,
+        hasMath
       };
     });
   };
@@ -208,13 +229,50 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
   const renderSection = (section: any) => {
     const isBookmarked = bookmarkedSections.has(section.id);
     
+    const renderContent = (content: string) => {
+      if (section.hasMath) {
+        // Extract and render math expressions
+        const mathRegex = /\\\(([^)]+)\\\)|\\\[([^\]]+)\\\]|\$([^$]+)\$/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = mathRegex.exec(content)) !== null) {
+          // Add text before math
+          if (match.index > lastIndex) {
+            parts.push(content.slice(lastIndex, match.index));
+          }
+          
+          // Add math expression
+          const mathContent = match[1] || match[2] || match[3];
+          const isBlock = match[2] || (match[0].startsWith('\\[') && match[0].endsWith('\\]'));
+          
+          if (isBlock) {
+            parts.push(<BlockMath key={match.index} math={mathContent} />);
+          } else {
+            parts.push(<InlineMath key={match.index} math={mathContent} />);
+          }
+          
+          lastIndex = match.index + match[0].length;
+        }
+        
+        // Add remaining text
+        if (lastIndex < content.length) {
+          parts.push(content.slice(lastIndex));
+        }
+        
+        return parts.length > 0 ? parts : content;
+      }
+      return content;
+    };
+    
     switch (section.type) {
       case 'heading':
         return (
-          <div key={section.id} className="relative group">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-2xl font-bold ${themeClasses.heading} leading-tight`}>
-                {section.content}
+          <div key={section.id} className="relative group mb-8">
+            <div className="flex items-center justify-between">
+              <h2 className={`text-3xl font-bold ${themeClasses.heading} leading-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}>
+                {renderContent(section.content)}
               </h2>
               <button
                 onClick={() => handleBookmark(section.id)}
@@ -226,6 +284,7 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
                 {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-4 h-4" />}
               </button>
             </div>
+            <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-2"></div>
           </div>
         );
       
@@ -234,14 +293,124 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
         return (
           <div key={section.id} className="relative group mb-6">
             <div className="flex items-start justify-between">
-              <ul className="space-y-2 flex-1">
-                {listItems.map((item: string, itemIndex: number) => (
-                  <li key={itemIndex} className={`flex items-start space-x-3 ${themeClasses.container}`}>
-                    <div className={`w-2 h-2 rounded-full mt-3 flex-shrink-0 ${themeClasses.accent} bg-current`} />
-                    <span className="leading-relaxed">{item.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '')}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex-1 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-blue-500">
+                <ul className="space-y-3">
+                  {listItems.map((item: string, itemIndex: number) => (
+                    <li key={itemIndex} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                        {itemIndex + 1}
+                      </div>
+                      <span className="leading-relaxed text-gray-700">
+                        {renderContent(item.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, ''))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                onClick={() => handleBookmark(section.id)}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ml-4 ${
+                  isBookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                }`}
+                title={isBookmarked ? 'Remove bookmark' : 'Bookmark this section'}
+              >
+                {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        );
+      
+      case 'example':
+        return (
+          <div key={section.id} className="relative group mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-l-4 border-green-500">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Lightbulb className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-800">Example</h3>
+                </div>
+                <p className="leading-relaxed text-gray-700">
+                  {renderContent(section.content)}
+                </p>
+              </div>
+              <button
+                onClick={() => handleBookmark(section.id)}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ml-4 ${
+                  isBookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                }`}
+                title={isBookmarked ? 'Remove bookmark' : 'Bookmark this section'}
+              >
+                {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        );
+      
+      case 'note':
+        return (
+          <div key={section.id} className="relative group mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                <div className="flex items-center space-x-2 mb-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <h3 className="font-semibold text-yellow-800">Important Note</h3>
+                </div>
+                <p className="leading-relaxed text-gray-700">
+                  {renderContent(section.content)}
+                </p>
+              </div>
+              <button
+                onClick={() => handleBookmark(section.id)}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ml-4 ${
+                  isBookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                }`}
+                title={isBookmarked ? 'Remove bookmark' : 'Bookmark this section'}
+              >
+                {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        );
+      
+      case 'steps':
+        return (
+          <div key={section.id} className="relative group mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-l-4 border-purple-500">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Target className="w-5 h-5 text-purple-600" />
+                  <h3 className="font-semibold text-purple-800">Step-by-Step</h3>
+                </div>
+                <p className="leading-relaxed text-gray-700">
+                  {renderContent(section.content)}
+                </p>
+              </div>
+              <button
+                onClick={() => handleBookmark(section.id)}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ml-4 ${
+                  isBookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                }`}
+                title={isBookmarked ? 'Remove bookmark' : 'Bookmark this section'}
+              >
+                {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        );
+      
+      case 'math':
+        return (
+          <div key={section.id} className="relative group mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 bg-gray-900 p-4 rounded-lg border-l-4 border-indigo-500">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Calculator className="w-5 h-5 text-indigo-400" />
+                  <h3 className="font-semibold text-indigo-300">Mathematical Expression</h3>
+                </div>
+                <div className="text-lg leading-relaxed text-white">
+                  {renderContent(section.content)}
+                </div>
+              </div>
               <button
                 onClick={() => handleBookmark(section.id)}
                 className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ml-4 ${
@@ -260,14 +429,14 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
           <div key={section.id} className="relative group mb-6">
             <div className="flex items-start justify-between">
               <p 
-                className={`leading-relaxed flex-1 ${themeClasses.container}`}
+                className={`leading-relaxed flex-1 text-gray-700 ${themeClasses.container}`}
                 style={{ 
                   fontSize: `${fontSize}px`, 
                   lineHeight: lineHeight,
                   textAlign: textAlign
                 }}
               >
-                {section.content}
+                {renderContent(section.content)}
               </p>
               <button
                 onClick={() => handleBookmark(section.id)}
@@ -294,7 +463,76 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
     Math.round((readingProgress.wordsRead / readingProgress.timeSpent) * 60) : 0;
 
   return (
-    <div className={`h-full flex flex-col ${themeClasses.container} transition-colors duration-300`}>
+    <>
+      <style jsx>{`
+        .katex {
+          color: #ffffff !important;
+        }
+        .katex .base {
+          color: #ffffff !important;
+        }
+        .katex .mord {
+          color: #ffffff !important;
+        }
+        .katex .mrel {
+          color: #ffffff !important;
+        }
+        .katex .mbin {
+          color: #ffffff !important;
+        }
+        .katex .mopen {
+          color: #ffffff !important;
+        }
+        .katex .mclose {
+          color: #ffffff !important;
+        }
+        .katex .mpunct {
+          color: #ffffff !important;
+        }
+        .katex .mord.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mrel.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mbin.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mopen.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mclose.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mpunct.mathdefault {
+          color: #ffffff !important;
+        }
+        .katex .mfrac {
+          color: #ffffff !important;
+        }
+        .katex .mfrac .mfrac-num {
+          color: #ffffff !important;
+        }
+        .katex .mfrac .mfrac-den {
+          color: #ffffff !important;
+        }
+        .katex .msup {
+          color: #ffffff !important;
+        }
+        .katex .msub {
+          color: #ffffff !important;
+        }
+        .katex .msubsup {
+          color: #ffffff !important;
+        }
+        .katex .mroot {
+          color: #ffffff !important;
+        }
+        .katex .msqrt {
+          color: #ffffff !important;
+        }
+      `}</style>
+      <div className={`h-full flex flex-col ${themeClasses.container} transition-colors duration-300`}>
       {/* Header */}
       <div className={`flex-shrink-0 p-4 border-b ${themeClasses.border} bg-white/90 backdrop-blur-sm`}>
         <div className="flex items-center justify-between">
@@ -505,14 +743,68 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
       >
         {structuredContent.length > 0 ? (
           <div className="max-w-4xl mx-auto">
-            {structuredContent.map((section) => renderSection(section))}
+            {/* Content Introduction */}
+            <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {content.title || 'Learning Content'}
+                  </h1>
+                  {content.subject && content.topic && (
+                    <p className="text-sm text-gray-600">
+                      {content.subject} • {content.topic}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {content.estimatedTime && (
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <Clock className="w-4 h-4" />
+                  <span>Estimated reading time: {content.estimatedTime} minutes</span>
+                </div>
+              )}
+            </div>
+
+            {/* Content Sections */}
+            <div className="space-y-6">
+              {structuredContent.map((section) => renderSection(section))}
+            </div>
+
+            {/* Content Summary */}
+            <div className="mt-12 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+                <h3 className="text-lg font-semibold text-green-800">Content Summary</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  <span className="text-gray-700">{structuredContent.length} sections</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Brain className="w-4 h-4 text-purple-600" />
+                  <span className="text-gray-700">{totalWords} words</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-green-600" />
+                  <span className="text-gray-700">{bookmarkedSections.size} bookmarked</span>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Content Available</h3>
-              <p className="text-gray-500">The lesson content is being prepared...</p>
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">No Content Available</h3>
+              <p className="text-gray-500 max-w-md">
+                The lesson content is being prepared. Please wait while we generate the learning materials for you.
+              </p>
             </div>
           </div>
         )}
@@ -536,7 +828,7 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
             
             {highlightedText && (
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Selected: "{highlightedText}"</span>
+                <span className="text-sm text-gray-600">Selected: &quot;{highlightedText}&quot;</span>
                 <button
                   onClick={() => setHighlightedText('')}
                   className="text-gray-400 hover:text-gray-600"
@@ -548,7 +840,8 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -6,13 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { 
   TrendingUp, 
-  TrendingDown, 
+  //TrendingDown, 
   MessageSquare, 
-  Bug, 
-  Lightbulb, 
-  AlertTriangle,
+  //Bug, 
+  //Lightbulb, 
+  //AlertTriangle,
   Star,
-  Users,
+  //Users,
   Calendar,
   BarChart3
 } from 'lucide-react';
@@ -60,12 +60,12 @@ const statusColors = {
   duplicate: 'bg-orange-100 text-orange-800',
 };
 
-const priorityColors = {
+/*const priorityColors = {
   low: 'bg-gray-100 text-gray-800',
   medium: 'bg-blue-100 text-blue-800',
   high: 'bg-orange-100 text-orange-800',
   critical: 'bg-red-100 text-red-800',
-};
+};*/
 
 export function FeedbackAnalytics() {
   const [analytics, setAnalytics] = useState<FeedbackAnalytics | null>(null);
@@ -340,7 +340,7 @@ export function FeedbackAnalytics() {
             {analytics.feedbackTrend.map((day, index) => (
               <div key={day.date} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm">
+                  <div key={index} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm">
                     {new Date(day.date).getDate()}
                   </div>
                   <div>

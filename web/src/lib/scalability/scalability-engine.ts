@@ -3,9 +3,10 @@ import { Redis } from 'ioredis';
 
 let redis: Redis | null = null;
 
-// Only initialize Redis if configured
+// Only initialize Redis if configured and not during build
 try {
-  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+  const isBuildTime = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build';
+  if (!isBuildTime && (process.env.REDIS_URL || process.env.REDIS_HOST)) {
     redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
       maxRetriesPerRequest: null,
       lazyConnect: true,
@@ -216,7 +217,7 @@ export class ScalabilityEngine {
   /**
    * Implement database sharding
    */
-  async implementDatabaseSharding(shardKey: string): Promise<{
+  async implementDatabaseSharding(): Promise<{
     success: boolean;
     message: string;
     shards: number;
@@ -231,7 +232,7 @@ export class ScalabilityEngine {
 
     try {
       // Analyze data distribution
-      const dataDistribution = await this.analyzeDataDistribution();
+      //const dataDistribution = await this.analyzeDataDistribution();
       
       // Create shards based on distribution
       const shards = await this.createDatabaseShards();

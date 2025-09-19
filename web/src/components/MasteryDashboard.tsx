@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 //import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import {
   Award,
   Lightbulb
 } from "lucide-react";
-import { useTranslations } from "@/lib/useTranslations";
+//import { useTranslations } from "@/lib/useTranslations";
 
 interface MasteryData {
   overallProgress: {
@@ -85,7 +85,7 @@ export function MasteryDashboard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMasteryData = async () => {
+  const fetchMasteryData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -106,7 +106,7 @@ export function MasteryDashboard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [studentId, subjectId]);
 
   useEffect(() => {
     fetchMasteryData();

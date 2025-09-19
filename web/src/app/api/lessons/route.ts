@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const includeInactive = searchParams.get('includeInactive') === 'true';
 
     // Build where clause based on user role and parameters
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (user.role === 'student') {
       // Students can only see lessons from subjects they're enrolled in

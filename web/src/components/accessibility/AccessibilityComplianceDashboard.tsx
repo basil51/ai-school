@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { 
   Shield, 
@@ -21,13 +20,10 @@ import {
   BookOpen, 
   TestTube,
   Plus,
-  Filter,
   Search,
   Eye,
   Edit,
-  Trash2,
-  Download,
-  Upload
+  Download
 } from 'lucide-react';
 
 interface AccessibilityCompliance {
@@ -777,6 +773,154 @@ export default function AccessibilityComplianceDashboard() {
                 Cancel
               </Button>
               <Button>Create Audit</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Finding Dialog */}
+      <Dialog open={isFindingDialogOpen} onOpenChange={setIsFindingDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Accessibility Finding</DialogTitle>
+            <DialogDescription>
+              Create a new accessibility finding for the selected audit
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="findingType">Finding Type</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="color_contrast">Color Contrast</SelectItem>
+                    <SelectItem value="keyboard_navigation">Keyboard Navigation</SelectItem>
+                    <SelectItem value="screen_reader">Screen Reader</SelectItem>
+                    <SelectItem value="focus_management">Focus Management</SelectItem>
+                    <SelectItem value="alt_text">Alt Text</SelectItem>
+                    <SelectItem value="semantic_markup">Semantic Markup</SelectItem>
+                    <SelectItem value="form_labels">Form Labels</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="severity">Severity</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="minor">Minor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="wcagCriteria">WCAG Criteria</Label>
+              <Input placeholder="e.g., 1.4.3 Contrast (Minimum)" />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea placeholder="Describe the accessibility finding" />
+            </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input placeholder="e.g., Home page, navigation menu" />
+            </div>
+            <div>
+              <Label htmlFor="impact">Impact</Label>
+              <Textarea placeholder="Describe the impact on users" />
+            </div>
+            <div>
+              <Label htmlFor="remediation">Remediation</Label>
+              <Textarea placeholder="Describe how to fix this issue" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsFindingDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button>Add Finding</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Recommendation Dialog */}
+      <Dialog open={isRecommendationDialogOpen} onOpenChange={setIsRecommendationDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Accessibility Recommendation</DialogTitle>
+            <DialogDescription>
+              Create a new accessibility recommendation for the selected audit
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="recommendationType">Recommendation Type</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="design_improvement">Design Improvement</SelectItem>
+                    <SelectItem value="technical_enhancement">Technical Enhancement</SelectItem>
+                    <SelectItem value="content_optimization">Content Optimization</SelectItem>
+                    <SelectItem value="user_experience">User Experience</SelectItem>
+                    <SelectItem value="testing_procedure">Testing Procedure</SelectItem>
+                    <SelectItem value="training_recommendation">Training Recommendation</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="priority">Priority</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input placeholder="Enter recommendation title" />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea placeholder="Describe the recommendation" />
+            </div>
+            <div>
+              <Label htmlFor="implementation">Implementation</Label>
+              <Textarea placeholder="Describe how to implement this recommendation" />
+            </div>
+            <div>
+              <Label htmlFor="benefits">Benefits</Label>
+              <Textarea placeholder="Describe the benefits of implementing this recommendation" />
+            </div>
+            <div>
+              <Label htmlFor="estimatedEffort">Estimated Effort</Label>
+              <Input placeholder="e.g., 2-4 hours, 1 day, 1 week" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsRecommendationDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button>Add Recommendation</Button>
             </div>
           </div>
         </DialogContent>

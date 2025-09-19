@@ -17,7 +17,7 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Settings
+  //Settings
 } from 'lucide-react';
 
 interface ParticleEffectsRendererProps {
@@ -35,7 +35,7 @@ interface ParticleEffectsRendererProps {
 
 export default function ParticleEffectsRenderer({ 
   content, 
-  learningStyle = 'visual',
+  //learningStyle = 'visual',
   onEffectChange, 
   className = '' 
 }: ParticleEffectsRendererProps) {
@@ -49,46 +49,6 @@ export default function ParticleEffectsRenderer({
   const [currentEffect, setCurrentEffect] = useState(content.effectType || 'sparkles');
   const [parameters, setParameters] = useState<any>(content.config || {});
   const [particleCount, setParticleCount] = useState(100);
-
-  // Initialize particle system
-  useEffect(() => {
-    if (!canvasRef.current || isInitialized) return;
-
-    const canvas = canvasRef.current;
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-
-    renderer.setSize(canvas.width, canvas.height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0x000000, 1);
-
-    // Setup lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 5);
-    scene.add(directionalLight);
-
-    camera.position.set(0, 0, 5);
-    camera.lookAt(0, 0, 0);
-
-    const effectsEngine = new VisualEffectsEngine(scene, renderer, camera);
-    effectsEngineRef.current = effectsEngine;
-
-    // Create initial particle system
-    createParticleSystem();
-
-    setIsInitialized(true);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      renderer.dispose();
-    };
-  }, [isInitialized]);
 
   // Create particle system
   const createParticleSystem = useCallback(() => {
@@ -116,6 +76,46 @@ export default function ParticleEffectsRenderer({
     onEffectChange?.(currentEffect);
   }, [currentEffect, parameters, particleCount, onEffectChange]);
 
+    // Initialize particle system
+    useEffect(() => {
+      if (!canvasRef.current || isInitialized) return;
+  
+      const canvas = canvasRef.current;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  
+      renderer.setSize(canvas.width, canvas.height);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setClearColor(0x000000, 1);
+  
+      // Setup lighting
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+      scene.add(ambientLight);
+  
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 5);
+      scene.add(directionalLight);
+  
+      camera.position.set(0, 0, 5);
+      camera.lookAt(0, 0, 0);
+  
+      const effectsEngine = new VisualEffectsEngine(scene, renderer, camera);
+      effectsEngineRef.current = effectsEngine;
+  
+      // Create initial particle system
+      createParticleSystem();
+  
+      setIsInitialized(true);
+  
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        renderer.dispose();
+      };
+    }, [isInitialized, createParticleSystem]);
+    
   // Animation loop
   useEffect(() => {
     if (!isInitialized || !isPlaying) return;

@@ -28,7 +28,7 @@ export default function ManageChunksPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState<number>(Number(searchParams.get("page") || 1));
-  const [pageSize, setPageSize] = useState<number>(Number(searchParams.get("pageSize") || 20));
+  const [pageSize, _setPageSize] = useState<number>(Number(searchParams.get("pageSize") || 20));
   const [total, setTotal] = useState<number>(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");

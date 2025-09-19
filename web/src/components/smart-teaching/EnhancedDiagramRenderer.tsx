@@ -1,19 +1,17 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+//import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Network, 
-  Play, 
-  Pause, 
   Volume2, 
   VolumeX, 
   Eye,
   Lightbulb,
   Target,
   CheckCircle,
-  ArrowRight,
+  //ArrowRight,
   Maximize2,
   RotateCcw
 } from 'lucide-react';
@@ -45,6 +43,7 @@ export default function EnhancedDiagramRenderer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [completedViews, setCompletedViews] = useState<Set<string>>(new Set());
 
+  console.log("isPlaying", isPlaying);
   const views = [
     { id: 'overview', title: 'Diagram Overview', icon: Eye },
     { id: 'explanation', title: 'Detailed Explanation', icon: Lightbulb },

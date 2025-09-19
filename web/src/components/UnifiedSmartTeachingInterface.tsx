@@ -1,20 +1,16 @@
-"use client";
-import React, { useState, useRef, useEffect } from 'react'; 
-import { 
-  Brain, Target, Settings, Users, MessageCircle, 
-  FileText, Image, Calculator, Globe, Play, 
-  Video, VideoOff, Mic, MicOff, Camera, Award, Zap,
-  Maximize2, Minimize2, Move, Plus, Minus, RotateCcw,
-  Download, Save, MousePointer,
-  TrendingUp, Clock, BarChart3
-} from 'lucide-react';
-
-// Import existing components
-//import SmartLearningCanvas from './SmartLearningCanvas';
+"use client"; 
+import React, { useState, useRef, useEffect, useCallback } from 'react'; 
 import EnhancedSmartLearningCanvas from './smart-teaching/EnhancedSmartLearningCanvas';
 import EnhancedVideoPlayer from './smart-teaching/EnhancedVideoPlayer';
-//import LessonSelector from './smart-teaching/LessonSelector';
 import SmartAssessmentInterface from './smart-teaching/SmartAssessmentInterface';
+import { 
+  Brain, Target, Settings, Users, MessageCircle, FileText, Image, Calculator, Globe, Play, 
+  Video, VideoOff, Mic, MicOff, Camera, Award, Zap, Maximize2, Minimize2, Move, Plus, Minus, RotateCcw,
+  Download, Save, MousePointer, TrendingUp, Clock, BarChart3
+} from 'lucide-react';
+// Import existing components
+//import SmartLearningCanvas from './SmartLearningCanvas';
+//import LessonSelector from './smart-teaching/LessonSelector';
 //import AdaptiveTeachingInterface from './smart-teaching/AdaptiveTeachingInterface';
 //import AdaptiveQuestionTrigger from './smart-teaching/AdaptiveQuestionTrigger';
 
@@ -69,9 +65,9 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [showStudentPanel, setShowStudentPanel] = useState(mode === 'teacher');
   const [showToolPanel, setShowToolPanel] = useState(true);
-  
+
   // Personal learning state (for student mode)
-  const [personalProgress, setPersonalProgress] = useState({
+  const [personalProgress, _setPersonalProgress] = useState({
     lessonsCompleted: 0,
     totalLessons: 0,
     currentStreak: 0,
@@ -104,15 +100,32 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     };
   }, []);
 
-  // Load lesson data when selectedLessonId changes
-  useEffect(() => {
-    if (selectedLessonId) {
-      loadLessonData(selectedLessonId);
+  // Smart teaching session functionality
+  const startSmartTeachingSession = useCallback(async (lessonId: string) => {
+    try {
+      const response = await fetch(`/api/smart-teaching/lesson/${lessonId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'start_session'
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to start smart teaching session');
+      } else {
+        const sessionData = await response.json();
+        setCurrentSessionId(sessionData.sessionId || `session-${Date.now()}`);
+      }
+    } catch (err) {
+      console.error('Error starting smart teaching session:', err);
     }
-  }, [selectedLessonId]);
+  }, []);
 
   // Lesson loading functionality
-  const loadLessonData = async (lessonId: string) => {
+  const loadLessonData = useCallback(async (lessonId: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -134,33 +147,17 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [startSmartTeachingSession]);
 
-  const startSmartTeachingSession = async (lessonId: string) => {
-    try {
-      const response = await fetch(`/api/smart-teaching/lesson/${lessonId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'start_session'
-        })
-      });
-      
-      if (!response.ok) {
-        console.error('Failed to start smart teaching session');
-      } else {
-        const sessionData = await response.json();
-        setCurrentSessionId(sessionData.sessionId || `session-${Date.now()}`);
-      }
-    } catch (err) {
-      console.error('Error starting smart teaching session:', err);
+  // Load lesson data when selectedLessonId changes
+  useEffect(() => {
+    if (selectedLessonId) {
+      loadLessonData(selectedLessonId);
     }
-  };
+  }, [selectedLessonId, loadLessonData]);
 
   // Handle lesson selection from parent component
-  const handleLessonSelect = (lessonId: string) => {
+  const _handleLessonSelect = (lessonId: string) => {
     loadLessonData(lessonId);
     // Also call parent callback if provided
     if (onLessonSelect) {
@@ -169,7 +166,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   };
 
   // Canvas operations
-  const saveToHistory = () => {
+  const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
     if (canvas) {
       const newHistory = canvasHistory.slice(0, historyStep + 1);
@@ -177,7 +174,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       setCanvasHistory(newHistory);
       setHistoryStep(newHistory.length - 1);
     }
-  };
+  }, [canvasHistory, historyStep]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -269,7 +266,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || selectedTool === 'select' || selectedTool === 'text') return;
-    
+  
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();

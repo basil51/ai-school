@@ -12,7 +12,6 @@ import {
   Brain, 
   Target, 
   Users, 
-  Clock, 
   BookOpen,
   Lightbulb,
   AlertTriangle,
@@ -87,7 +86,7 @@ interface GuardianInsight {
 }
 
 export default function AdvancedAnalyticsDashboard() {
-  const t = useTranslations();
+  const _t = useTranslations();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

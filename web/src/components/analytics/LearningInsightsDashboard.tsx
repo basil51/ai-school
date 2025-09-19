@@ -15,11 +15,11 @@ import {
   BookOpen,
   RefreshCw,
   Calendar,
-  BarChart3,
-  PieChart,
+  //BarChart3,
+  //PieChart,
   Activity
 } from 'lucide-react';
-import { useTranslations } from '@/lib/useTranslations';
+// import { useTranslations } from '@/lib/useTranslations';
 
 interface KnowledgeRetention {
   id: string;
@@ -78,7 +78,7 @@ interface EngagementOptimization {
 }
 
 export default function LearningInsightsDashboard() {
-  const t = useTranslations();
+  //const t = useTranslations();
   const [activeTab, setActiveTab] = useState('retention');
   const [loading, setLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState<string>('all');

@@ -1,6 +1,6 @@
 import { prisma } from '../prisma';
 import { LearningAnalyticsEngine, PersonalizedContent, LearningPattern } from './learning-analytics';
-import { User, Lesson, Assessment, StudentProgress, NeuralPathway, LearningDimensions, EmotionalState } from '@prisma/client';
+import { User, Lesson, StudentProgress, NeuralPathway, LearningDimensions, EmotionalState } from '@prisma/client';
 
 export interface PersonalizationContext {
   student: User;
@@ -65,17 +65,17 @@ export class PersonalizationEngine {
     // Generate personalized content based on learning pattern
     const personalizedContent = await this.analyticsEngine.predictOptimalContent(
       context.student,
-      context.currentLesson
+      //context.currentLesson
     );
     
     // Adapt the content based on personalization data
     const adaptedContent = await this.adaptContent(originalContent, personalizedContent, context);
     
     // Generate adaptation reason
-    const adaptationReason = this.generateAdaptationReason(context, personalizedContent);
+    const adaptationReason = this.generateAdaptationReason(context);
     
     // Calculate confidence in the adaptation
-    const confidence = this.calculateAdaptationConfidence(context, personalizedContent);
+    const confidence = this.calculateAdaptationConfidence(context);
 
     return {
       originalContent,
@@ -380,7 +380,7 @@ export class PersonalizationEngine {
   ): Promise<string> {
     // This is a simplified content adaptation
     // In a real implementation, this would use AI to generate personalized content
-    
+    console.log(context);
     let adaptedContent = originalContent;
     
     // Add emotional support
@@ -395,7 +395,7 @@ export class PersonalizationEngine {
     }
     
     // Add personalized introduction based on learning style
-    const introduction = this.generatePersonalizedIntroduction(personalizedContent, context);
+    const introduction = this.generatePersonalizedIntroduction(personalizedContent);
     adaptedContent = `${introduction}\n\n${adaptedContent}`;
     
     return adaptedContent;
@@ -403,7 +403,7 @@ export class PersonalizationEngine {
 
   private generatePersonalizedIntroduction(
     personalizedContent: PersonalizedContent,
-    context: PersonalizationContext
+    //context: PersonalizationContext
   ): string {
     const { modality, difficulty, pacing } = personalizedContent;
     
@@ -424,7 +424,7 @@ export class PersonalizationEngine {
     return introduction;
   }
 
-  private generateAdaptationReason(context: PersonalizationContext, personalizedContent: PersonalizedContent): string {
+  private generateAdaptationReason(context: PersonalizationContext): string {
     const reasons = [];
     
     if ((context.recentEmotionalState?.stress || 0) > 0.7) {
@@ -452,7 +452,7 @@ export class PersonalizationEngine {
 
   private calculateAdaptationConfidence(
     context: PersonalizationContext,
-    personalizedContent: PersonalizedContent
+    //personalizedContent: PersonalizedContent
   ): number {
     let confidence = 0.5; // Base confidence
     
@@ -598,6 +598,7 @@ export class PersonalizationEngine {
     // Filter lessons based on prerequisites
     const recommendedLessons = availableLessons.filter(lesson => {
       // Check if prerequisites are met
+      console.log(lesson);
       return true; // Simplified - would check actual prerequisites
     });
     

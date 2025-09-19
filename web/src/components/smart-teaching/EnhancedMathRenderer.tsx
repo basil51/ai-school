@@ -1,12 +1,10 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calculator, 
-  Play, 
-  Pause, 
   Volume2, 
   VolumeX, 
   BookOpen, 
@@ -43,17 +41,17 @@ export default function EnhancedMathRenderer({
   onProgress 
 }: EnhancedMathRendererProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  //const [isPlaying, setIsPlaying] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [audioEnabled, setAudioEnabled] = useState(true);
 
-  const steps = [
+  const steps = useMemo(() => [
     { title: "Equation", content: content.equation, type: "equation" },
     { title: "Explanation", content: content.explanation, type: "explanation" },
     ...(content.graphExpression ? [{ title: "Graph", content: content.graphExpression, type: "graph" }] : []),
     { title: "Examples", content: content.examples, type: "examples" }
-  ];
+  ], [content.equation, content.explanation, content.graphExpression, content.examples]);
 
   useEffect(() => {
     if (onProgress) {
@@ -61,24 +59,24 @@ export default function EnhancedMathRenderer({
     }
   }, [completedSteps, steps.length, onProgress]);
 
-  const handleStepComplete = (stepIndex: number) => {
+  const handleStepComplete = useCallback((stepIndex: number) => {
     setCompletedSteps(prev => new Set([...prev, stepIndex]));
-  };
+  }, []);
 
-  const handleNextStep = () => {
+  const handleNextStep = useCallback(() => {
     if (currentStep < steps.length - 1) {
       handleStepComplete(currentStep);
       setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep, steps.length, handleStepComplete]);
 
-  const handlePreviousStep = () => {
+  const handlePreviousStep = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const toggleAudio = () => {
+  const toggleAudio = useCallback(() => {
     setAudioEnabled(!audioEnabled);
     if (!audioEnabled) {
       // Play narration
@@ -89,7 +87,7 @@ export default function EnhancedMathRenderer({
     } else {
       speechSynthesis.cancel();
     }
-  };
+  }, [audioEnabled, content.narration]);
 
   const renderEquation = (equation: string) => (
     <div className="bg-gray-50 p-6 rounded-lg border-2 border-blue-200">
@@ -111,20 +109,27 @@ export default function EnhancedMathRenderer({
     </div>
   );
 
-  const renderGraph = (graphExpression: string, graphTitle: string) => (
-    <div className="space-y-4">
-      <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
-        <h4 className="font-semibold text-green-900 mb-2 flex items-center">
-          <Calculator className="w-4 h-4 mr-2" />
-          Interactive Graph
-        </h4>
-        <p className="text-green-800 mb-3">{graphTitle}</p>
-        <div className="bg-white p-4 rounded border">
-          <InteractiveGraph expression={graphExpression} title={graphTitle || 'Function Plot'} />
+  const renderGraph = (graphExpression: string, graphTitle: string) => {
+    console.log('EnhancedMathRenderer renderGraph called with:', { graphExpression, graphTitle });
+    return (
+      <div className="space-y-4">
+        <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+          <h4 className="font-semibold text-green-900 mb-2 flex items-center">
+            <Calculator className="w-4 h-4 mr-2" />
+            Interactive Graph
+          </h4>
+          <p className="text-green-800 mb-3">{graphTitle}</p>
+          <div className="bg-white p-4 rounded border w-full">
+            <InteractiveGraph 
+              graphExpression={graphExpression} 
+              title={graphTitle || 'Function Plot'} 
+              height={400}
+            />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderExamples = (examples: Array<{problem: string; solution: string; steps: string[]}>) => (
     <div className="space-y-4">

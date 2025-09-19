@@ -90,31 +90,33 @@ export function AssessmentResults({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchResults = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/assessments/attempts?attemptId=${attemptId}&includeResponses=true`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch assessment results');
-      }
-      
-      const data = await response.json();
-      if (data.length > 0) {
-        setAttempt(data[0]);
-      } else {
-        throw new Error('Assessment attempt not found');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/assessments/attempts?attemptId=${attemptId}&includeResponses=true`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch assessment results');
+        }
+        
+        const data = await response.json();
+        if (data.length > 0) {
+          setAttempt(data[0]);
+        } else {
+          throw new Error('Assessment attempt not found');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    
     fetchResults();
-  }, [attemptId, fetchResults]);
+  }, [attemptId]);
 
   const getScoreColor = (percentage: number) => {
     if (percentage >= 90) return 'text-green-600';

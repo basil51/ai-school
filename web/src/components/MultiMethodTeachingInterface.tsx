@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +81,7 @@ export default function MultiMethodTeachingInterface({
   const [startTime, setStartTime] = useState<number>(0);
   const [hasSelected, setHasSelected] = useState(false);
 
-  const generateExplanations = async () => {
+  const generateExplanations = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/teaching/multi-method', {
@@ -110,7 +110,7 @@ export default function MultiMethodTeachingInterface({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [lessonContent, studentId, subject, topic]);
 
   useEffect(() => {
     generateExplanations();

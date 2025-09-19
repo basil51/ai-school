@@ -351,7 +351,7 @@ export function withPerformanceMonitoring<T extends any[]>(
   return async (...args: T): Promise<any> => {
     const startTime = Date.now();
     let statusCode = 200;
-    let cacheHit = false;
+    const cacheHit = false;
 
     try {
       const result = await handler(...args);

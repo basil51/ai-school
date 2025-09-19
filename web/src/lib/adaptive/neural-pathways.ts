@@ -199,43 +199,66 @@ export class NeuralPathwayEngine {
       return this.generateSamplePathways(studentData);
     }
 
-    const prompt = `
-    Analyze this student's learning data and create neural pathway maps that represent how their brain processes information.
+    const prompt = `You are an AI expert in cognitive science and learning analytics. Analyze the student's learning data and create neural pathway maps.
 
-    Student Data:
-    - Progress: ${JSON.stringify(studentData.progress.slice(0, 5))}
-    - Assessment Performance: ${JSON.stringify(studentData.attempts.slice(0, 5))}
-    - Response Patterns: ${JSON.stringify(studentData.responses.slice(0, 10))}
-    - Learning Analytics: ${JSON.stringify(studentData.analytics.slice(0, 3))}
+Student Data:
+- Progress: ${JSON.stringify(studentData.progress.slice(0, 5))}
+- Assessment Performance: ${JSON.stringify(studentData.attempts.slice(0, 5))}
+- Response Patterns: ${JSON.stringify(studentData.responses.slice(0, 10))}
+- Learning Analytics: ${JSON.stringify(studentData.analytics.slice(0, 3))}
 
-    Create 3-5 neural pathways that represent different cognitive processing patterns:
-    1. Sequential: Step-by-step logical processing
-    2. Parallel: Multi-threaded simultaneous processing  
-    3. Hierarchical: Top-down conceptual processing
-    4. Network: Interconnected web-like processing
-    5. Hybrid: Combination of multiple patterns
+Create 3-5 neural pathways representing different cognitive processing patterns:
+1. Sequential: Step-by-step logical processing
+2. Parallel: Multi-threaded simultaneous processing  
+3. Hierarchical: Top-down conceptual processing
+4. Network: Interconnected web-like processing
+5. Hybrid: Combination of multiple patterns
 
-    For each pathway, determine:
-    - Strength (0-1): How well this pathway works for the student
-    - Activation Pattern: Sequence of cognitive steps
-    - Learning Velocity: Speed of learning through this pathway
-    - Retention Rate: How well they retain information
-    - Emotional Resonance: Engagement level
-    - Cross-Domain Transfer: Ability to apply across subjects
+For each pathway, provide:
+- strength: number (0-1)
+- activationPattern: string array
+- learningVelocity: number (0-1)
+- retentionRate: number (0-1)
+- emotionalResonance: number (0-1)
+- crossDomainTransfer: number (0-1)
+- pathwayType: string
 
-    Return as JSON array of pathway objects.
-    `;
+CRITICAL: Return ONLY valid JSON array. No explanations, no markdown, no additional text. Start with [ and end with ].`;
 
+    let response: any;
     try {
-      const response = await openai.chat.completions.create({
+      response = await openai.chat.completions.create({
         model: "gpt-4o",
-        temperature: 0.7,
-        messages: [{ role: "user", content: prompt }]
+        temperature: 0.3, // Lower temperature for more consistent JSON output
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a JSON API. Always respond with valid JSON only. No explanations, no markdown, no additional text." 
+          },
+          { role: "user", content: prompt }
+        ]
       });
 
       const content = response.choices[0]?.message?.content || "[]";
-      // Clean markdown code blocks if present
-      const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // More robust content cleaning
+      let cleanContent = content
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .replace(/^[^{[]*/, '') // Remove any text before JSON starts
+        .replace(/[^}\]]*$/, '') // Remove any text after JSON ends
+        .trim();
+      
+      // If content doesn't start with [ or {, try to find JSON in the content
+      if (!cleanContent.startsWith('[') && !cleanContent.startsWith('{')) {
+        const jsonMatch = cleanContent.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          cleanContent = jsonMatch[0];
+        } else {
+          throw new Error('No valid JSON found in response');
+        }
+      }
+      
       const pathways = JSON.parse(cleanContent);
       return pathways.map((pathway: any, index: number) => ({
         id: `pathway_${index}`,
@@ -245,6 +268,7 @@ export class NeuralPathwayEngine {
       }));
     } catch (error) {
       console.warn('OpenAI API error, falling back to sample pathways:', error);
+      console.warn('Raw response content:', response?.choices?.[0]?.message?.content);
       return this.generateSamplePathways(studentData);
     }
   }
@@ -508,12 +532,13 @@ export class NeuralPathwayEngine {
   }
 
   private async getStudentInterests(studentId: string) {
+    console.log('getStudentInterests', studentId);
     // Get student interests from their learning patterns
-    const analytics = await prisma.learningAnalytics.findMany({
+    /*const analytics = await prisma.learningAnalytics.findMany({
       where: { studentId },
       orderBy: { dateRange: 'desc' },
       take: 5
-    });
+    });*/
 
     // Extract interests from learning patterns
     return {

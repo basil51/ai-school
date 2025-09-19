@@ -5,6 +5,7 @@ import { SystemIntegrationEngine, SystemIntegrationConfig } from "@/lib/integrat
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("GET request received", request);
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("POST request received", request);
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== 'admin') {

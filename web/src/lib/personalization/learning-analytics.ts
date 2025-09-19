@@ -56,7 +56,7 @@ export class LearningAnalyticsEngine {
     timeframe: { start: Date; end: Date }
   ): Promise<LearningPattern> {
     // Get all learning data for the timeframe
-    const [progress, assessments, analytics, emotionalStates] = await Promise.all([
+    const [progress, assessments, emotionalStates] = await Promise.all([
       prisma.studentProgress.findMany({
         where: {
           studentId,
@@ -171,7 +171,7 @@ export class LearningAnalyticsEngine {
    */
   async predictOptimalContent(
     student: User,
-    upcomingLesson: any
+    //upcomingLesson: any
   ): Promise<PersonalizedContent> {
     // Get student's learning pattern
     const timeframe = {
@@ -187,9 +187,9 @@ export class LearningAnalyticsEngine {
     });
     
     // Get student's learning dimensions
-    const learningDimensions = await prisma.learningDimensions.findUnique({
+    /*const learningDimensions = await prisma.learningDimensions.findUnique({
       where: { studentId: student.id }
-    });
+    });*/
     
     // Get recent emotional state
     const recentEmotionalState = await prisma.emotionalState.findFirst({
@@ -216,10 +216,10 @@ export class LearningAnalyticsEngine {
     const emotionalSupport = this.generateEmotionalSupport(recentEmotionalState);
     
     // Find cross-domain connections
-    const crossDomainConnections = await this.findCrossDomainConnections(student.id, upcomingLesson);
+    const crossDomainConnections = await this.findCrossDomainConnections(student.id);
     
     // Predict expected outcome
-    const expectedOutcome = this.predictExpectedOutcome(learningPattern, neuralPathways, upcomingLesson);
+    const expectedOutcome = this.predictExpectedOutcome(learningPattern, neuralPathways);
 
     return {
       contentType: bestContentType,
@@ -277,7 +277,7 @@ export class LearningAnalyticsEngine {
         expectedOutcome: `Mastery of ${concept} through personalized approach`,
         confidence: this.calculateInterventionConfidence(learningPattern, neuralPathways),
         personalizedContent: await this.generatePersonalizedContent(concept, learningPattern),
-        crossDomainConnections: await this.findCrossDomainConnections(student.id, { topic: concept }),
+        crossDomainConnections: await this.findCrossDomainConnections(student.id),
         emotionalSupport: this.generateEmotionalSupport(recentEmotionalState),
         successMetrics: [`Understanding of ${concept}`, 'Engagement level', 'Retention rate'],
         isActive: true
@@ -555,7 +555,7 @@ export class LearningAnalyticsEngine {
     return "Great job staying engaged! Let's continue building on your strengths and tackle this new concept together.";
   }
 
-  private async findCrossDomainConnections(studentId: string, lesson: any): Promise<string[]> {
+  private async findCrossDomainConnections(studentId: string): Promise<string[]> {
     const connections = await prisma.crossDomainConnection.findMany({
       where: { studentId },
       orderBy: { strength: 'desc' },
@@ -568,7 +568,7 @@ export class LearningAnalyticsEngine {
   private predictExpectedOutcome(
     learningPattern: LearningPattern,
     neuralPathways: any[],
-    lesson: any
+    //lesson: any
   ): string {
     const baseConfidence = learningPattern.learningVelocity * learningPattern.retentionRate;
     const pathwayBoost = neuralPathways.reduce((sum, pathway) => sum + pathway.strength, 0) / neuralPathways.length;
@@ -619,11 +619,13 @@ export class LearningAnalyticsEngine {
 
   private analyzeEffectiveApproach(successfulAttempts: any[]): 'visual' | 'auditory' | 'kinesthetic' | 'analytical' | 'creative' | 'collaborative' {
     // Simplified analysis - in reality, we'd track which approaches were used
+    console.log(successfulAttempts);
     return 'visual';
   }
 
   private analyzeEffectiveModality(progress: any[]): 'text' | 'video' | 'interactive' | 'simulation' | '3d' | 'advanced-3d' | 'd3-advanced' {
     // Simplified analysis - in reality, we'd track which modalities were used
+    console.log(progress);
     return 'interactive';
   }
 

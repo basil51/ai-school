@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,23 +9,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Activity, 
-  TrendingUp, 
-  TrendingDown, 
+  //TrendingUp, 
+  //TrendingDown, 
   Clock, 
-  Target, 
+  //Target, 
   Brain, 
-  Users, 
+  //Users, 
   BookOpen,
-  BarChart3,
-  LineChart,
-  PieChart,
+  //BarChart3,
+  //LineChart,
+  //PieChart,
   AlertTriangle,
-  CheckCircle,
+  //CheckCircle,
   Loader2,
   RefreshCw,
   Download,
-  Filter,
-  Calendar,
+  //Filter,
+  //Calendar,
   Eye,
   EyeOff
 } from "lucide-react";
@@ -154,7 +154,7 @@ export default function PerformanceMonitoringDashboard({
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [showDetails, setShowDetails] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -192,24 +192,24 @@ export default function PerformanceMonitoringDashboard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [studentId, organizationId, timeframe]);
 
   useEffect(() => {
     fetchData();
-  }, [studentId, organizationId, timeframe]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (autoRefresh) {
       const interval = setInterval(fetchData, refreshInterval);
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, refreshInterval]);
+  }, [autoRefresh, refreshInterval, fetchData]);
 
-  const getEngagementColor = (level: number) => {
+  /*const getEngagementColor = (level: number) => {
     if (level >= 0.8) return 'text-green-600';
     if (level >= 0.6) return 'text-yellow-600';
     return 'text-red-600';
-  };
+  };*/
 
   const getEngagementBadge = (level: number) => {
     if (level >= 0.8) return <Badge className="bg-green-100 text-green-800">High</Badge>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,7 +103,7 @@ export default function TeacherAssessmentsPage() {
     }
   }, [status, router, locale]);
 
-  const fetchLessons = async () => {
+  const fetchLessons = useCallback(async () => {
     try {
       const response = await fetch('/api/lessons');
       
@@ -121,9 +121,9 @@ export default function TeacherAssessmentsPage() {
     } catch (err) {
       console.error('Error fetching lessons:', err);
     }
-  };
+  }, [selectedLessonId]);
 
-  const fetchAllAssessments = async () => {
+  const fetchAllAssessments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -141,7 +141,7 @@ export default function TeacherAssessmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (session && status === "authenticated") {
@@ -164,9 +164,6 @@ export default function TeacherAssessmentsPage() {
     }
   };
 
-  const getSelectedLesson = () => {
-    return lessons.find(lesson => lesson.id === selectedLessonId);
-  };
 
   if (status === "loading" || dictLoading) {
     return (

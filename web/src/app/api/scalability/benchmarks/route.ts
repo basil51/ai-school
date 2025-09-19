@@ -27,7 +27,7 @@ const createBenchmarkSchema = z.object({
   recommendations: z.record(z.string(), z.any()).optional(),
 });
 
-const updateBenchmarkSchema = createBenchmarkSchema.partial().omit({ baselineDate: true });
+//const updateBenchmarkSchema = createBenchmarkSchema.partial().omit({ baselineDate: true });
 
 export async function GET(request: NextRequest) {
   try {

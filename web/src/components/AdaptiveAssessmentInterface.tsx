@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +87,28 @@ export default function AdaptiveAssessmentInterface({
     }
   }, [currentQuestion, questionStartTime]);
 
-  const loadNextQuestion = async () => {
+  const completeAssessment = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/adaptive-assessment/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId: session.assessmentId })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        onComplete(data.data);
+      }
+    } catch (error) {
+      console.error('Error completing assessment:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [session.assessmentId, onComplete]);
+
+  const loadNextQuestion = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/adaptive-assessment/question', {
@@ -116,7 +137,7 @@ export default function AdaptiveAssessmentInterface({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session.assessmentId, completeAssessment]);
 
   // Load first question when component mounts
   useEffect(() => {
@@ -152,27 +173,6 @@ export default function AdaptiveAssessmentInterface({
       }
     } catch (error) {
       console.error('Error submitting answer:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const completeAssessment = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/adaptive-assessment/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assessmentId: session.assessmentId })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        onComplete(data.data);
-      }
-    } catch (error) {
-      console.error('Error completing assessment:', error);
     } finally {
       setIsLoading(false);
     }

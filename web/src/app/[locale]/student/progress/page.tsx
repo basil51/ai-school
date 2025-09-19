@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+//import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -73,183 +73,182 @@ export default function ProgressPage() {
   const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for progress tracking
-  const mockSubjects: SubjectProgress[] = [
-    {
-      id: '1',
-      name: 'Mathematics',
-      icon: '📊',
-      color: 'from-blue-500 to-cyan-500',
-      overallProgress: 78,
-      lessonsCompleted: 23,
-      totalLessons: 30,
-      averageScore: 87,
-      timeSpent: 1240,
-      lastActivity: '2024-02-15T14:30:00Z',
-      topics: [
-        {
-          id: '1-1',
-          name: 'Algebra',
-          progress: 85,
-          lessonsCompleted: 8,
-          totalLessons: 10,
-          averageScore: 92,
-          difficulty: 'medium',
-          lastStudied: '2024-02-15T14:30:00Z'
-        },
-        {
-          id: '1-2',
-          name: 'Geometry',
-          progress: 70,
-          lessonsCompleted: 7,
-          totalLessons: 10,
-          averageScore: 85,
-          difficulty: 'hard',
-          lastStudied: '2024-02-14T16:20:00Z'
-        },
-        {
-          id: '1-3',
-          name: 'Statistics',
-          progress: 80,
-          lessonsCompleted: 8,
-          totalLessons: 10,
-          averageScore: 84,
-          difficulty: 'easy',
-          lastStudied: '2024-02-13T11:15:00Z'
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Physics',
-      icon: '⚡',
-      color: 'from-purple-500 to-pink-500',
-      overallProgress: 65,
-      lessonsCompleted: 13,
-      totalLessons: 20,
-      averageScore: 82,
-      timeSpent: 980,
-      lastActivity: '2024-02-14T16:45:00Z',
-      topics: [
-        {
-          id: '2-1',
-          name: 'Mechanics',
-          progress: 75,
-          lessonsCompleted: 6,
-          totalLessons: 8,
-          averageScore: 88,
-          difficulty: 'medium',
-          lastStudied: '2024-02-14T16:45:00Z'
-        },
-        {
-          id: '2-2',
-          name: 'Thermodynamics',
-          progress: 50,
-          lessonsCompleted: 4,
-          totalLessons: 8,
-          averageScore: 76,
-          difficulty: 'hard',
-          lastStudied: '2024-02-12T13:30:00Z'
-        },
-        {
-          id: '2-3',
-          name: 'Waves',
-          progress: 75,
-          lessonsCompleted: 3,
-          totalLessons: 4,
-          averageScore: 82,
-          difficulty: 'easy',
-          lastStudied: '2024-02-11T10:20:00Z'
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Chemistry',
-      icon: '🧪',
-      color: 'from-green-500 to-emerald-500',
-      overallProgress: 90,
-      lessonsCompleted: 18,
-      totalLessons: 20,
-      averageScore: 91,
-      timeSpent: 1120,
-      lastActivity: '2024-02-15T09:15:00Z',
-      topics: [
-        {
-          id: '3-1',
-          name: 'Organic Chemistry',
-          progress: 100,
-          lessonsCompleted: 10,
-          totalLessons: 10,
-          averageScore: 94,
-          difficulty: 'hard',
-          lastStudied: '2024-02-15T09:15:00Z'
-        },
-        {
-          id: '3-2',
-          name: 'Inorganic Chemistry',
-          progress: 80,
-          lessonsCompleted: 8,
-          totalLessons: 10,
-          averageScore: 88,
-          difficulty: 'medium',
-          lastStudied: '2024-02-14T15:30:00Z'
-        }
-      ]
-    },
-    {
-      id: '4',
-      name: 'English Literature',
-      icon: '📚',
-      color: 'from-amber-500 to-orange-500',
-      overallProgress: 45,
-      lessonsCompleted: 9,
-      totalLessons: 20,
-      averageScore: 79,
-      timeSpent: 680,
-      lastActivity: '2024-02-13T12:00:00Z',
-      topics: [
-        {
-          id: '4-1',
-          name: 'Poetry',
-          progress: 60,
-          lessonsCompleted: 6,
-          totalLessons: 10,
-          averageScore: 82,
-          difficulty: 'medium',
-          lastStudied: '2024-02-13T12:00:00Z'
-        },
-        {
-          id: '4-2',
-          name: 'Prose',
-          progress: 30,
-          lessonsCompleted: 3,
-          totalLessons: 10,
-          averageScore: 76,
-          difficulty: 'easy',
-          lastStudied: '2024-02-10T14:20:00Z'
-        }
-      ]
-    }
-  ];
-
-  const mockStreak: LearningStreak = {
-    current: 7,
-    longest: 15,
-    lastActivity: '2024-02-15T14:30:00Z'
-  };
-
-  const mockWeeklyActivity: WeeklyActivity[] = [
-    { day: 'Mon', lessons: 3, timeSpent: 120, assessments: 1 },
-    { day: 'Tue', lessons: 2, timeSpent: 90, assessments: 0 },
-    { day: 'Wed', lessons: 4, timeSpent: 150, assessments: 2 },
-    { day: 'Thu', lessons: 1, timeSpent: 60, assessments: 1 },
-    { day: 'Fri', lessons: 3, timeSpent: 110, assessments: 0 },
-    { day: 'Sat', lessons: 2, timeSpent: 80, assessments: 1 },
-    { day: 'Sun', lessons: 0, timeSpent: 0, assessments: 0 }
-  ];
 
   useEffect(() => {
+    const mockSubjects: SubjectProgress[] = [
+      {
+        id: '1',
+        name: 'Mathematics',
+        icon: '📊',
+        color: 'from-blue-500 to-cyan-500',
+        overallProgress: 78,
+        lessonsCompleted: 23,
+        totalLessons: 30,
+        averageScore: 87,
+        timeSpent: 1240,
+        lastActivity: '2024-02-15T14:30:00Z',
+        topics: [
+          {
+            id: '1-1',
+            name: 'Algebra',
+            progress: 85,
+            lessonsCompleted: 8,
+            totalLessons: 10,
+            averageScore: 92,
+            difficulty: 'medium',
+            lastStudied: '2024-02-15T14:30:00Z'
+          },
+          {
+            id: '1-2',
+            name: 'Geometry',
+            progress: 70,
+            lessonsCompleted: 7,
+            totalLessons: 10,
+            averageScore: 85,
+            difficulty: 'hard',
+            lastStudied: '2024-02-14T16:20:00Z'
+          },
+          {
+            id: '1-3',
+            name: 'Statistics',
+            progress: 80,
+            lessonsCompleted: 8,
+            totalLessons: 10,
+            averageScore: 84,
+            difficulty: 'easy',
+            lastStudied: '2024-02-13T11:15:00Z'
+          }
+        ]
+      },
+      {
+        id: '2',
+        name: 'Physics',
+        icon: '⚡',
+        color: 'from-purple-500 to-pink-500',
+        overallProgress: 65,
+        lessonsCompleted: 13,
+        totalLessons: 20,
+        averageScore: 82,
+        timeSpent: 980,
+        lastActivity: '2024-02-14T16:45:00Z',
+        topics: [
+          {
+            id: '2-1',
+            name: 'Mechanics',
+            progress: 75,
+            lessonsCompleted: 6,
+            totalLessons: 8,
+            averageScore: 88,
+            difficulty: 'medium',
+            lastStudied: '2024-02-14T16:45:00Z'
+          },
+          {
+            id: '2-2',
+            name: 'Thermodynamics',
+            progress: 50,
+            lessonsCompleted: 4,
+            totalLessons: 8,
+            averageScore: 76,
+            difficulty: 'hard',
+            lastStudied: '2024-02-12T13:30:00Z'
+          },
+          {
+            id: '2-3',
+            name: 'Waves',
+            progress: 75,
+            lessonsCompleted: 3,
+            totalLessons: 4,
+            averageScore: 82,
+            difficulty: 'easy',
+            lastStudied: '2024-02-11T10:20:00Z'
+          }
+        ]
+      },
+      {
+        id: '3',
+        name: 'Chemistry',
+        icon: '🧪',
+        color: 'from-green-500 to-emerald-500',
+        overallProgress: 90,
+        lessonsCompleted: 18,
+        totalLessons: 20,
+        averageScore: 91,
+        timeSpent: 1120,
+        lastActivity: '2024-02-15T09:15:00Z',
+        topics: [
+          {
+            id: '3-1',
+            name: 'Organic Chemistry',
+            progress: 100,
+            lessonsCompleted: 10,
+            totalLessons: 10,
+            averageScore: 94,
+            difficulty: 'hard',
+            lastStudied: '2024-02-15T09:15:00Z'
+          },
+          {
+            id: '3-2',
+            name: 'Inorganic Chemistry',
+            progress: 80,
+            lessonsCompleted: 8,
+            totalLessons: 10,
+            averageScore: 88,
+            difficulty: 'medium',
+            lastStudied: '2024-02-14T15:30:00Z'
+          }
+        ]
+      },
+      {
+        id: '4',
+        name: 'English Literature',
+        icon: '📚',
+        color: 'from-amber-500 to-orange-500',
+        overallProgress: 45,
+        lessonsCompleted: 9,
+        totalLessons: 20,
+        averageScore: 79,
+        timeSpent: 680,
+        lastActivity: '2024-02-13T12:00:00Z',
+        topics: [
+          {
+            id: '4-1',
+            name: 'Poetry',
+            progress: 60,
+            lessonsCompleted: 6,
+            totalLessons: 10,
+            averageScore: 82,
+            difficulty: 'medium',
+            lastStudied: '2024-02-13T12:00:00Z'
+          },
+          {
+            id: '4-2',
+            name: 'Prose',
+            progress: 30,
+            lessonsCompleted: 3,
+            totalLessons: 10,
+            averageScore: 76,
+            difficulty: 'easy',
+            lastStudied: '2024-02-10T14:20:00Z'
+          }
+        ]
+      }
+    ];
+  
+    const mockStreak: LearningStreak = {
+      current: 7,
+      longest: 15,
+      lastActivity: '2024-02-15T14:30:00Z'
+    };
+  
+    const mockWeeklyActivity: WeeklyActivity[] = [
+      { day: 'Mon', lessons: 3, timeSpent: 120, assessments: 1 },
+      { day: 'Tue', lessons: 2, timeSpent: 90, assessments: 0 },
+      { day: 'Wed', lessons: 4, timeSpent: 150, assessments: 2 },
+      { day: 'Thu', lessons: 1, timeSpent: 60, assessments: 1 },
+      { day: 'Fri', lessons: 3, timeSpent: 110, assessments: 0 },
+      { day: 'Sat', lessons: 2, timeSpent: 80, assessments: 1 },
+      { day: 'Sun', lessons: 0, timeSpent: 0, assessments: 0 }
+    ];
     // Simulate loading
     setTimeout(() => {
       setSubjects(mockSubjects);
@@ -257,7 +256,7 @@ export default function ProgressPage() {
       setWeeklyActivity(mockWeeklyActivity);
       setLoading(false);
     }, 1000);
-  }, [ mockSubjects, mockStreak, mockWeeklyActivity ]);
+  }, []);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -425,7 +424,7 @@ export default function ProgressPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-500" />
-                This Week's Activity
+                This Week&#39;s Activity
               </CardTitle>
             </CardHeader>
             <CardContent>

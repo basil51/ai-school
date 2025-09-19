@@ -205,7 +205,7 @@ describe('Smart Teaching User Experience Tests', () => {
         content: 'This is a UX test lesson with multimodal content',
         subject: 'Science',
         topic: 'Physics',
-        difficulty: 'INTERMEDIATE',
+        difficulty: 'intermediate',
         estimatedTime: 45,
         organizationId: 'ux-test-org'
       }

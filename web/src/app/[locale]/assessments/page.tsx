@@ -79,6 +79,10 @@ export default function AssessmentsPage() {
     }
   }, [status, router, locale]);
 
+  // Extract complex expressions to separate variables for better dependency tracking
+  const userRole = (session as any)?.role;
+  const userId = (session as any)?.user?.id;
+
   const fetchAssessments = useCallback(async () => {
     try {
       setLoading(true);
@@ -90,8 +94,6 @@ export default function AssessmentsPage() {
       });
       
       // Add studentId if user is a student
-      const userRole = (session as any)?.role;
-      const userId = (session as any)?.user?.id;
       if (userRole === 'student' && userId) {
         params.append('studentId', userId);
       }
@@ -109,7 +111,7 @@ export default function AssessmentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [userRole, userId]); // Include session and extracted variables
 
   const fetchAttempts = useCallback(async () => {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +84,7 @@ export default function AssessmentsPage() {
     }
   }, [status, router, locale]);
 
-  const fetchAssessments = async () => {
+  const fetchAssessments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -130,9 +130,9 @@ export default function AssessmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session]);
 
-  const fetchAttempts = async () => {
+  const fetchAttempts = useCallback(async () => {
     try {
       const response = await fetch('/api/assessments/attempts?includeResponses=false');
       
@@ -145,7 +145,7 @@ export default function AssessmentsPage() {
     } catch (err) {
       console.error('Error fetching attempts:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (session && status === "authenticated") {

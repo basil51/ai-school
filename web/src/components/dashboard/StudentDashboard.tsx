@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+//import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   BrainCircuit,
-  BookOpen,
+  //BookOpen,
   Target,
   Trophy,
-  Clock,
+  //Clock,
   ArrowRight,
   Flame,
   Star,

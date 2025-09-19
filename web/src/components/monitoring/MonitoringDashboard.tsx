@@ -22,16 +22,16 @@ import {
   Clock,
   Users,
   BarChart3,
-  Database,
+  //Database,
   Search,
   Eye,
   Edit,
   //Trash2,
   //Download,
   //Upload,
-  Target,
-  Gauge,
-  TrendingUp,
+  //Target,
+  //Gauge,
+  //TrendingUp,
   //TrendingDown,
   //Server,
   //Globe,
@@ -185,7 +185,7 @@ export default function MonitoringDashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedDashboard, setSelectedDashboard] = useState<MonitoringDashboard | null>(null);
+  const [_selectedDashboard, _setSelectedDashboard] = useState<MonitoringDashboard | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     dashboardType: 'all',

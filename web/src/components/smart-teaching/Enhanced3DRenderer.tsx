@@ -7,7 +7,7 @@ import { VisualEffectsEngine } from '@/lib/visual-effects/visual-effects-engine'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
+//import { Slider } from '@/components/ui/slider';
 import { 
   Play, 
   Pause, 
@@ -16,7 +16,7 @@ import {
   ZoomOut, 
   Move3D, 
   Sparkles,
-  Settings,
+  //Settings,
   Eye,
   EyeOff
 } from 'lucide-react';
@@ -37,7 +37,7 @@ interface Enhanced3DRendererProps {
 
 export default function Enhanced3DRenderer({ 
   content, 
-  learningStyle = 'visual',
+  //learningStyle = 'visual',
   onInteraction, 
   className = '' 
 }: Enhanced3DRendererProps) {
@@ -54,79 +54,6 @@ export default function Enhanced3DRenderer({
   const [currentModel, setCurrentModel] = useState<THREE.Object3D | null>(null);
   const [effects, setEffects] = useState<string[]>([]);
   const [parameters, setParameters] = useState<any>(content.config || {});
-
-  // Initialize 3D scene
-  useEffect(() => {
-    if (!canvasRef.current || isInitialized) return;
-
-    const canvas = canvasRef.current;
-    const modelGenerator = new Model3DGenerator(canvas);
-    const effectsEngine = new VisualEffectsEngine(
-      modelGenerator.getScene(),
-      modelGenerator.getRenderer(),
-      modelGenerator.getCamera()
-    );
-
-    modelGeneratorRef.current = modelGenerator;
-    effectsEngineRef.current = effectsEngine;
-
-    // Generate initial model based on content
-    generateModel();
-
-    setIsInitialized(true);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      modelGenerator.dispose();
-    };
-  }, [isInitialized]);
-
-  // Generate 3D model based on content
-  const generateModel = useCallback(() => {
-    if (!modelGeneratorRef.current) return;
-
-    const generator = modelGeneratorRef.current;
-    const scene = generator.getScene();
-    
-    // Clear existing model
-    if (currentModel) {
-      scene.remove(currentModel);
-    }
-
-    let model: THREE.Object3D;
-
-    switch (content.visualizationType) {
-      case 'geometry':
-        model = generator.generateGeometryModel(parameters.type || 'cube', parameters);
-        break;
-      case 'molecule':
-        model = generator.generateMoleculeModel(parameters.moleculeData || {});
-        break;
-      case 'physics':
-        model = generator.generatePhysicsModel(parameters.type || 'pendulum', parameters);
-        break;
-      case 'architecture':
-        model = generator.generateArchitectureModel(parameters.type || 'building', parameters);
-        break;
-      default:
-        model = generator.generateGeometryModel('cube', parameters);
-    }
-
-    // Add visual effects
-    if (showEffects && effects.length > 0) {
-      generator.addVisualEffects(model, effects);
-    }
-
-    generator.addToScene(model);
-    setCurrentModel(model);
-
-    // Add particle effects based on model type
-    if (effectsEngineRef.current && showEffects) {
-      addParticleEffects();
-    }
-  }, [content.visualizationType, parameters, showEffects, effects, currentModel]);
 
   // Add particle effects
   const addParticleEffects = useCallback(() => {
@@ -178,6 +105,80 @@ export default function Enhanced3DRenderer({
         });
     }
   }, [content.visualizationType, parameters, currentModel]);
+
+
+  // Generate 3D model based on content
+  const generateModel = useCallback(() => {
+      if (!modelGeneratorRef.current) return;
+  
+      const generator = modelGeneratorRef.current;
+      const scene = generator.getScene();
+      
+      // Clear existing model
+      if (currentModel) {
+        scene.remove(currentModel);
+      }
+  
+      let model: THREE.Object3D;
+  
+      switch (content.visualizationType) {
+        case 'geometry':
+          model = generator.generateGeometryModel(parameters.type || 'cube', parameters);
+          break;
+        case 'molecule':
+          model = generator.generateMoleculeModel(parameters.moleculeData || {});
+          break;
+        case 'physics':
+          model = generator.generatePhysicsModel(parameters.type || 'pendulum', parameters);
+          break;
+        case 'architecture':
+          model = generator.generateArchitectureModel(parameters.type || 'building', parameters);
+          break;
+        default:
+          model = generator.generateGeometryModel('cube', parameters);
+      }
+  
+      // Add visual effects
+      if (showEffects && effects.length > 0) {
+        generator.addVisualEffects(model, effects);
+      }
+  
+      generator.addToScene(model);
+      setCurrentModel(model);
+  
+      // Add particle effects based on model type
+      if (effectsEngineRef.current && showEffects) {
+        addParticleEffects();
+      }
+  }, [content.visualizationType, parameters, showEffects, effects, currentModel, addParticleEffects]);
+
+  // Initialize 3D scene
+  useEffect(() => {
+        if (!canvasRef.current || isInitialized) return;
+    
+        const canvas = canvasRef.current;
+        const modelGenerator = new Model3DGenerator(canvas);
+        const effectsEngine = new VisualEffectsEngine(
+          modelGenerator.getScene(),
+          modelGenerator.getRenderer(),
+          modelGenerator.getCamera()
+        );
+    
+        modelGeneratorRef.current = modelGenerator;
+        effectsEngineRef.current = effectsEngine;
+    
+        // Generate initial model based on content
+        generateModel();
+    
+        setIsInitialized(true);
+    
+        return () => {
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+          }
+          modelGenerator.dispose();
+        };
+  }, [isInitialized, generateModel, addParticleEffects]);
 
   // Animation loop
   useEffect(() => {

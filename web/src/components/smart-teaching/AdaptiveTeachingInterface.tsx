@@ -14,7 +14,7 @@ import {
   Target,
   Zap,
   Users,
-  BookOpen,
+  //BookOpen,
   Lightbulb,
   Activity,
   BarChart3
@@ -88,6 +88,22 @@ export default function AdaptiveTeachingInterface({
   const [error, setError] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  console.log(onMethodChange);
+    // Load adaptation recommendations
+  const loadRecommendations = useCallback(async () => {
+      if (!sessionId) return;
+  
+      try {
+        const response = await fetch(`/api/smart-teaching/adaptive?sessionId=${sessionId}&action=get_recommendations`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setRecommendations(data.data || []);
+        }
+      } catch (err) {
+        console.error('Error loading recommendations:', err);
+      }
+  }, [sessionId]);
   // Initialize adaptive session
   const initializeSession = useCallback(async () => {
     if (!sessionId || !lessonId) return;
@@ -122,23 +138,7 @@ export default function AdaptiveTeachingInterface({
     } finally {
       setLoading(false);
     }
-  }, [sessionId, lessonId]);
-
-  // Load adaptation recommendations
-  const loadRecommendations = useCallback(async () => {
-    if (!sessionId) return;
-
-    try {
-      const response = await fetch(`/api/smart-teaching/adaptive?sessionId=${sessionId}&action=get_recommendations`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setRecommendations(data.data || []);
-      }
-    } catch (err) {
-      console.error('Error loading recommendations:', err);
-    }
-  }, [sessionId]);
+  }, [sessionId, lessonId, loadRecommendations]);
 
   // Update performance metrics
   const updateMetrics = useCallback(async (metrics: Partial<any>) => {

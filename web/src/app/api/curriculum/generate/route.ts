@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+//import { openai } from "@ai-sdk/openai";
+//import { streamText } from "ai";
 
 export const runtime = "nodejs";
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Generate curriculum structure using AI
-    const systemPrompt = `You are an expert curriculum designer. Create a comprehensive curriculum structure for ${subjectName} at the ${level} level.
+    /*const systemPrompt = `You are an expert curriculum designer. Create a comprehensive curriculum structure for ${subjectName} at the ${level} level.
 
 Generate a structured curriculum with:
 1. Topics (major units of study)
@@ -103,8 +103,8 @@ Format your response as JSON with this structure:
 }
 
 Make the content engaging, comprehensive, and pedagogically sound. Include practical examples and real-world applications where appropriate.`;
-
-    const result = await streamText({
+    */
+    /*onst result = await streamText({
       model: openai("gpt-4o-mini"),
       system: systemPrompt,
       temperature: 0.7,
@@ -114,7 +114,7 @@ Make the content engaging, comprehensive, and pedagogically sound. Include pract
           content: `Create a curriculum for ${subjectName} at ${level} level. Focus on creating a logical progression of concepts and ensure each lesson builds upon previous knowledge.`
         }
       ]
-    });
+    });*/
 
     // For now, we'll create a basic structure and let the AI generate content
     // In a full implementation, we'd parse the AI response and create the database records

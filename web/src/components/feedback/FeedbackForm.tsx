@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTranslations } from '@/lib/useTranslations';
+// import { useTranslations } from '@/lib/useTranslations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Star, Send, MessageSquare, Bug, Lightbulb, AlertTriangle, Eye, Zap, FileText, Users } from 'lucide-react';
+import { Star, Send, MessageSquare, Bug, Lightbulb, Eye, Zap, FileText, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FeedbackFormProps {
@@ -50,7 +50,7 @@ const categories = [
 ];
 
 export function FeedbackForm({ onClose, context, defaultType }: FeedbackFormProps) {
-  const t = useTranslations();
+  //const t = useTranslations();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     feedbackType: defaultType || 'general_feedback',

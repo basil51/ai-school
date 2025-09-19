@@ -9,14 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+//import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { 
   TestTube, 
   CheckCircle, 
   XCircle, 
-  Clock, 
+  //Clock, 
   Eye, 
   Keyboard,
   Volume2,
@@ -25,11 +25,11 @@ import {
   User,
   Users,
   Plus,
-  Filter,
+  //Filter,
   Search,
   Play,
   Download,
-  Upload,
+  //Upload,
   BarChart3
 } from 'lucide-react';
 

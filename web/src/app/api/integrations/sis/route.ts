@@ -24,7 +24,7 @@ const createSISIntegrationSchema = z.object({
   autoSync: z.boolean().default(false),
 });
 
-const updateSISIntegrationSchema = createSISIntegrationSchema.partial();
+//const updateSISIntegrationSchema = createSISIntegrationSchema.partial();
 
 export async function GET(request: NextRequest) {
   try {

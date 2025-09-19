@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, BookOpen, Brain, Trophy, MessageSquare, 
   BarChart3, Users, Settings, School, 
-  Sparkles, Target, Zap, BookMarked, ClipboardCheck,
+  Sparkles, Target, Zap, ClipboardCheck,
   Video, Headphones, Eye, PenTool, FileText,
   Monitor, UserCheck, BrainCircuit, Shield, MessageCircle, Link as LinkIcon, Activity
 } from 'lucide-react';

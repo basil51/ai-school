@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -81,7 +81,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
   const [activeTab, setActiveTab] = useState('overview');
   const [demoMode, setDemoMode] = useState(false);
 
-  const loadPersonalizationData = async () => {
+  const loadPersonalizationData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -121,7 +121,7 @@ export default function PersonalizationDashboard({ studentId }: { studentId: str
     } finally {
       setLoading(false);
     }
-  };
+  }, [studentId, demoMode]);
 
   useEffect(() => {
     loadPersonalizationData();

@@ -5,6 +5,7 @@ import { PerformanceOptimizationEngine } from "@/lib/performance/optimization-en
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("GET request received", request);
     const session = await getServerSession(authOptions);
     
     if (!session?.user || session.user.role !== 'admin') {

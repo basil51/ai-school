@@ -105,7 +105,7 @@ export function AssessmentManager({
     questions: [] as Question[]
   });
 
-  const fetchAssessments = async () => {
+  /*const fetchAssessments = async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/assessments?lessonId=${lessonId}&includeQuestions=true&includeAttempts=true`);
@@ -121,11 +121,29 @@ export function AssessmentManager({
     } finally {
       setLoading(false);
     }
-  };
+  };*/
 
   useEffect(() => {
+    const fetchAssessments = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/assessments?lessonId=${lessonId}&includeQuestions=true&includeAttempts=true`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch assessments');
+        }
+        
+        const data = await response.json();
+        setAssessments(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     fetchAssessments();
-  }, [lessonId, fetchAssessments]);
+  }, [lessonId]);
 
   const generateQuestions = async () => {
     try {

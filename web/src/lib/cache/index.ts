@@ -110,6 +110,7 @@ export class UnifiedCacheManager implements CacheInterface {
         this.redisHealthy = health.status === 'healthy';
         return health;
       } catch (error) {
+        console.error('Redis health check failed:', error);
         this.redisHealthy = false;
         this.useRedis = false;
       }

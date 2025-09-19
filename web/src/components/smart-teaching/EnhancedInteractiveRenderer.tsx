@@ -6,14 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Code, 
   Play, 
-  Pause, 
+  //Pause, 
   Volume2, 
   VolumeX, 
-  Settings,
+  //Settings,
   Lightbulb,
   Target,
   CheckCircle,
-  ArrowRight,
   Zap,
   Monitor,
   FileText,
@@ -113,7 +112,7 @@ export default function EnhancedInteractiveRenderer({
       
       <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
         <h4 className="font-semibold text-green-900 mb-2">
-          🎯 What You'll Learn
+          🎯 What You&#39;ll Learn
         </h4>
         <p className="text-green-800">
           This interactive activity will help you understand the concepts through hands-on practice.
@@ -238,7 +237,7 @@ export default function EnhancedInteractiveRenderer({
         <div className="text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Great Job!</h2>
-          <p className="text-gray-600">You've completed the interactive activity</p>
+          <p className="text-gray-600">You&#39;ve completed the interactive activity</p>
         </div>
         
         {content.type === 'quiz' && (
@@ -257,10 +256,10 @@ export default function EnhancedInteractiveRenderer({
         
         <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
           <h4 className="font-semibold text-green-900 mb-2">
-            🎯 What You've Learned
+            🎯 What You&#39;ve Learned
           </h4>
           <p className="text-green-800">
-            Through this interactive activity, you've gained hands-on experience with the concepts.
+            Through this interactive activity, you&#39;ve gained hands-on experience with the concepts.
             This type of learning helps reinforce your understanding.
           </p>
         </div>

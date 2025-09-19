@@ -94,7 +94,7 @@ export class SystemIntegrationEngine {
       : this.getDefaultTeachingMethod();
 
     // Generate personalized content
-    const content = await this.generateIntegratedContent(studentContext, teachingMethod);
+    const content = await this.generateIntegratedContent(studentContext);
 
     // Create session
     const session: IntegratedLearningSession = {
@@ -151,7 +151,7 @@ export class SystemIntegrationEngine {
     const response = await this.generateContextualResponse(session, interaction, adaptations);
 
     // Predict next steps
-    const nextSteps = await this.predictNextSteps(session, interaction);
+    const nextSteps = await this.predictNextSteps(session);
 
     // Apply adaptations if needed
     if (adaptations.length > 0) {
@@ -344,9 +344,11 @@ export class SystemIntegrationEngine {
       : this.getDefaultLearningPattern();
 
     // Get neural pathways
-    const neuralPathways = this.config.enableNeuralPathways
+    /*const neuralPathways = this.config.enableNeuralPathways
       ? await this.neuralPathwayEngine.getStudentPathways(studentId)
       : [];
+    */
+    //const neuralPathways = [];
 
     // Build comprehensive context
     return {
@@ -384,7 +386,7 @@ export class SystemIntegrationEngine {
 
   private async generateIntegratedContent(
     context: TeachingContext,
-    teachingMethod: any
+    //teachingMethod: any
   ): Promise<any> {
     const contentRequest: ContentGenerationRequest = {
       subject: context.subject,
@@ -455,7 +457,7 @@ export class SystemIntegrationEngine {
 
   private async predictNextSteps(
     session: IntegratedLearningSession,
-    interaction: any
+    //interaction: any
   ): Promise<any[]> {
     if (this.config.enablePredictiveAnalytics) {
       const trajectory = await this.predictiveEngine.predictLearningTrajectory(
@@ -571,7 +573,7 @@ export class SystemIntegrationEngine {
         }
       });
     } catch (error) {
-      console.warn('LearningSession model not available yet. Run migration to enable session storage.');
+      console.warn('LearningSession model not available yet. Run migration to enable session storage.', error);
     }
   }
 

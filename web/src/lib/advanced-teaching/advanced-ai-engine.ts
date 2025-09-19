@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { prisma } from "@/lib/prisma";
+//import { prisma } from "@/lib/prisma";
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -280,7 +280,7 @@ export class AdvancedAITeachingEngine {
     context: TeachingContext
   ): AdvancedContent {
     let adaptedContent = originalContent;
-    
+    console.log(context);
     // Apply basic adaptations based on method
     switch (method.id) {
       case 'socratic-method':

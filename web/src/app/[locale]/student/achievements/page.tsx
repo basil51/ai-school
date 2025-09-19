@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+//import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -52,123 +52,130 @@ export default function AchievementsPage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for achievements
-  const mockAchievements: Achievement[] = [
-    {
-      id: '1',
-      title: 'First Steps',
-      description: 'Complete your first lesson',
-      icon: '🎯',
-      category: 'milestone',
-      rarity: 'common',
-      points: 10,
-      unlockedAt: '2024-01-15T10:30:00Z',
-      requirements: ['Complete 1 lesson']
-    },
-    {
-      id: '2',
-      title: 'Quick Learner',
-      description: 'Complete 5 lessons in a single day',
-      icon: '⚡',
-      category: 'academic',
-      rarity: 'rare',
-      points: 50,
-      unlockedAt: '2024-01-20T16:45:00Z',
-      requirements: ['Complete 5 lessons in one day']
-    },
-    {
-      id: '3',
-      title: 'Perfect Score',
-      description: 'Achieve 100% on any assessment',
-      icon: '🏆',
-      category: 'academic',
-      rarity: 'epic',
-      points: 100,
-      unlockedAt: '2024-01-25T14:20:00Z',
-      requirements: ['Score 100% on any assessment']
-    },
-    {
-      id: '4',
-      title: 'Streak Master',
-      description: 'Maintain a 7-day learning streak',
-      icon: '🔥',
-      category: 'participation',
-      rarity: 'rare',
-      points: 75,
-      unlockedAt: '2024-02-01T09:15:00Z',
-      requirements: ['Learn for 7 consecutive days']
-    },
-    {
-      id: '5',
-      title: 'AI Collaborator',
-      description: 'Have 50 conversations with your AI teacher',
-      icon: '🤖',
-      category: 'participation',
-      rarity: 'epic',
-      points: 150,
-      unlockedAt: '2024-02-10T11:30:00Z',
-      requirements: ['Chat with AI teacher 50 times']
-    },
-    {
-      id: '6',
-      title: 'Subject Master',
-      description: 'Complete all lessons in a subject',
-      icon: '👑',
-      category: 'academic',
-      rarity: 'legendary',
-      points: 300,
-      unlockedAt: '2024-02-15T13:45:00Z',
-      requirements: ['Complete all lessons in Mathematics']
-    },
-    {
-      id: '7',
-      title: 'Helpful Student',
-      description: 'Help 10 classmates with their questions',
-      icon: '🤝',
-      category: 'participation',
-      rarity: 'rare',
-      points: 80,
-      progress: 7,
-      maxProgress: 10,
-      requirements: ['Help 10 classmates']
-    },
-    {
-      id: '8',
-      title: 'Early Bird',
-      description: 'Complete lessons before 8 AM for 5 days',
-      icon: '🌅',
-      category: 'participation',
-      rarity: 'common',
-      points: 25,
-      progress: 3,
-      maxProgress: 5,
-      requirements: ['Study before 8 AM for 5 days']
-    },
-    {
-      id: '9',
-      title: 'Quiz Champion',
-      description: 'Score above 90% on 10 consecutive quizzes',
-      icon: '🎖️',
-      category: 'academic',
-      rarity: 'epic',
-      points: 200,
-      progress: 6,
-      maxProgress: 10,
-      requirements: ['Score 90%+ on 10 consecutive quizzes']
-    },
-    {
-      id: '10',
-      title: 'Knowledge Seeker',
-      description: 'Ask 100 questions to your AI teacher',
-      icon: '❓',
-      category: 'participation',
-      rarity: 'rare',
-      points: 120,
-      progress: 45,
-      maxProgress: 100,
-      requirements: ['Ask 100 questions to AI teacher']
-    }
-  ];
+  useEffect(() => {
+    // Mock data for achievements
+    const mockAchievements: Achievement[] = [
+      {
+        id: '1',
+        title: 'First Steps',
+        description: 'Complete your first lesson',
+        icon: '🎯',
+        category: 'milestone',
+        rarity: 'common',
+        points: 10,
+        unlockedAt: '2024-01-15T10:30:00Z',
+        requirements: ['Complete 1 lesson']
+      },
+      {
+        id: '2',
+        title: 'Quick Learner',
+        description: 'Complete 5 lessons in a single day',
+        icon: '⚡',
+        category: 'academic',
+        rarity: 'rare',
+        points: 50,
+        unlockedAt: '2024-01-20T16:45:00Z',
+        requirements: ['Complete 5 lessons in one day']
+      },
+      {
+        id: '3',
+        title: 'Perfect Score',
+        description: 'Achieve 100% on any assessment',
+        icon: '🏆',
+        category: 'academic',
+        rarity: 'epic',
+        points: 100,
+        unlockedAt: '2024-01-25T14:20:00Z',
+        requirements: ['Score 100% on any assessment']
+      },
+      {
+        id: '4',
+        title: 'Streak Master',
+        description: 'Maintain a 7-day learning streak',
+        icon: '🔥',
+        category: 'participation',
+        rarity: 'rare',
+        points: 75,
+        unlockedAt: '2024-02-01T09:15:00Z',
+        requirements: ['Learn for 7 consecutive days']
+      },
+      {
+        id: '5',
+        title: 'AI Collaborator',
+        description: 'Have 50 conversations with your AI teacher',
+        icon: '🤖',
+        category: 'participation',
+        rarity: 'epic',
+        points: 150,
+        unlockedAt: '2024-02-10T11:30:00Z',
+        requirements: ['Chat with AI teacher 50 times']
+      },
+      {
+        id: '6',
+        title: 'Subject Master',
+        description: 'Complete all lessons in a subject',
+        icon: '👑',
+        category: 'academic',
+        rarity: 'legendary',
+        points: 300,
+        unlockedAt: '2024-02-15T13:45:00Z',
+        requirements: ['Complete all lessons in Mathematics']
+      },
+      {
+        id: '7',
+        title: 'Helpful Student',
+        description: 'Help 10 classmates with their questions',
+        icon: '🤝',
+        category: 'participation',
+        rarity: 'rare',
+        points: 80,
+        progress: 7,
+        maxProgress: 10,
+        requirements: ['Help 10 classmates']
+      },
+      {
+        id: '8',
+        title: 'Early Bird',
+        description: 'Complete lessons before 8 AM for 5 days',
+        icon: '🌅',
+        category: 'participation',
+        rarity: 'common',
+        points: 25,
+        progress: 3,
+        maxProgress: 5,
+        requirements: ['Study before 8 AM for 5 days']
+      },
+      {
+        id: '9',
+        title: 'Quiz Champion',
+        description: 'Score above 90% on 10 consecutive quizzes',
+        icon: '🎖️',
+        category: 'academic',
+        rarity: 'epic',
+        points: 200,
+        progress: 6,
+        maxProgress: 10,
+        requirements: ['Score 90%+ on 10 consecutive quizzes']
+      },
+      {
+        id: '10',
+        title: 'Knowledge Seeker',
+        description: 'Ask 100 questions to your AI teacher',
+        icon: '❓',
+        category: 'participation',
+        rarity: 'rare',
+        points: 120,
+        progress: 45,
+        maxProgress: 100,
+        requirements: ['Ask 100 questions to AI teacher']
+      }
+    ];
+    // Simulate loading
+    setTimeout(() => {
+      setAchievements(mockAchievements);
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   const categories: AchievementCategory[] = [
     {
@@ -200,14 +207,6 @@ export default function AchievementsPage() {
       unlockedAchievements: 0
     }
   ];
-
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setAchievements(mockAchievements);
-      setLoading(false);
-    }, 1000);
-  }, [ mockAchievements ]);
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {

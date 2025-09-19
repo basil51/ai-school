@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SmartLearningCanvas from '@/components/SmartLearningCanvas';
 import EnhancedMathRenderer from './EnhancedMathRenderer';
 import EnhancedDiagramRenderer from './EnhancedDiagramRenderer';
@@ -13,8 +13,7 @@ import {
   Brain, 
   Sparkles, 
   Loader2, 
-  RefreshCw, 
-  Settings, 
+  RefreshCw,  
   Zap,
   Trash2,
   BookOpen,
@@ -93,13 +92,7 @@ export default function EnhancedSmartLearningCanvas({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
 
-  useEffect(() => {
-    if (lessonData) {
-      generateSmartContent();
-    }
-  }, [lessonData, learningStyle]);
-
-  const generateSmartContent = async () => {
+  const generateSmartContent = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -155,7 +148,13 @@ export default function EnhancedSmartLearningCanvas({
       setIsGenerating(false);
       setGenerationProgress(0);
     }
-  };
+  }, [lessonData, learningStyle, onContentGenerated]);
+
+  useEffect(() => {
+    if (lessonData) {
+      generateSmartContent();
+    }
+  }, [lessonData, learningStyle]);
 
   const getInitialContentType = (style: string, available: string[]): any => {
     console.log('🎯 Selecting initial content type for learning style:', style, 'Available types:', available);
@@ -223,7 +222,7 @@ export default function EnhancedSmartLearningCanvas({
     return 'text';
   };
 
-  const regenerateContent = async (contentType: string) => {
+  const regenerateContent = useCallback(async (contentType: string) => {
     try {
       setIsGenerating(true);
       setGenerationProgress(0);
@@ -262,9 +261,9 @@ export default function EnhancedSmartLearningCanvas({
       setIsGenerating(false);
       setGenerationProgress(0);
     }
-  };
+  }, [lessonData, learningStyle, generatedContent]);
 
-  const clearAllCache = async () => {
+  const clearAllCache = useCallback(async () => {
     try {
       setIsGenerating(true);
       
@@ -295,7 +294,7 @@ export default function EnhancedSmartLearningCanvas({
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [lessonData, generateSmartContent]);
 
   const content = useMemo(() => {
     if (!generatedContent) {

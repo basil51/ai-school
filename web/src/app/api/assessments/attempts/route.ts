@@ -260,15 +260,15 @@ export async function PUT(request: NextRequest) {
     }
 
     // Calculate score and process responses
-    let totalScore = 0;
-    let totalPoints = 0;
+    let _totalScore = 0;
+    let _totalPoints = 0;
     const processedResponses: any[] = [];
 
     for (const response of responses) {
       const question = attempt.assessment.questions.find(q => q.id === response.questionId);
       if (!question) continue;
 
-      totalPoints += question.points;
+      _totalPoints += question.points;
       
       let isCorrect = false;
       let pointsEarned = 0;
@@ -298,7 +298,7 @@ export async function PUT(request: NextRequest) {
           pointsEarned = 0;
       }
 
-      totalScore += pointsEarned;
+      _totalScore += pointsEarned;
 
       processedResponses.push({
         attemptId,
@@ -310,11 +310,11 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const percentage = totalPoints > 0 ? (totalScore / totalPoints) : 0;
-    const passed = percentage >= attempt.assessment.passingScore;
+    //const percentage = totalPoints > 0 ? (totalScore / totalPoints) : 0;
+    //const passed = percentage >= attempt.assessment.passingScore;
 
     // Update attempt and create responses in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    /*const result = await prisma.$transaction(async (tx) => {
       // Update the attempt
       const updatedAttempt = await tx.assessmentAttempt.update({
         where: { id: attemptId },
@@ -353,7 +353,7 @@ export async function PUT(request: NextRequest) {
       }
 
       return updatedAttempt;
-    });
+    });*/
 
     // Fetch complete attempt with responses
     const completeAttempt = await prisma.assessmentAttempt.findUnique({

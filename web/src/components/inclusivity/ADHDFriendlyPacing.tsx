@@ -40,7 +40,7 @@ interface ADHDPreferences {
 }
 
 export function ADHDFriendlyPacing() {
-  const [preferences, setPreferences] = useState<ADHDPreferences>({
+  const [preferences, _setPreferences] = useState<ADHDPreferences>({
     focusDuration: 25,
     shortBreakDuration: 5,
     longBreakDuration: 15,
@@ -56,23 +56,6 @@ export function ADHDFriendlyPacing() {
   const [isRunning, setIsRunning] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (isRunning && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            handleSessionComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [isRunning, timeRemaining]);
 
   const startSession = (type: 'focus' | 'break' | 'long_break') => {
     let duration = 0;
@@ -104,45 +87,6 @@ export function ADHDFriendlyPacing() {
 
     if (preferences.enableNotifications) {
       toast.success(`${type === 'focus' ? 'Focus' : 'Break'} session started!`);
-    }
-  };
-
-  const handleSessionComplete = () => {
-    if (!currentSession) return;
-
-    const completedSession = {
-      ...currentSession,
-      isActive: false,
-      completed: true,
-      remaining: 0,
-    };
-
-    setSessionHistory(prev => [completedSession, ...prev]);
-    
-    if (currentSession.type === 'focus') {
-      setFocusSessionsCompleted(prev => prev + 1);
-    }
-
-    setIsRunning(false);
-    setCurrentSession(null);
-    setTimeRemaining(0);
-
-    if (preferences.enableNotifications) {
-      toast.success('Session completed! Great job! 🎉');
-    }
-
-    // Auto-start break after focus session
-    if (currentSession.type === 'focus') {
-      setTimeout(() => {
-        const shouldTakeLongBreak = focusSessionsCompleted > 0 && 
-          (focusSessionsCompleted + 1) % preferences.longBreakInterval === 0;
-        
-        if (shouldTakeLongBreak) {
-          startSession('long_break');
-        } else {
-          startSession('break');
-        }
-      }, 2000);
     }
   };
 
@@ -194,6 +138,64 @@ export function ADHDFriendlyPacing() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  useEffect(() => {
+    const handleSessionComplete = () => {
+      if (!currentSession) return;
+  
+      const completedSession = {
+        ...currentSession,
+        isActive: false,
+        completed: true,
+        remaining: 0,
+      };
+  
+      setSessionHistory(prev => [completedSession, ...prev]);
+      
+      if (currentSession.type === 'focus') {
+        setFocusSessionsCompleted(prev => prev + 1);
+      }
+  
+      setIsRunning(false);
+      setCurrentSession(null);
+      setTimeRemaining(0);
+  
+      if (preferences.enableNotifications) {
+        toast.success('Session completed! Great job! 🎉');
+      }
+  
+      // Auto-start break after focus session
+      if (currentSession.type === 'focus') {
+        setTimeout(() => {
+          const shouldTakeLongBreak = focusSessionsCompleted > 0 && 
+            (focusSessionsCompleted + 1) % preferences.longBreakInterval === 0;
+          
+          if (shouldTakeLongBreak) {
+            startSession('long_break');
+          } else {
+            startSession('break');
+          }
+        }, 2000);
+      }
+    };
+  
+    let interval: NodeJS.Timeout;
+    
+    if (isRunning && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            handleSessionComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, timeRemaining, currentSession, focusSessionsCompleted, preferences.enableNotifications, startSession, ]);
+
 
   return (
     <div className="space-y-6">
@@ -264,7 +266,7 @@ export function ADHDFriendlyPacing() {
               Start a Session
             </CardTitle>
             <CardDescription>
-              Choose the type of session you'd like to start
+              Choose the type of session you&#39;d like to start
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -317,7 +319,7 @@ export function ADHDFriendlyPacing() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Today's Sessions
+              Today&#39;s Sessions
             </CardTitle>
             <CardDescription>
               Track your productivity and break patterns

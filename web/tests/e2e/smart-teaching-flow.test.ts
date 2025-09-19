@@ -169,16 +169,25 @@ describe('Smart Teaching End-to-End Flow', () => {
       }
     })
 
+    // Create test topic first
+    const testTopic = await prisma.topic.create({
+      data: {
+        name: 'Algebra',
+        description: 'Test topic for smart teaching',
+        subjectId: 'test-subject-id', // You may need to create a subject first
+        order: 1
+      }
+    })
+
     // Create test lesson
     testLesson = await prisma.lesson.create({
       data: {
         title: 'Test Lesson',
         content: 'This is a test lesson for smart teaching',
-        subject: 'Mathematics',
-        topic: 'Algebra',
-        difficulty: 'BEGINNER',
+        topicId: testTopic.id,
+        difficulty: 'beginner',
         estimatedTime: 30,
-        organizationId: 'test-org'
+        order: 1
       }
     })
   }
@@ -353,7 +362,7 @@ describe('Smart Teaching End-to-End Flow', () => {
     await prisma.smartTeachingInteraction.create({
       data: {
         sessionId,
-        type: 'CONFUSION_DETECTED',
+        type: 'content_interaction',
         content: { confidence: 0.2, timeSpent: 300 }
       }
     })
@@ -366,7 +375,7 @@ describe('Smart Teaching End-to-End Flow', () => {
     })
 
     const hasAdaptation = session?.interactions.some(
-      i => i.type === 'ADAPTATION_TRIGGERED'
+      i => i.type === 'method_change'
     )
 
     return {

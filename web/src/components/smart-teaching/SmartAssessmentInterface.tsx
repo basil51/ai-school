@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+//import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Clock, 
@@ -18,7 +18,7 @@ import {
   Target, 
   Lightbulb,
   BookOpen,
-  Trophy
+  //Trophy
 } from 'lucide-react';
 
 interface Question {
@@ -340,7 +340,7 @@ export default function SmartAssessmentInterface({
         <CardContent className="space-y-4">
           <div className="text-center text-gray-600">
             {adaptiveMode ? (
-              <p>Let's check your understanding with some adaptive questions!</p>
+              <p>Let&apos;s check your understanding with some adaptive questions!</p>
             ) : (
               <p>Test your knowledge of this lesson with a quick assessment.</p>
             )}

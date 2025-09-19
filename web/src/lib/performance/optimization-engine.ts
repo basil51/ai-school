@@ -178,7 +178,7 @@ export class PerformanceOptimizationEngine {
     for (const group of groupedRequests) {
       if (group.length === 1) {
         // Single request - check cache first
-        const cacheKey = this.generateCacheKey('openai-batch', group[0]);
+        //const cacheKey = this.generateCacheKey('openai-batch', group[0]);
         const cached = await this.getCachedAIContent(group[0]);
         
         if (cached) {
@@ -374,7 +374,7 @@ export class PerformanceOptimizationEngine {
     
     for (const request of requests) {
       // For now, process individually but cache results
-      const cacheKey = this.generateCacheKey('openai-batch', request);
+      //const cacheKey = this.generateCacheKey('openai-batch', request);
       const cached = await this.getCachedAIContent(request);
       
       if (cached) {

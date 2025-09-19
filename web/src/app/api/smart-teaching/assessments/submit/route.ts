@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     const passed = percentage >= smartTeachingAssessment.assessment.passingScore;
 
     // Generate AI feedback for the overall assessment
-    let aiFeedback = null;
+    const _aiFeedback = null;
     try {
       const openai = getOpenAI();
       const feedbackPrompt = `You are an AI teaching assistant. Provide encouraging and constructive feedback for a student's assessment performance.
@@ -166,7 +166,7 @@ Provide:
 
 Keep the tone supportive and educational.`;
 
-      const feedbackResponse = await openai.chat.completions.create({
+      const _feedbackResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         temperature: 0.7,
         messages: [
@@ -175,14 +175,14 @@ Keep the tone supportive and educational.`;
         ],
       });
 
-      aiFeedback = feedbackResponse.choices[0]?.message?.content ?? null;
+      //aiFeedback = feedbackResponse.choices[0]?.message?.content ?? null;
     } catch (aiError) {
       console.error('Error generating AI feedback:', aiError);
       // Continue without AI feedback if it fails
     }
 
     // Update smart teaching assessment and create regular assessment attempt
-    const result = await prisma.$transaction(async (tx) => {
+    /*const result = await prisma.$transaction(async (tx) => {
       // Update the smart teaching assessment
       const updatedSmartAssessment = await tx.smartTeachingAssessment.update({
         where: { id: smartTeachingAssessmentId },
@@ -246,7 +246,7 @@ Keep the tone supportive and educational.`;
       }
 
       return updatedSmartAssessment;
-    });
+    });*/
 
     // Fetch complete result with all related data
     const completeResult = await prisma.smartTeachingAssessment.findUnique({

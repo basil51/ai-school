@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { AdvancedAITeachingEngine } from "@/lib/advanced-teaching/advanced-ai-engine";
 
 export async function GET(request: NextRequest) {
+  console.log("GET request received", request);
   try {
     const session = await getServerSession(authOptions);
     

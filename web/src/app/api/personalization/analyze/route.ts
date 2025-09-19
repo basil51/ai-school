@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { PersonalizationEngine } from '@/lib/personalization/personalization-engine';
 import { DemoDataGenerator } from '@/lib/personalization/demo-data';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -12,10 +12,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const studentId = searchParams.get('studentId') || (session?.user as any)?.id;
+    const { studentId } = await request.json();
     
-    // Check if user has permission to get recommendations for this student
+    if (!studentId) {
+      return NextResponse.json({ error: 'Student ID is required' }, { status: 400 });
+    }
+    
+    // Check if user has permission to analyze this student
     // Allow demo students for demonstration purposes
     const isDemoStudent = studentId.startsWith('demo-student-');
     if (!isDemoStudent && (session?.user as any)?.role !== 'admin' && (session?.user as any)?.role !== 'teacher' && (session?.user as any)?.id !== studentId) {
@@ -24,29 +27,29 @@ export async function GET(request: NextRequest) {
 
     // Check if we're in demo mode
     if (DemoDataGenerator.isDemoMode()) {
-      const recommendations = DemoDataGenerator.generateDemoRecommendations(studentId);
+      const learningPattern = DemoDataGenerator.generateDemoLearningPattern(studentId);
       return NextResponse.json({
         success: true,
-        data: recommendations,
+        data: learningPattern,
         demoMode: true,
-        message: 'Demo data - Recommendations are simulated for demonstration purposes'
+        message: 'Demo data - Learning pattern analysis is simulated for demonstration purposes'
       });
     }
 
     const personalizationEngine = new PersonalizationEngine();
     
-    const recommendations = await personalizationEngine.getPersonalizedRecommendations(studentId);
+    const learningPattern = await personalizationEngine.analyzeLearningEffectiveness(studentId);
 
     return NextResponse.json({
       success: true,
-      data: recommendations,
+      data: learningPattern,
       demoMode: false
     });
 
   } catch (error) {
-    console.error('Error getting personalized recommendations:', error);
+    console.error('Error analyzing learning pattern:', error);
     return NextResponse.json(
-      { error: 'Failed to get personalized recommendations' },
+      { error: 'Failed to analyze learning pattern' },
       { status: 500 }
     );
   }

@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  Users, 
+  //Users, 
   TrendingUp, 
   Brain, 
   Target, 
@@ -15,14 +15,14 @@ import {
   CheckCircle,
   Lightbulb,
   BookOpen,
-  Clock,
+  //Clock,
   RefreshCw,
   Eye,
   EyeOff,
   MessageSquare,
-  Calendar
+  //Calendar
 } from 'lucide-react';
-import { useTranslations } from '@/lib/useTranslations';
+// import { useTranslations } from '@/lib/useTranslations';
 
 interface GuardianInsight {
   id: string;
@@ -54,7 +54,7 @@ interface StudentSummary {
 }
 
 export default function GuardianInsightsDashboard() {
-  const t = useTranslations();
+  //const t = useTranslations();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState<string>('all');
@@ -64,15 +64,11 @@ export default function GuardianInsightsDashboard() {
   const [studentSummaries, setStudentSummaries] = useState<StudentSummary[]>([]);
   const [actionNotes, setActionNotes] = useState<{ [key: string]: string }>({});
 
-  useEffect(() => {
-    loadGuardianInsights();
-  }, [selectedStudent]);
-
-  const loadGuardianInsights = async () => {
+  const loadGuardianInsights = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch('/api/analytics/guardian-insights');
-      const data = await response.json();
+      const data = await response.json(); 
       
       if (data.success) {
         setInsights(data.data);
@@ -86,7 +82,11 @@ export default function GuardianInsightsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadGuardianInsights();
+  }, [selectedStudent, loadGuardianInsights]);
 
   const createStudentSummaries = (insights: GuardianInsight[]): StudentSummary[] => {
     const studentMap = new Map<string, StudentSummary>();

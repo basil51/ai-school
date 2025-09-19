@@ -638,6 +638,7 @@ export class AdaptiveAssessmentEngine {
       where: { id: assessmentId },
       include: { responses: true },
     });
+    console.log('gradingResult', gradingResult);
 
     if (!assessment) return 'CONTINUE';
 
