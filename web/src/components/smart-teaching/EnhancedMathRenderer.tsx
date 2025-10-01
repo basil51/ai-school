@@ -19,8 +19,15 @@ import InteractiveGraph from '@/components/multimodal/InteractiveGraph';
 interface MathContent {
   equation: string;
   explanation: string;
-  graphExpression: string;
-  graphTitle: string;
+  graphExpression?: string;
+  graphTitle?: string;
+  graph?: {
+    title: string;
+    expressions: any[];
+    viewport: any;
+    points: any[];
+    ggb: any;
+  };
   examples: Array<{
     problem: string;
     solution: string;
@@ -46,12 +53,23 @@ export default function EnhancedMathRenderer({
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [audioEnabled, setAudioEnabled] = useState(true);
 
-  const steps = useMemo(() => [
-    { title: "Equation", content: content.equation, type: "equation" },
-    { title: "Explanation", content: content.explanation, type: "explanation" },
-    ...(content.graphExpression ? [{ title: "Graph", content: content.graphExpression, type: "graph" }] : []),
-    { title: "Examples", content: content.examples, type: "examples" }
-  ], [content.equation, content.explanation, content.graphExpression, content.examples]);
+  // Debug logging
+  console.log('EnhancedMathRenderer received content:', content);
+
+  const steps = useMemo(() => {
+    const stepsArray = [
+      { title: "Equation", content: content.equation, type: "equation" },
+      { title: "Explanation", content: content.explanation, type: "explanation" },
+      ...(content.graph || content.graphExpression ? [{ title: "Graph", content: content.graph || content.graphExpression, type: "graph" }] : []),
+      { title: "Examples", content: content.examples, type: "examples" }
+    ];
+    
+    console.log('EnhancedMathRenderer steps created:', stepsArray);
+    console.log('Content has graph:', !!content.graph);
+    console.log('Content has graphExpression:', !!content.graphExpression);
+    
+    return stepsArray;
+  }, [content.equation, content.explanation, content.graph, content.graphExpression, content.examples]);
 
   useEffect(() => {
     if (onProgress) {
@@ -109,8 +127,42 @@ export default function EnhancedMathRenderer({
     </div>
   );
 
-  const renderGraph = (graphExpression: string, graphTitle: string) => {
-    console.log('EnhancedMathRenderer renderGraph called with:', { graphExpression, graphTitle });
+  const renderGraph = (graphData: any) => {
+    console.log('EnhancedMathRenderer renderGraph called with:', graphData);
+    
+    // Handle both old and new graph data structures
+    const isNewFormat = graphData && typeof graphData === 'object' && graphData.title;
+    const graphTitle = isNewFormat ? graphData.title : (typeof graphData === 'string' ? 'Function Plot' : 'Interactive Graph');
+    
+    // Extract graph expression and other properties
+    let graphExpression = 'x';
+    let expressions: string[] = [];
+    let ggbCommands: string[] = [];
+    let viewport = { xMin: -10, xMax: 10, yMin: -10, yMax: 10 };
+    
+    if (isNewFormat) {
+      // Handle the new graph format with GeoGebra data
+      if (graphData.expressions && Array.isArray(graphData.expressions)) {
+        expressions = graphData.expressions;
+        graphExpression = expressions[0] || 'x';
+      }
+      
+      if (graphData.ggb && graphData.ggb.commands) {
+        ggbCommands = graphData.ggb.commands;
+      }
+      
+      if (graphData.viewport) {
+        viewport = {
+          xMin: graphData.viewport.xMin || -10,
+          xMax: graphData.viewport.xMax || 10,
+          yMin: graphData.viewport.yMin || -10,
+          yMax: graphData.viewport.yMax || 10
+        };
+      }
+    } else {
+      graphExpression = graphData || 'x';
+    }
+    
     return (
       <div className="space-y-4">
         <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
@@ -121,9 +173,15 @@ export default function EnhancedMathRenderer({
           <p className="text-green-800 mb-3">{graphTitle}</p>
           <div className="bg-white p-4 rounded border w-full">
             <InteractiveGraph 
-              graphExpression={graphExpression} 
-              title={graphTitle || 'Function Plot'} 
+              graphExpression={graphExpression}
+              expressions={expressions.length > 0 ? expressions : undefined}
+              title={graphTitle} 
               height={400}
+              xMin={viewport.xMin}
+              xMax={viewport.xMax}
+              yMin={viewport.yMin}
+              yMax={viewport.yMax}
+              ggbCommands={ggbCommands.length > 0 ? ggbCommands : undefined}
             />
           </div>
         </div>
@@ -198,7 +256,7 @@ export default function EnhancedMathRenderer({
       case 'explanation':
         return renderExplanation(step.content as string);
       case 'graph':
-        return renderGraph(step.content as string, content.graphTitle);
+        return renderGraph(step.content);
       case 'examples':
         return renderExamples(step.content as Array<{problem: string; solution: string; steps: string[]}>);
       default:
@@ -293,7 +351,7 @@ export default function EnhancedMathRenderer({
 
       {/* Content */}
       <div className="flex-1 p-6 overflow-y-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="mx-auto">
           {renderCurrentStep()}
         </div>
       </div>

@@ -1,6 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import SmartLearningCanvas from '@/components/SmartLearningCanvas';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+
+// Module-scoped lock to prevent duplicate generation calls across React StrictMode re-mounts
+const generationLocks = new Set<string>();
+import SmartLearningCanvas from '@/components/SmartLearningCanvas'; 
 import EnhancedMathRenderer from './EnhancedMathRenderer';
 import EnhancedDiagramRenderer from './EnhancedDiagramRenderer';
 import EnhancedSimulationRenderer from './EnhancedSimulationRenderer';
@@ -91,8 +94,26 @@ export default function EnhancedSmartLearningCanvas({
   const [availableContentTypes, setAvailableContentTypes] = useState<string[]>(['text']);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const hasGeneratedContent = useRef(false);
 
   const generateSmartContent = useCallback(async () => {
+    const lessonId = lessonData.lesson.id;
+
+    // Global/module lock prevents duplicate network calls across remounts (React StrictMode)
+    if (generationLocks.has(lessonId)) {
+      console.log('Generation already in progress (global lock), skipping for', lessonId);
+      return;
+    }
+
+    // Local guard still useful for component-level protection
+    if (loading || isGenerating || hasGeneratedContent.current) {
+      console.log('Content generation already in progress or completed, skipping...');
+      return;
+    }
+
+    // Acquire lock
+    generationLocks.add(lessonId);
+
     try {
       setLoading(true);
       setError(null);
@@ -100,15 +121,16 @@ export default function EnhancedSmartLearningCanvas({
       setGenerationProgress(0);
   
       // Generate comprehensive content
+      console.log('Generating comprehensive content');
       const response = await fetch('/api/smart-teaching/generate-content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lessonId: lessonData.lesson.id,
+          lessonId,
           contentType: 'full',
-          learningStyle: learningStyle,
+          learningStyle,
           forceRegenerate: false
         })
       });
@@ -141,20 +163,30 @@ export default function EnhancedSmartLearningCanvas({
         onContentGenerated(data.data);
       }
 
+      // Mark as generated to prevent duplicate calls
+      hasGeneratedContent.current = true;
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
+      // Release lock
+      generationLocks.delete(lessonId);
       setLoading(false);
       setIsGenerating(false);
       setGenerationProgress(0);
     }
-  }, [lessonData, learningStyle, onContentGenerated]);
+  }, [lessonData.lesson.id, learningStyle, onContentGenerated]);
+
+  // Reset generation flag when lesson changes
+  useEffect(() => {
+    hasGeneratedContent.current = false;
+  }, [lessonData.lesson.id, learningStyle]);
 
   useEffect(() => {
-    if (lessonData) {
+    if (lessonData && !hasGeneratedContent.current) {
       generateSmartContent();
     }
-  }, [lessonData, learningStyle]);
+  }, [lessonData.lesson.id, learningStyle]);
 
   const getInitialContentType = (style: string, available: string[]): any => {
     console.log('🎯 Selecting initial content type for learning style:', style, 'Available types:', available);
@@ -227,6 +259,7 @@ export default function EnhancedSmartLearningCanvas({
       setIsGenerating(true);
       setGenerationProgress(0);
 
+      console.log('Regenerating content');
       const response = await fetch('/api/smart-teaching/generate-content', {
         method: 'POST',
         headers: {
@@ -267,6 +300,7 @@ export default function EnhancedSmartLearningCanvas({
     try {
       setIsGenerating(true);
       
+      console.log('Clearing all cache');
       const response = await fetch(`/api/smart-teaching/generate-content?lessonId=${lessonData.lesson.id}`, {
         method: 'DELETE',
         headers: {
@@ -284,9 +318,12 @@ export default function EnhancedSmartLearningCanvas({
       // Clear local state
       setGeneratedContent(null);
       setError(null);
+      hasGeneratedContent.current = false;
       
-      // Regenerate content immediately after clearing cache
-      await generateSmartContent();
+      // Clear module-scoped lock
+      generationLocks.delete(lessonData.lesson.id);
+      
+      // The useEffect will automatically trigger generateSmartContent when generatedContent becomes null
       
     } catch (error) {
       console.error('Error clearing cache:', error);
@@ -294,7 +331,7 @@ export default function EnhancedSmartLearningCanvas({
     } finally {
       setIsGenerating(false);
     }
-  }, [lessonData, generateSmartContent]);
+  }, [lessonData.lesson.id]);
 
   const content = useMemo(() => {
     if (!generatedContent) {

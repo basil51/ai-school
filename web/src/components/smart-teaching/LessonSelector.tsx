@@ -80,6 +80,8 @@ interface LessonSelectorProps {
 }
 
 export default function LessonSelector({ onLessonSelect, selectedLessonId }: LessonSelectorProps) {
+  console.log('🎯 [DEBUG] LessonSelector initialized with selectedLessonId:', selectedLessonId);
+  
   const [curriculumData, setCurriculumData] = useState<CurriculumData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,7 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
   }, []);
 
   const fetchCurriculumData = async () => {
+    console.log('🎯 [DEBUG] LessonSelector fetching curriculum data...');
     try {
       setLoading(true);
       const response = await fetch('/api/smart-teaching/curriculum/current-user');
@@ -101,6 +104,7 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
       }
       
       const data = await response.json();
+      console.log('🎯 [DEBUG] LessonSelector received curriculum data:', data);
       setCurriculumData(data.data);
       
       // Auto-expand first subject and topic
@@ -277,7 +281,10 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                 {curriculumData.recommendedLessons.filter(lesson => lesson && lesson.lessonId).map((lesson, index) => (
                   <div
                     key={`recommended-${lesson.lessonId || `recommended-${index}`}`}
-                    onClick={() => onLessonSelect(lesson.lessonId)}
+                    onClick={() => {
+                      console.log('🎯 [DEBUG] LessonSelector - Recommended lesson clicked:', lesson.lessonId);
+                      onLessonSelect(lesson.lessonId);
+                    }}
                     className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
                       selectedLessonId === lesson.lessonId
                         ? 'border-blue-500 bg-blue-50'
@@ -391,7 +398,10 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                               {topic.lessons.map((lesson, index) => (
                                 <div
                                   key={`lesson-${lesson.id || `lesson-${index}`}`}
-                                  onClick={() => onLessonSelect(lesson.id)}
+                                  onClick={() => {
+                                    console.log('🎯 [DEBUG] LessonSelector - Curriculum lesson clicked:', lesson.id);
+                                    onLessonSelect(lesson.id);
+                                  }}
                                   className={`p-3 pl-12 cursor-pointer hover:bg-white transition-colors border-b border-gray-100 last:border-b-0 ${
                                     selectedLessonId === lesson.id ? 'bg-blue-50 border-blue-200' : ''
                                   }`}

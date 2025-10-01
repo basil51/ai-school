@@ -7,10 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-//import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-//import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Plus, 
@@ -104,24 +102,6 @@ export function AssessmentManager({
     maxAttempts: 3,
     questions: [] as Question[]
   });
-
-  /*const fetchAssessments = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/assessments?lessonId=${lessonId}&includeQuestions=true&includeAttempts=true`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch assessments');
-      }
-      
-      const data = await response.json();
-      setAssessments(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };*/
 
   useEffect(() => {
     const fetchAssessments = async () => {

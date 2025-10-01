@@ -52,6 +52,11 @@ export default function InteractiveGraph({
     
     console.log('Converting expression:', expression);
     
+    // Handle simple expressions like "y = 8" or "8"
+    if (expression.trim() === '8' || expression.trim() === 'y = 8') {
+      return 'y = 8';
+    }
+    
     // Convert JavaScript syntax to GeoGebra syntax
     let ggbExpression = expression
       .replace(/\*/g, '') // Remove * for multiplication (GeoGebra uses implicit multiplication)
@@ -135,6 +140,8 @@ export default function InteractiveGraph({
       allowZoom,
       perspective: undefined,               // let app choose sensible default
       useBrowserForJS: true,                // allow JS API from page
+      scale: 1.2,
+      // Font size settings
       // pre-load material (none; we'll inject commands below)
     };
 
@@ -146,71 +153,80 @@ export default function InteractiveGraph({
     // wait until API is ready
     const onLoad = () => {
       console.log('GeoGebra applet onLoad called');
-      // store API handle
-      ggbRef.current = applet.getAppletObject();
-      console.log('GGB API handle:', !!ggbRef.current);
-
-      // set axes range (graphing & 3D apps honor this via SetCoordSystem)
-      try {
-        // 2D view id=1
-        ggbRef.current.setCoordSystem(xMin, xMax, yMin, yMax);
-      } catch {}
-
-      // title as a text object (optional)
-      if (title) {
+      
+      // Add a small delay to ensure the applet is fully initialized
+      setTimeout(() => {
         try {
-          ggbRef.current.evalCommand(`Text("${title}", (${xMin}+${xMax})/2, ${yMax} - 0.5)`);
-        } catch {}
-      }
+          // store API handle
+          ggbRef.current = applet.getAppletObject();
+          console.log('GGB API handle:', !!ggbRef.current);
 
-      // primary expression(s)
-      const list = (expressions && expressions.length > 0) ? expressions : [graphExpression];
-      console.log('Original expressions:', list);
-      
-      // Convert expressions to GeoGebra syntax
-      const convertedList = list.map(expr => convertToGeoGebraExpression(expr));
-      console.log('Converted expressions:', convertedList);
-      
-      convertedList.forEach((cmd, index) => {
-        if (cmd) {
-          console.log('Executing command:', cmd);
-          try {
-            ggbRef.current.evalCommand(cmd);
-            console.log('Command executed successfully');
-          } catch (error) {
-            console.error('Error executing converted command:', cmd, error);
-            // Try original expression as fallback
-            const originalCmd = list[index];
-            if (originalCmd && originalCmd !== cmd) {
-              console.log('Trying original expression as fallback:', originalCmd);
+          // primary expression(s)
+          const list = (expressions && expressions.length > 0) ? expressions : [graphExpression];
+          console.log('Original expressions:', list);
+          
+          // Convert expressions to GeoGebra syntax
+          const convertedList = list.map(expr => convertToGeoGebraExpression(expr));
+          console.log('Converted expressions:', convertedList);
+          
+          convertedList.forEach((cmd, index) => {
+            if (cmd) {
+              console.log('Executing command:', cmd);
               try {
-                ggbRef.current.evalCommand(originalCmd);
-                console.log('Original command executed successfully');
-              } catch (fallbackError) {
-                console.error('Fallback command also failed:', originalCmd, fallbackError);
+                ggbRef.current.evalCommand(cmd);
+                console.log('Command executed successfully');
+              } catch (error) {
+                console.error('Error executing converted command:', cmd, error);
+                // Try original expression as fallback
+                const originalCmd = list[index];
+                if (originalCmd && originalCmd !== cmd) {
+                  console.log('Trying original expression as fallback:', originalCmd);
+                  try {
+                    ggbRef.current.evalCommand(originalCmd);
+                    console.log('Original command executed successfully');
+                  } catch (fallbackError) {
+                    console.error('Fallback command also failed:', originalCmd, fallbackError);
+                  }
+                }
               }
             }
+          });
+
+          // convert points to GeoGebra commands (legacy support)
+          if (points && points.length > 0) {
+            const pointsCommands = convertPointsToCommands(points);
+            pointsCommands.forEach((cmd) => {
+              try {
+                ggbRef.current.evalCommand(cmd);
+              } catch (pointError) {
+                console.error('Error executing point command:', cmd, pointError);
+              }
+            });
           }
+
+          // extra scripted commands (sliders, points, derivatives, etc.)
+          ggbCommands.forEach((cmd) => {
+            try {
+              ggbRef.current.evalCommand(cmd);
+            } catch (cmdError) {
+              console.error('Error executing ggb command:', cmd, cmdError);
+            }
+          });
+
+          // example: listen for object updates (teacher analytics later)
+          try {
+            ggbRef.current.registerUpdateListener((name: string) => {
+              console.log("Updated:", name, ggbRef.current.getValueString(name));
+              // e.g., capture point movement or slider changes
+              // console.log("Updated:", name, ggbRef.current.getValueString(name));
+            });
+          } catch (listenerError) {
+            console.log('Could not register update listener:', listenerError);
+          }
+        } catch (error) {
+          console.error('Error in GeoGebra onLoad:', error);
         }
-      });
-
-      // convert points to GeoGebra commands (legacy support)
-      if (points && points.length > 0) {
-        const pointsCommands = convertPointsToCommands(points);
-        pointsCommands.forEach((cmd) => ggbRef.current.evalCommand(cmd));
-      }
-
-      // extra scripted commands (sliders, points, derivatives, etc.)
-      ggbCommands.forEach((cmd) => ggbRef.current.evalCommand(cmd));
-
-      // example: listen for object updates (teacher analytics later)
-      try {
-        ggbRef.current.registerUpdateListener((name: string) => {
-          console.log("Updated:", name, ggbRef.current.getValueString(name));
-          // e.g., capture point movement or slider changes
-          // console.log("Updated:", name, ggbRef.current.getValueString(name));
-        });
-      } catch {}
+      }, 500); // Wait 500ms for applet to fully initialize
     };
 
     // GeoGebra calls this when ready
@@ -229,30 +245,64 @@ export default function InteractiveGraph({
   // update expressions / view when props change at runtime
   useEffect(() => {
     const api = ggbRef.current;
-    if (!api) return;
+    if (!api) {
+      console.log('GeoGebra API not available for updates');
+      return;
+    }
 
-    try { api.setCoordSystem(xMin, xMax, yMin, yMax); } catch {}
+    try { 
+      api.setCoordSystem(xMin, xMax, yMin, yMax); 
+    } catch (coordError) {
+      console.log('Could not update coordinate system:', coordError);
+    }
 
     // clear previous functions (optional: refine to only replace known ids)
-    try { api.reset(); } catch {}
+    try { 
+      api.reset(); 
+    } catch (resetError) {
+      console.log('Could not reset applet:', resetError);
+    }
 
     const list = (expressions && expressions.length > 0) ? expressions : [graphExpression];
     const convertedList = list.map(expr => convertToGeoGebraExpression(expr));
     convertedList.forEach((cmd) => {
       if (cmd) {
-        api.evalCommand(cmd);
+        try {
+          api.evalCommand(cmd);
+        } catch (cmdError) {
+          console.error('Error executing command in update:', cmd, cmdError);
+        }
       }
     });
     
     // convert points to GeoGebra commands (legacy support)
     if (points && points.length > 0) {
       const pointsCommands = convertPointsToCommands(points);
-      pointsCommands.forEach((cmd) => api.evalCommand(cmd));
+      pointsCommands.forEach((cmd) => {
+        try {
+          api.evalCommand(cmd);
+        } catch (pointError) {
+          console.error('Error executing point command in update:', cmd, pointError);
+        }
+      });
     }
     
-    ggbCommands.forEach((cmd) => api.evalCommand(cmd));
+    ggbCommands.forEach((cmd) => {
+      try {
+        api.evalCommand(cmd);
+      } catch (cmdError) {
+        console.error('Error executing ggb command in update:', cmd, cmdError);
+      }
+    });
+    
     // title
-    if (title) { try { api.evalCommand(`Text("${title}", (${xMin}+${xMax})/2, ${yMax} - 0.5)`); } catch {} }
+    if (title) { 
+      try { 
+        api.evalCommand(`Text("${title}", (${xMin}+${xMax})/2, ${yMax} - 0.5)`); 
+      } catch (titleError) {
+        console.log('Could not update title:', titleError);
+      }
+    }
 }, [
   graphExpression,
   expressions, // Added missing dependency
@@ -263,6 +313,6 @@ export default function InteractiveGraph({
   yMin,
   yMax,
   title
-]);
-  return <div ref={containerRef} style={{ width: "100%", height }} />;
+  ]);
+  return <div id="ggb-element" ref={containerRef} style={{ width: "100%", height }} />;
 }

@@ -69,8 +69,8 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Parse and structure the text content with enhanced formatting
-  const parseTextContent = (text: string) => {
-    if (!text) return [];
+  const parseTextContent = (text: string | undefined) => {
+    if (!text || typeof text !== 'string') return [];
     
     const sections = text.split(/\n\s*\n/).filter(section => section.trim());
     return sections.map((section, index) => {

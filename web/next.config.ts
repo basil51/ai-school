@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   turbopack: {
-    root: "/home/basel/Projects/AI-school/web",
+    root: "/Users/baseljerjawi/Projects/AI-School/ai-school/web",
   },
 };
 

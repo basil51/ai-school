@@ -1,18 +1,21 @@
 "use client"; 
 import React, { useState, useRef, useEffect, useCallback } from 'react'; 
-import EnhancedSmartLearningCanvas from './smart-teaching/EnhancedSmartLearningCanvas';
+import ProgressiveContentLoader from './smart-teaching/ProgressiveContentLoader';
 import EnhancedVideoPlayer from './smart-teaching/EnhancedVideoPlayer';
 import SmartAssessmentInterface from './smart-teaching/SmartAssessmentInterface';
+import EnhancedMathRenderer from './smart-teaching/EnhancedMathRenderer';
+import EnhancedDiagramRenderer from './smart-teaching/EnhancedDiagramRenderer';
+import EnhancedInteractiveRenderer from './smart-teaching/EnhancedInteractiveRenderer';
+import EnhancedAssessmentRenderer from './smart-teaching/EnhancedAssessmentRenderer';
+
+// Module-level lock to prevent duplicate operations in React StrictMode
+const componentLocks = new Set<string>();
 import { 
   Brain, Target, Settings, Users, MessageCircle, FileText, Image, Calculator, Globe, Play, 
-  Video, VideoOff, Mic, MicOff, Camera, Award, Zap, Maximize2, Minimize2, Move, Plus, Minus, RotateCcw,
+  Video, VideoOff, Mic, MicOff, Camera, Award, Zap, Plus, Minus, RotateCcw,
   Download, Save, MousePointer, TrendingUp, Clock, BarChart3
 } from 'lucide-react';
-// Import existing components
-//import SmartLearningCanvas from './SmartLearningCanvas';
-//import LessonSelector from './smart-teaching/LessonSelector';
-//import AdaptiveTeachingInterface from './smart-teaching/AdaptiveTeachingInterface';
-//import AdaptiveQuestionTrigger from './smart-teaching/AdaptiveQuestionTrigger';
+
 
 interface UnifiedInterfaceProps {
   studentId?: string;
@@ -34,16 +37,161 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   onLessonSelect,
   selectedLessonId
 }) => {
+  // Generate unique component instance ID to prevent duplicate operations in StrictMode
+  const componentId = useRef<string>(`component-${Date.now()}-${Math.random()}`).current;
+  
   // Core state management
   const [activeTab, setActiveTab] = useState<UnifiedTab>(initialTab as UnifiedTab);
   //const [canvasMode, setCanvasMode] = useState<CanvasMode>('smart');
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Smart Teaching state
   const [lessonData, setLessonData] = useState<any>(null);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const [learningStyle, setLearningStyle] = useState<'visual' | 'audio' | 'kinesthetic' | 'analytical'>('visual');
+  
+  // Content generation state (parent-owned to prevent duplicates)
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState<number | null>(null);
+  const [contentStatuses, setContentStatuses] = useState<Record<string, any>>({});
+  const generationLocks = useRef<Set<string>>(new Set());
+  
+  // Parent-owned content generation to prevent duplicates
+  const generateContent = useCallback(async (contentType: string, options?: { force?: boolean }) => {
+    if (!lessonData?.lesson?.id) {
+      console.log('🎯 [DEBUG] No lesson data available for content generation');
+      return;
+    }
+
+    const lessonId = lessonData.lesson.id;
+    const lockKey = `${lessonId}-${contentType}`;
+    
+    // Check if generation is already in progress (prevents duplicates)
+    if (generationLocks.current.has(lockKey)) {
+      console.log('🎯 [DEBUG] Generation already in progress for', lockKey, '- skipping duplicate');
+      return;
+    }
+
+    // Acquire lock
+    generationLocks.current.add(lockKey);
+    console.log('🎯 [DEBUG] Starting content generation for', contentType, 'with lock:', lockKey);
+
+    try {
+      setIsGenerating(true);
+      setGenerationProgress(0);
+      
+      setContentStatuses(prev => ({
+        ...prev,
+        [contentType]: { status: 'loading' }
+      }));
+
+      const response = await fetch('/api/smart-teaching/generate-progressive-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lessonId: lessonId,
+          contentType: contentType,
+          learningStyle: learningStyle,
+          forceRegenerate: options?.force || false
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate ${contentType} content`);
+      }
+
+      const result = await response.json();
+      console.log('🎯 [DEBUG] Content generation response for', contentType, ':', result);
+      
+      if (result.success) {
+        setContentStatuses(prev => ({
+          ...prev,
+          [contentType]: { 
+            status: 'loaded', 
+            content: result.data 
+          }
+        }));
+
+        // Update generated content
+        setGeneratedContent((prevContent: any) => {
+          if (contentType === 'text' && result.data.baseContent) {
+            console.log('🎯 [DEBUG] Setting base content (text)');
+            return result.data;
+          } else {
+            const newContent = { ...prevContent, [contentType]: result.data };
+            console.log('🎯 [DEBUG] Merging', contentType, 'content with existing content');
+            return newContent;
+          }
+        });
+
+        setGenerationProgress(100);
+        console.log('✅ [DEBUG] Content generation completed for', contentType);
+      } else {
+        throw new Error(result.error || `Failed to generate ${contentType} content`);
+      }
+    } catch (error) {
+      console.error('❌ [DEBUG] Error generating', contentType, 'content:', error);
+      setContentStatuses(prev => ({
+        ...prev,
+        [contentType]: { 
+          status: 'error', 
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      }));
+    } finally {
+      // Release lock
+      generationLocks.current.delete(lockKey);
+      setIsGenerating(false);
+      setGenerationProgress(null);
+      console.log('🎯 [DEBUG] Released lock for', lockKey);
+    }
+  }, [lessonData?.lesson?.id, learningStyle]);
+
+  // Generate all content types progressively
+  const generateAllContent = useCallback(async (options?: { force?: boolean }) => {
+    if (!lessonData?.lesson?.id) return;
+    
+    console.log('🎯 [DEBUG] Starting progressive content generation for all types');
+    console.log('🎯 [DEBUG] Available content types to generate: text, video, math, diagram, interactive, assessment');
+    
+    try {
+      setIsGenerating(true);
+      setGenerationProgress(0);
+      
+      // Generate text content first (fast)
+      console.log('🎯 [DEBUG] Generating text content...');
+      await generateContent('text', options);
+      setGenerationProgress(20);
+      
+      // Then generate other content types with small delays
+      console.log('🎯 [DEBUG] Scheduling video content generation...');
+      setTimeout(() => generateContent('video', options), 500);
+      setGenerationProgress(40);
+      
+      console.log('🎯 [DEBUG] Scheduling math content generation...');
+      setTimeout(() => generateContent('math', options), 1000);
+      setGenerationProgress(60);
+      
+      console.log('🎯 [DEBUG] Scheduling diagram content generation...');
+      setTimeout(() => generateContent('diagram', options), 1500);
+      setGenerationProgress(80);
+      
+      console.log('🎯 [DEBUG] Scheduling interactive content generation...');
+      setTimeout(() => generateContent('interactive', options), 2000);
+      setGenerationProgress(90);
+      
+      console.log('🎯 [DEBUG] Scheduling assessment content generation...');
+      setTimeout(() => generateContent('assessment', options), 2500);
+      setGenerationProgress(100);
+      
+    } catch (error) {
+      console.error('🎯 [DEBUG] Error in generateAllContent:', error);
+    } finally {
+      setIsGenerating(false);
+      setGenerationProgress(null);
+    }
+  }, [lessonData?.lesson?.id, generateContent]);
   //const [showAssessment, setShowAssessment] = useState(false);
   //const [showAdaptiveTeaching, setShowAdaptiveTeaching] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -126,9 +274,11 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
 
   // Lesson loading functionality
   const loadLessonData = useCallback(async (lessonId: string) => {
+    console.log('🎯 [DEBUG] loadLessonData called with lessonId:', lessonId);
     try {
       setLoading(true);
       setError(null);
+      console.log('🎯 [DEBUG] Fetching lesson data from API...');
       
       const response = await fetch(`/api/smart-teaching/lesson/${lessonId}`);
       
@@ -137,24 +287,85 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       }
       
       const data = await response.json();
+      console.log('🎯 [DEBUG] Lesson data received:', data);
       setLessonData(data.data);
+      console.log('🎯 [DEBUG] Lesson data set in state:', data.data);
       
       // Start smart teaching session
+      console.log('🎯 [DEBUG] Starting smart teaching session...');
       await startSmartTeachingSession(lessonId);
       
     } catch (err) {
+      console.error('🎯 [DEBUG] Error loading lesson data:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+      console.log('🎯 [DEBUG] Lesson loading completed');
     }
   }, [startSmartTeachingSession]);
 
   // Load lesson data when selectedLessonId changes
   useEffect(() => {
-    if (selectedLessonId) {
-      loadLessonData(selectedLessonId);
+    const lockKey = `lesson-load-${selectedLessonId || 'none'}-${componentId}`;
+    
+    // Check if this operation is already in progress (prevents StrictMode duplicates)
+    if (componentLocks.has(lockKey)) {
+      console.log('🎯 [DEBUG] Lesson loading already in progress, skipping duplicate');
+      return;
     }
-  }, [selectedLessonId, loadLessonData]);
+    
+    console.log('🎯 [DEBUG] UnifiedSmartTeachingInterface - selectedLessonId changed:', selectedLessonId);
+    
+    if (selectedLessonId) {
+      console.log('🎯 [DEBUG] Starting to load lesson data for:', selectedLessonId);
+      
+      // Clear any existing content and cache when switching lessons
+      setGeneratedContent(null);
+      setContentStatuses({});
+      
+      componentLocks.add(lockKey);
+      loadLessonData(selectedLessonId).finally(() => {
+        componentLocks.delete(lockKey);
+      });
+    } else {
+      console.log('🎯 [DEBUG] No selectedLessonId, clearing lesson data');
+      setLessonData(null);
+      setGeneratedContent(null);
+      setContentStatuses({});
+    }
+  }, [selectedLessonId, loadLessonData, componentId]);
+
+  // Generate content when lesson data is loaded
+  useEffect(() => {
+    if (lessonData?.lesson?.id && !generatedContent) {
+      const lockKey = `content-gen-${lessonData.lesson.id}-${componentId}`;
+      
+      // Check if content generation is already in progress
+      if (componentLocks.has(lockKey)) {
+        console.log('🎯 [DEBUG] Content generation already in progress, skipping duplicate');
+        return;
+      }
+      
+      console.log('🎯 [DEBUG] Lesson data loaded, starting content generation for:', lessonData.lesson.id);
+      console.log('🎯 [DEBUG] Lesson data:', lessonData);
+      componentLocks.add(lockKey);
+      generateAllContent().finally(() => {
+        componentLocks.delete(lockKey);
+      });
+    }
+  }, [lessonData?.lesson?.id, generatedContent, generateAllContent, componentId]);
+
+  // Cleanup locks when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up any locks for this component instance
+      for (const lockKey of componentLocks) {
+        if (lockKey.includes(componentId)) {
+          componentLocks.delete(lockKey);
+        }
+      }
+    };
+  }, [componentId]);
 
   // Handle lesson selection from parent component
   const _handleLessonSelect = (lessonId: string) => {
@@ -326,16 +537,6 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     }
   };
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-    if (!isFullscreen) {
-      setIsExpanded(true);
-    }
-  };
 
   // Unified tab configuration
   const unifiedTabs = [
@@ -345,13 +546,6 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       icon: Brain,
       color: 'blue',
       description: 'AI-powered adaptive learning'
-    },
-    {
-      id: 'whiteboard',
-      label: 'Whiteboard',
-      icon: FileText,
-      color: 'green',
-      description: 'Interactive drawing and annotation'
     },
     {
       id: 'media',
@@ -380,6 +574,13 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       icon: Zap,
       color: 'red',
       description: 'AI assistant and automation'
+    },
+    {
+      id: 'whiteboard',
+      label: 'Whiteboard',
+      icon: FileText,
+      color: 'green',
+      description: 'Interactive drawing and annotation'
     }
   ];
 
@@ -428,7 +629,18 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   };
 
   const renderSmartTeachingCanvas = () => {
+    const renderLockKey = `render-${componentId}`;
+    
+    // Only log once per render cycle to reduce StrictMode noise
+    if (!componentLocks.has(renderLockKey)) {
+      console.log('🎯 [DEBUG] renderSmartTeachingCanvas called with state:', { loading, error, lessonData, generatedContent });
+      componentLocks.add(renderLockKey);
+      // Clear the lock after a short delay
+      setTimeout(() => componentLocks.delete(renderLockKey), 100);
+    }
+    
     if (loading) {
+      console.log('🎯 [DEBUG] Rendering loading state');
       return (
         <div className="flex items-center justify-center">
           <div className="text-center">
@@ -441,6 +653,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     }
 
     if (error) {
+      console.log('🎯 [DEBUG] Rendering error state:', error);
       return (
         <div className="flex items-center justify-center">
           <div className="text-center text-red-600">
@@ -459,12 +672,18 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     }
 
     if (lessonData) {
+      console.log('🎯 [DEBUG] Rendering ProgressiveContentLoader with lessonData:', lessonData);
       return (
         <div className="h-full overflow-hidden">
-          <EnhancedSmartLearningCanvas
+          <ProgressiveContentLoader
             lessonData={lessonData}
             learningStyle={learningStyle}
-            onContentGenerated={setGeneratedContent}
+            generatedContent={generatedContent}
+            contentStatuses={contentStatuses}
+            isGenerating={isGenerating}
+            generationProgress={generationProgress}
+            onGenerateContent={generateContent}
+            onGenerateAllContent={generateAllContent}
           />
         </div>
       );
@@ -482,8 +701,8 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   };
 
   const renderWhiteboardCanvas = () => {
-    const canvasWidth = isFullscreen ? window.innerWidth - 100 : isExpanded ? 1000 : 600;
-    const canvasHeight = isFullscreen ? window.innerHeight - 200 : isExpanded ? 600 : 400;
+    const canvasWidth = Math.min(800, window.innerWidth - 40);
+    const canvasHeight = Math.min(500, window.innerHeight - 200);
     
     return (
       <div className="relative w-full flex flex-col">
@@ -520,10 +739,13 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   };
 
   const renderMediaHub = () => {
+    console.log('🎯 [DEBUG] renderMediaHub called with generatedContent:', generatedContent);
     // Check if we have video content available
     const hasVideoContent = generatedContent?.video;
+    console.log('🎯 [DEBUG] hasVideoContent:', hasVideoContent);
     
     if (hasVideoContent) {
+      console.log('🎯 [DEBUG] Rendering video content:', hasVideoContent);
       return (
         <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub - Video Content</h3>
@@ -572,58 +794,176 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     );
   };
 
-  const renderInteractiveTools = () => (
-    <div className="w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Interactive Tools</h3>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Calculator className="w-5 h-5 text-blue-500 mb-2" />
-          <h4 className="font-medium">Math Tools</h4>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Globe className="w-5 h-5 text-green-500 mb-2" />
-          <h4 className="font-medium">Simulations</h4>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Target className="w-5 h-5 text-purple-500 mb-2" />
-          <h4 className="font-medium">Activities</h4>
-        </div>
+  const renderInteractiveTools = () => {
+    console.log('🎯 [DEBUG] renderInteractiveTools called with generatedContent:', generatedContent);
+    console.log('🎯 [DEBUG] renderInteractiveTools called with contentStatuses:', contentStatuses);
+    
+    // Check both generatedContent and contentStatuses for content
+    const mathContent = generatedContent?.math || contentStatuses?.math?.content;
+    const diagramContent = generatedContent?.diagram || contentStatuses?.diagram?.content;
+    const interactiveContent = generatedContent?.interactive || contentStatuses?.interactive?.content;
+    
+    console.log('🎯 [DEBUG] Interactive content available:', { mathContent, diagramContent, interactiveContent });
+    
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 sm:p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Interactive Tools</h3>
+        
+        {/* Math Content */}
+        {mathContent && (
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+              <Calculator className="w-5 h-5 text-blue-500 mr-2" />
+              Math Tools
+            </h4>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <EnhancedMathRenderer
+                content={mathContent}
+                learningStyle={learningStyle}
+                onProgress={(progress) => console.log('Math progress:', progress)}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Diagram Content */}
+        {diagramContent && (
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+              <Globe className="w-5 h-5 text-green-500 mr-2" />
+              Diagrams & Visualizations
+            </h4>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <EnhancedDiagramRenderer
+                content={diagramContent}
+                learningStyle={learningStyle}
+                onProgress={(progress) => console.log('Diagram progress:', progress)}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Interactive Content */}
+        {interactiveContent && (
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+              <Target className="w-5 h-5 text-purple-500 mr-2" />
+              Interactive Activities
+            </h4>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <EnhancedInteractiveRenderer
+                content={interactiveContent}
+                learningStyle={learningStyle}
+                onProgress={(progress) => console.log('Interactive progress:', progress)}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Fallback when no content is available */}
+        {!mathContent && !diagramContent && !interactiveContent && (
+          <div className="text-center py-8">
+            <Calculator className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Interactive Content Loading</h4>
+            <p className="text-sm text-gray-500">
+              {lessonData ? 'Interactive tools are being generated...' : 'Select a lesson to view interactive content'}
+            </p>
+            {!lessonData && (
+              <button
+                onClick={() => setActiveTab('smart-teaching')}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Smart Teaching
+              </button>
+            )}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderAssessmentPanel = () => (
-    <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Assessment Center</h3>
-      {lessonData && currentSessionId ? (
-        <SmartAssessmentInterface
-          sessionId={currentSessionId}
-          lessonId={lessonData.lesson.id}
-          onAssessmentComplete={() => {}}
-        />
-      ) : (
-        <div className="text-center text-gray-500">
-          <Award className="w-12 h-12 mx-auto mb-2" />
-          <p>Start a lesson to access assessments</p>
-        </div>
-      )}
-    </div>
-  );
+  const renderAssessmentPanel = () => {
+    console.log('🎯 [DEBUG] renderAssessmentPanel called with generatedContent:', generatedContent);
+    console.log('🎯 [DEBUG] renderAssessmentPanel called with contentStatuses:', contentStatuses);
+    
+    // Check both generatedContent and contentStatuses for content
+    const assessmentContent = generatedContent?.assessment || contentStatuses?.assessment?.content;
+    console.log('🎯 [DEBUG] Assessment content available:', assessmentContent);
+    
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Assessment Center</h3>
+        
+        {/* Generated Assessment Content */}
+        {assessmentContent && (
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+              <Award className="w-5 h-5 text-yellow-500 mr-2" />
+              AI-Generated Assessment
+            </h4>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <EnhancedAssessmentRenderer
+                content={assessmentContent}
+                learningStyle={learningStyle}
+                onProgress={(progress) => console.log('Assessment progress:', progress)}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Smart Assessment Interface */}
+        {lessonData && currentSessionId && (
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+              <Target className="w-5 h-5 text-blue-500 mr-2" />
+              Interactive Assessment
+            </h4>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <SmartAssessmentInterface
+                sessionId={currentSessionId}
+                lessonId={lessonData.lesson.id}
+                onAssessmentComplete={() => {}}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Fallback when no content is available */}
+        {!assessmentContent && (!lessonData || !currentSessionId) && (
+          <div className="text-center py-8">
+            <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Assessment Loading</h4>
+            <p className="text-sm text-gray-500">
+              {lessonData ? 'Assessment content is being generated...' : 'Select a lesson to view assessments'}
+            </p>
+            {!lessonData && (
+              <button
+                onClick={() => setActiveTab('smart-teaching')}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Smart Teaching
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderAITools = () => (
-    <div className="w-full h-full bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-6">
+    <div className="w-full h-full bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-3 sm:p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">AI Assistant</h3>
       {mode === 'student' ? (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2 sm:gap-0">
               <div className="flex items-center">
                 <Brain className="w-5 h-5 text-red-500 mr-2" />
                 <h4 className="font-medium">Personal AI Teacher</h4>
               </div>
               <button
                 onClick={() => setShowAIAssistant(!showAIAssistant)}
-                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors w-full sm:w-auto"
               >
                 {showAIAssistant ? 'Hide Chat' : 'Start Chat'}
               </button>
@@ -644,7 +984,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                     ))
                   )}
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                   <input
                     type="text"
                     placeholder="Ask your AI teacher..."
@@ -663,7 +1003,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
                       }
                     }}
                   />
-                  <button className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <button className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto">
                     Send
                   </button>
                 </div>
@@ -697,47 +1037,50 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
   );
 
   return (
-    <div className="flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
-      <div className="mx-auto flex flex-col">
+    <div className="flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2 sm:p-4 h-full">
+      <div className="mx-auto flex flex-col h-full w-full max-w-fit">
         {/* Unified Header */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 mb-4 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Brain className="w-7 h-7 text-white" />
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 mb-2 sm:mb-4 p-3 sm:p-4 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Brain className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {mode === 'student' ? 'Personal AI Teacher' : 'Unified Smart Teaching Interface'}
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   {lessonData ? `${lessonData.subject?.name} - ${lessonData.topic?.name}` : 
                    mode === 'student' ? 'Your Personal Learning Space' : 'AI-Enhanced Learning Platform'}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-4">
               {mode === 'student' ? (
                 // Student-focused header
                 <>
-                  <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-full text-sm font-medium shadow-sm">
-                    <Target className="w-4 h-4" />
-                    <span>Progress: {personalProgress.lessonsCompleted}/{personalProgress.totalLessons}</span>
+                  <div className="flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-full text-xs sm:text-sm font-medium shadow-sm">
+                    <Target className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Progress: {personalProgress.lessonsCompleted}/{personalProgress.totalLessons}</span>
+                    <span className="sm:hidden">{personalProgress.lessonsCompleted}/{personalProgress.totalLessons}</span>
                   </div>
                   
-                  <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 rounded-full text-sm font-medium shadow-sm">
-                    <TrendingUp className="w-4 h-4" />
-                    <span>Streak: {personalProgress.currentStreak} days</span>
+                  <div className="flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 rounded-full text-xs sm:text-sm font-medium shadow-sm">
+                    <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Streak: {personalProgress.currentStreak} days</span>
+                    <span className="sm:hidden">{personalProgress.currentStreak}d</span>
                   </div>
                   
-                  <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 rounded-full text-sm font-medium shadow-sm">
-                    <Clock className="w-4 h-4" />
-                    <span>Time: {Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
+                  <div className="flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 rounded-full text-xs sm:text-sm font-medium shadow-sm">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Time: {Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
+                    <span className="sm:hidden">{Math.floor(personalProgress.totalTimeSpent / 60)}h</span>
                   </div>
                   
-                  <div className="flex flex-col items-center px-3 py-2 bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 rounded-lg text-sm font-medium shadow-sm min-w-fit">
-                    <label className="text-xs font-medium mb-1">Learning style:</label>
+                  <div className="flex flex-col items-center px-2 sm:px-3 py-2 bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 rounded-lg text-xs sm:text-sm font-medium shadow-sm min-w-fit">
+                    <label className="text-xs font-medium mb-1 hidden sm:block">Learning style:</label>
                     <select
                       value={learningStyle}
                       onChange={(e) => setLearningStyle(e.target.value as any)}
@@ -779,9 +1122,9 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
         </div>
 
         {/* Main Content Grid */}
-        <div className={`flex-1 flex ${isFullscreen ? 'flex-col' : mode === 'student' ? 'flex-col' : 'flex-row'} gap-4 min-h-0`}>
+        <div className={`flex-1 flex ${mode === 'student' ? 'flex-col' : 'flex-col lg:flex-row'} gap-2 sm:gap-4 min-h-0`}>
           {/* Left Sidebar - Controls (Only for teacher mode) */}
-          {!isFullscreen && mode === 'teacher' && (
+          {mode === 'teacher' && (
             <div className="w-64 flex-shrink-0">
               {/* Teacher-focused sidebar */}
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4 mb-4">
@@ -851,69 +1194,48 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
           )}
 
           {/* Main Teaching Area */}
-          <div className={`flex-1 min-h-0 ${isFullscreen ? 'h-screen' : ''}`}>
-            <div 
-              className={`bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/30 transition-all duration-500 h-full flex flex-col ${
-                isExpanded ? 'max-h-[calc(100vh-200px)]' : 'max-h-full'
-              } ${isFullscreen ? 'h-full' : ''}`}
-            >
+          <div className="flex-1 min-h-0">
+            <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/30 transition-all duration-500 h-full flex flex-col">
               {/* Unified Tab Navigation */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-xl">
-                <div className="flex space-x-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-xl">
+                <div className="flex flex-wrap gap-1 sm:space-x-1 sm:gap-0">
                   {unifiedTabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as UnifiedTab)}
-                      className={`px-4 py-2 rounded-xl flex items-center space-x-2 transition-all duration-300 text-sm font-medium ${
+                      className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center space-x-1 sm:space-x-2 transition-all duration-300 text-xs sm:text-sm font-medium ${
                         activeTab === tab.id
                           ? `bg-gradient-to-r from-${tab.color}-100 to-${tab.color}-200 text-${tab.color}-700 shadow-lg transform scale-105`
                           : 'text-gray-600 hover:bg-white hover:text-gray-800 hover:shadow-md'
                       }`}
                       title={tab.description}
                     >
-                      <tab.icon className="w-4 h-4" />
-                      <span>{tab.label}</span>
+                      <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                     </button>
                   ))}
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={toggleExpand}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 transform hover:scale-110"
-                    title="Expand/Collapse"
-                  >
-                    {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                  </button>
-                  
-                  <button
-                    onClick={toggleFullscreen}
-                    className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200 transform hover:scale-110"
-                    title="Fullscreen Mode"
-                  >
-                    <Move className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
 
               {/* Tool Panel (when whiteboard is active) */}
               {activeTab === 'whiteboard' && showToolPanel && (
-                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-100">
-                  <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-100 gap-2 sm:gap-0">
+                  <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
                     {/* Drawing Tools */}
                     <div className="flex space-x-1">
                       {drawingTools.map((tool) => (
                         <button
                           key={tool.id}
                           onClick={() => setSelectedTool(tool.id)}
-                          className={`p-2 rounded-lg transition-all duration-200 ${
+                          className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                             selectedTool === tool.id
                               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-110'
                               : 'text-gray-600 hover:bg-white hover:shadow-md hover:scale-105'
                           }`}
                           title={tool.label}
                         >
-                          <tool.icon className="w-4 h-4" />
+                          <tool.icon className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       ))}
                     </div>
@@ -1080,7 +1402,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
               )}
 
               {/* Content Area */}
-              <div className="flex-1 p-4 min-h-0">
+              <div className="flex-1 p-2 sm:p-4 min-h-0">
                 <div className="h-full rounded-lg">
                   {renderUnifiedCanvas()}
                 </div>
@@ -1089,7 +1411,7 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
           </div>
 
           {/* Right Sidebar - Student Panel (Teacher Mode Only) */}
-          {!isFullscreen && showStudentPanel && mode === 'teacher' && (
+          {showStudentPanel && mode === 'teacher' && (
             <div className="w-64 flex-shrink-0">
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">

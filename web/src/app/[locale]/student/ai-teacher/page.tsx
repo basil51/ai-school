@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import UnifiedSmartTeachingInterface from '@/components/UnifiedSmartTeachingInterface';
 import LessonSelector from '@/components/smart-teaching/LessonSelector';
-//import InteractiveGraph from '@/components/multimodal/InteractiveGraph';
 
+// Module-level lock to prevent duplicate operations in React StrictMode
+const pageLocks = new Set<string>();
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from  "@/components/ui/badge";
@@ -60,9 +61,19 @@ interface Enrollment {
 }
 
 export default function UnifiedSmartTeachingPage() {
+  // Generate unique component instance ID to prevent duplicate operations in StrictMode
+  const componentId = useRef<string>(`page-${Date.now()}-${Math.random()}`).current;
   const [activeTab, setActiveTab] = useState<'learning' | 'courses'>('learning');
   const [showLessonSelector, setShowLessonSelector] = useState(true);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  
+  // Only log once per render cycle to reduce StrictMode noise
+  const logLockKey = `page-log-${componentId}`;
+  if (!pageLocks.has(logLockKey)) {
+    console.log('🎯 [DEBUG] Page component state:', { activeTab, showLessonSelector, selectedLessonId });
+    pageLocks.add(logLockKey);
+    setTimeout(() => pageLocks.delete(logLockKey), 100);
+  }
   
   // Enrollment state
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -132,9 +143,29 @@ export default function UnifiedSmartTeachingPage() {
   };
 
   const handleLessonSelect = (lessonId: string) => {
+    const lockKey = `lesson-select-${lessonId}-${componentId}`;
+    
+    // Check if this lesson selection is already in progress
+    if (pageLocks.has(lockKey)) {
+      console.log('🎯 [DEBUG] Lesson selection already in progress, skipping duplicate');
+      return;
+    }
+    
+    console.log('🎯 [DEBUG] Lesson selected in page.tsx:', lessonId);
+    pageLocks.add(lockKey);
+    
+    // Clear previous lesson selection and reset state
+    if (selectedLessonId && selectedLessonId !== lessonId) {
+      console.log('🎯 [DEBUG] Switching from lesson', selectedLessonId, 'to', lessonId);
+    }
+    
     setSelectedLessonId(lessonId);
     setShowLessonSelector(false);
     setActiveTab('learning'); // Switch to learning tab when lesson is selected
+    console.log('🎯 [DEBUG] Page state updated - selectedLessonId:', lessonId, 'activeTab: learning');
+    
+    // Clear the lock after a short delay
+    setTimeout(() => pageLocks.delete(lockKey), 1000);
   };
 
   return (
@@ -155,47 +186,47 @@ export default function UnifiedSmartTeachingPage() {
       
       <div className="flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-semibold text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
               AI Learning Hub
             </h1>
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-              Phase 2.5 - Unified Interface
-            </span>
             {!geogebraLoaded && (
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm flex items-center gap-1">
+              <span className="px-2 sm:px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm flex items-center gap-1">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                Loading GeoGebra...
+                <span className="hidden sm:inline">Loading GeoGebra...</span>
+                <span className="sm:hidden">Loading...</span>
               </span>
             )}
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             {/* Tab Navigation */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex bg-gray-100 rounded-lg p-1 w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab('learning')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'learning'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Brain className="w-4 h-4 inline mr-2" />
-                Learning
+                <Brain className="w-4 h-4 inline mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Learning</span>
+                <span className="sm:hidden">Learn</span>
               </button>
               <button
                 onClick={() => setActiveTab('courses')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'courses'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <BookOpen className="w-4 h-4 inline mr-2" />
-                Courses
+                <BookOpen className="w-4 h-4 inline mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Courses</span>
+                <span className="sm:hidden">Courses</span>
               </button>
             </div>
             
@@ -203,9 +234,10 @@ export default function UnifiedSmartTeachingPage() {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowLessonSelector(!showLessonSelector)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm whitespace-nowrap"
                 >
-                  {showLessonSelector ? 'Hide' : 'Show'} Lessons
+                  <span className="hidden sm:inline">{showLessonSelector ? 'Hide' : 'Show'} Lessons</span>
+                  <span className="sm:hidden">{showLessonSelector ? 'Hide' : 'Show'}</span>
                 </button>
               </div>
             )}
@@ -214,12 +246,12 @@ export default function UnifiedSmartTeachingPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         {activeTab === 'learning' ? (
           <>
             {/* Lesson Selector Sidebar */}
             {showLessonSelector && (
-            <div className="flex-1 bg-white border-r border-gray-200 flex-shrink-0">
+            <div className="w-full lg:w-80 xl:w-96 bg-white border-r border-gray-200 flex-shrink-0 h-64 lg:h-auto overflow-y-auto">
                 <LessonSelector 
                   onLessonSelect={handleLessonSelect}
                   selectedLessonId={selectedLessonId || undefined}
@@ -228,7 +260,7 @@ export default function UnifiedSmartTeachingPage() {
             )}
 
             {/* Unified Interface */}
-            <div className="flex-2">
+            <div className="flex-1 min-h-0">
               <UnifiedSmartTeachingInterface
                 studentId="demo-student"
                 initialTab="smart-teaching"
@@ -241,8 +273,8 @@ export default function UnifiedSmartTeachingPage() {
           </>
         ) : (
           /* Courses Tab Content */
-          <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-            <div className="mx-auto">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">
+            <div className="mx-auto max-w-fit">
               {/* Current Enrollments */}
               {enrollments.length > 0 && (
                 <Card className="mb-6">
@@ -256,7 +288,7 @@ export default function UnifiedSmartTeachingPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                       {enrollments.map((enrollment) => (
                         <Card key={enrollment.id} className="hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
@@ -322,7 +354,7 @@ export default function UnifiedSmartTeachingPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                       {subjects.map((subject) => {
                         const isEnrolled = enrollments.some(e => e.subject.id === subject.id);
                         const totalLessons = subject.topics.reduce((acc, topic) => acc + topic.lessons.length, 0);

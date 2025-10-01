@@ -9,7 +9,6 @@ import MermaidDiagram from './multimodal/MermaidDiagram';
 import AudioNarrator from './multimodal/AudioNarrator';
 import ProjectileSimulator from './multimodal/ProjectileSimulator';
 import CodePlayground from './multimodal/CodePlayground';
-//import VideoPlayer from './multimodal/VideoPlayer';
 import EnhancedVideoPlayer from './smart-teaching/EnhancedVideoPlayer';
 import InteractiveGraph from './multimodal/InteractiveGraph';
 import ThreeJSVisualizer from './multimodal/ThreeJSVisualizer';

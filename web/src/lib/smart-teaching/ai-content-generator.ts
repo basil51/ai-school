@@ -371,7 +371,23 @@ export type AssessmentContent = z.infer<typeof AssessmentContentSchema>;
 export class SmartTeachingContentGenerator {
   private cache = new Map<string, SmartTeachingContent>();
   private cacheTimestamps = new Map<string, number>();
-  private readonly CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+  private readonly CACHE_DURATION = 48 * 60 * 60 * 1000; // 2 hours
+  
+  // Cache for schema selections to avoid multiple GPT-4o calls
+  private schemaSelectionCache = new Map<string, string[]>();
+  private schemaSelectionTimestamps = new Map<string, number>();
+
+  // Generate a hash from content to ensure unique cache keys
+  private generateContentHash(lessonContent: string, title: string, objectives: string[]): string {
+    const contentString = `${title}-${lessonContent.substring(0, 100)}-${objectives.join(',')}`;
+    let hash = 0;
+    for (let i = 0; i < contentString.length; i++) {
+      const char = contentString.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
 
   async generateContent(
     lessonContent: string,
@@ -384,7 +400,9 @@ export class SmartTeachingContentGenerator {
     lessonId?: string,
     forceRegenerate: boolean = false
   ): Promise<SmartTeachingContent> {
-    const cacheKey = `${lessonId ?? 'no-id'}-${title}-${subject}-${topic}-${difficulty}-${learningStyle}`;
+    // Create a unique cache key that includes lesson ID and content hash to prevent conflicts
+    const contentHash = this.generateContentHash(lessonContent, title, objectives);
+    const cacheKey = `${lessonId || 'no-id'}-${contentHash}-${subject}-${topic}-${difficulty}-${learningStyle}`;
     
     // Check cache first (unless force regenerate)
     if (!forceRegenerate && this.cache.has(cacheKey)) {
@@ -462,62 +480,148 @@ export class SmartTeachingContentGenerator {
     difficulty: string,
     learningStyle: string
   ): Promise<SmartTeachingContent> {
-    console.log('🎯 Starting optimized content generation pipeline...');
-    console.log('[Step 1] detect Required Content Types by GPT-4o');
+    console.log('🎯 Starting PROGRESSIVE content generation pipeline...');
+    console.log('[Step 1] Generate Required Content and text subject ONLY first');
     
-    const requiredTypes = await this.selectSchemas(title,topic, subject, difficulty, learningStyle);
-    console.log('Types by GPT-4o: ',requiredTypes);
+    // STEP 1: Generate only base content (text) first for immediate display
+    const baseContent = {
+      title: title,
+      text: lessonContent,
+      objectives: objectives,
+      keyConcepts: this.extractKeyConcepts(lessonContent),
+      summary: this.generateSummary(lessonContent)
+    };
+
+    const metadata = {
+      difficulty: difficulty,
+      estimatedTime: 30,
+      learningStyle: learningStyle,
+      subject: subject,
+      topic: topic,
+      generatedAt: new Date().toISOString(),
+      version: '1.0',
+      locale: 'en',
+      ssml: false,
+      voice: 'en-US-Standard-A'
+    };
+
+    const constraints = {
+      mustUseContext: true,
+      forbiddenTopics: [],
+      locale: 'en',
+      conceptId: '',
+      conceptTitle: title,
+      canonicalExample: ''
+    };
+
+    // Return minimal content first for immediate display
+    const initialContent: SmartTeachingContent = {
+      baseContent,
+      metadata,
+      constraints
+    };
+
+    console.log('✅ [STEP 1] Base content generated for immediate display');
+    return initialContent;
+  }
+
+  // New method for generating additional content types progressively with caching
+  async generateAdditionalContentType(
+    lessonContent: string,
+    subject: string,
+    topic: string,
+    title: string,
+    objectives: string[],
+    difficulty: string,
+    learningStyle: string,
+    contentType: string,
+    lessonId?: string
+  ): Promise<any> {
+    console.log(`🎯 Generating additional ${contentType} content with caching...`);
     
-    let videoSearchResult = null;
-    console.log('🎥 [STEP 2] if Video exist search for video link by Perplexity');
-    if (requiredTypes.includes('video')) {
-      videoSearchResult = await this.generateStaticVideoContent(subject, topic, title);
-      console.log('🎥 [STEP 2] Video search result:', videoSearchResult);
-    } else {
-      console.log('❌ [STEP 2] No video content found, skipping video addition');
+    // Create cache key for this specific content type that includes lesson ID and content hash
+    const contentHash = this.generateContentHash(lessonContent, title, objectives);
+    const cacheKey = `${lessonId || 'no-id'}-${contentHash}-${subject}-${topic}-${difficulty}-${learningStyle}-${contentType}`;
+    
+    // Check cache first - this prevents expensive API calls
+    if (this.cache.has(cacheKey)) {
+      const timestamp = this.cacheTimestamps.get(cacheKey);
+      if (timestamp && Date.now() - timestamp < this.CACHE_DURATION) {
+        console.log(`✅ Using cached ${contentType} content for ${cacheKey}`);
+        return this.cache.get(cacheKey);
+      } else {
+        this.cache.delete(cacheKey);
+        this.cacheTimestamps.delete(cacheKey);
+      }
     }
     
-
-    //const requiredTypes = this.detectRequiredContentTypes(subject);
-    //console.log(LOG_MESSAGES.requiredContentTypes(subject,requiredTypes));
-    
-    // Optimize content types for learning style
-    //const optimizedTypes = this.optimizeContentTypesForLearningStyle(requiredTypes, learningStyle, subject);
-    //console.log(LOG_MESSAGES.optimizedContentTypes(learningStyle, optimizedTypes));
-    
-    // STEP 3: Generate all other content using GPT-4o (without video)
-    console.log('📝 [STEP 2] Generating other content types via GPT-4o...');
-    const content = await this.generateOptimizedContent(lessonContent, title, objectives, subject, topic, difficulty, learningStyle, requiredTypes);
-    
-    // STEP 3: Add video content
-    if (videoSearchResult) {
-      console.log('🎥 [STEP 3] Adding video content to generated content...');
-      const keyConcepts = this.generateKeyConceptsForSubject(subject, topic);
+    try {
+      // Only make expensive API calls if not in cache
+      const requiredTypes = await this.selectSchemas(title, topic, subject, difficulty, learningStyle);
+      console.log('Required types by GPT-4o: ', requiredTypes);
       
-      content.video = {
-        title: videoSearchResult.title,
-        description: videoSearchResult.description,
-        keyConcepts: keyConcepts,
-        duration: 10,
-        narration: `This video will help you understand ${title} better. Watch carefully and take notes on the key concepts.`,
-        transcript: `This educational video covers ${title}. The instructor will explain the main concepts step by step, making it easy to understand. Key points include: ${keyConcepts.join(', ')}.`,
-        src: videoSearchResult.url,
-        poster: '',
-        isValidUrl: true,
-        license: 'CC-BY'
-      };
-      console.log('✅ [STEP 3] Video content added successfully');
-    } 
-    //const selectSchemas = await this.validateAndEnhanceContent(content, subject, topic, title);
-    
-    
-      // Validate and enhance the generated content
-    //console.log('🔍 [DEBUG] About to validate and enhance content...');
-    //const validatedContent = await this.validateAndEnhanceContent(content, subject, topic, title);
-    //console.log('🔍 [DEBUG] Content validation completed');
-    
-    console.log('✅ Optimized content generation pipeline completed');
-    return content;
+      let generatedContent = null;
+      
+      if (contentType === 'video' && requiredTypes.includes('video')) {
+        console.log('🎥 [CACHED] Searching for video content...');
+        const videoSearchResult = await this.generateStaticVideoContent(subject, topic, title);
+        if (videoSearchResult) {
+          const keyConcepts = this.generateKeyConceptsForSubject(subject, topic);
+          generatedContent = {
+            title: videoSearchResult.title,
+            description: videoSearchResult.description,
+            keyConcepts: keyConcepts,
+            duration: 10,
+            narration: `This video will help you understand ${title} better. Watch carefully and take notes on the key concepts.`,
+            transcript: `This educational video covers ${title}. The instructor will explain the main concepts step by step, making it easy to understand. Key points include: ${keyConcepts.join(', ')}.`,
+            src: videoSearchResult.url,
+            poster: '',
+            isValidUrl: true,
+            license: 'CC-BY'
+          };
+        }
+      } else if (contentType === 'math' && requiredTypes.includes('math')) {
+        console.log('🧮 [CACHED] Generating math content...');
+        generatedContent = await this.generateSpecificContentType(
+          lessonContent,
+          'math' as any,
+          { title, subject, topic, difficulty, learningStyle }
+        );
+      } else if (contentType === 'diagram' && requiredTypes.includes('diagram')) {
+        console.log('📊 [CACHED] Generating diagram content...');
+        generatedContent = await this.generateSpecificContentType(
+          lessonContent,
+          'diagram' as any,
+          { title, subject, topic, difficulty, learningStyle }
+        );
+      } else if (contentType === 'interactive' && requiredTypes.includes('interactive')) {
+        console.log('🎯 [CACHED] Generating interactive content...');
+        generatedContent = await this.generateSpecificContentType(
+          lessonContent,
+          'interactive' as any,
+          { title, subject, topic, difficulty, learningStyle }
+        );
+      } else if (contentType === 'assessment' && requiredTypes.includes('assessment')) {
+        console.log('📝 [CACHED] Generating assessment content...');
+        generatedContent = await this.generateSpecificContentType(
+          lessonContent,
+          'assessment' as any,
+          { title, subject, topic, difficulty, learningStyle }
+        );
+      }
+      
+      // Cache the result to prevent future expensive API calls
+      if (generatedContent) {
+        this.cache.set(cacheKey, generatedContent);
+        this.cacheTimestamps.set(cacheKey, Date.now());
+        console.log(`✅ Cached ${contentType} content for future use`);
+      }
+      
+      return generatedContent;
+    } catch (error) {
+      console.error(`❌ Error generating ${contentType} content:`, error);
+      return null;
+    }
   }
   
   private async selectSchemas(
@@ -527,6 +631,24 @@ export class SmartTeachingContentGenerator {
     difficulty: string,
     learningStyle: string
   ): Promise<string[]> {
+    // Create cache key for schema selection
+    const schemaCacheKey = `${title}-${subject}-${topic}-${difficulty}-${learningStyle}`;
+    
+    // Check cache first to avoid multiple GPT-4o calls
+    if (this.schemaSelectionCache.has(schemaCacheKey)) {
+      const timestamp = this.schemaSelectionTimestamps.get(schemaCacheKey);
+      if (timestamp && Date.now() - timestamp < this.CACHE_DURATION) {
+        console.log('🎯 [CACHED] Using cached schema selection for:', schemaCacheKey);
+        return this.schemaSelectionCache.get(schemaCacheKey)!;
+      } else {
+        // Remove expired cache entry
+        this.schemaSelectionCache.delete(schemaCacheKey);
+        this.schemaSelectionTimestamps.delete(schemaCacheKey);
+      }
+    }
+    
+    console.log('🎯 [GPT-4o] Making schema selection call for:', schemaCacheKey);
+    
   // Utility: dynamic enum from a runtime array (non-empty)
     function enumFrom<T extends string>(vals: readonly T[]) {
       if (!vals.length) throw new Error("Candidates must be non-empty");
@@ -567,9 +689,15 @@ export class SmartTeachingContentGenerator {
         "- Do NOT select anything outside the candidates list."
       ].join("\n")
     });
-    console.log('Selected types by GPT-4o: ',object.selected);
-    console.log('Selected types by GPT-4o: ',object);
-  return object.selected;
+    
+    const selectedTypes = object.selected;
+    console.log('🎯 [GPT-4o] Selected types:', selectedTypes);
+    
+    // Cache the result
+    this.schemaSelectionCache.set(schemaCacheKey, selectedTypes);
+    this.schemaSelectionTimestamps.set(schemaCacheKey, Date.now());
+    
+    return selectedTypes;
   }
 
 
@@ -677,12 +805,12 @@ export class SmartTeachingContentGenerator {
 
   private async generateOptimizedContent(
     lessonContent: string,
-    title: string,
+  title: string,
     objectives: string[],
-    subject: string,
-    topic: string,
-    difficulty: string,
-    learningStyle: string,
+  subject: string,
+  topic: string,
+  difficulty: string,
+  learningStyle: string,
     optimizedTypes: string[]
   ): Promise<SmartTeachingContent> {
     console.log('📝 Generating optimized content with all required types...');
@@ -778,8 +906,8 @@ export class SmartTeachingContentGenerator {
 
   private async validateAndEnhanceContent(
     content: SmartTeachingContent,
-    subject: string,
-    topic: string,
+  subject: string,
+  topic: string,
     title: string
   ): Promise<SmartTeachingContent> {
     console.log('🔍 Stage 4: Validating and enhancing content quality...');
@@ -822,12 +950,12 @@ export class SmartTeachingContentGenerator {
 
   private async generateFallbackMultimodalContent(
     lessonContent: string,
-    title: string,
+  title: string,
     objectives: string[],
-    subject: string,
-    topic: string,
-    difficulty: string,
-    learningStyle: string,
+  subject: string,
+  topic: string,
+  difficulty: string,
+  learningStyle: string,
     requiredTypes: string[]
   ): Promise<SmartTeachingContent> {
     console.log('Generating fallback multimodal content for types:', requiredTypes);
@@ -1516,12 +1644,15 @@ export class SmartTeachingContentGenerator {
   clearCache(): void {
     this.cache.clear();
     this.cacheTimestamps.clear();
+    this.schemaSelectionCache.clear();
+    this.schemaSelectionTimestamps.clear();
   }
 
   clearCacheForLesson(lessonId: string): void {
     const keysToDelete: string[] = [];
     for (const key of this.cache.keys()) {
-      if (key.startsWith(lessonId)) {
+      // Check if the cache key starts with the lesson ID (new format) or contains it (old format)
+      if (key.startsWith(`${lessonId}-`) || key.startsWith(`no-id-`) && key.includes(lessonId)) {
         keysToDelete.push(key);
       }
     }
@@ -1529,11 +1660,31 @@ export class SmartTeachingContentGenerator {
       this.cache.delete(key);
       this.cacheTimestamps.delete(key);
     });
+    
+    // Also clear schema selection cache for this lesson
+    const schemaKeysToDelete: string[] = [];
+    for (const key of this.schemaSelectionCache.keys()) {
+      // Clear schema cache entries that might be related to this lesson
+      // Since schema cache doesn't include lesson ID, we'll clear all for safety
+      schemaKeysToDelete.push(key);
+    }
+    schemaKeysToDelete.forEach(key => {
+      this.schemaSelectionCache.delete(key);
+      this.schemaSelectionTimestamps.delete(key);
+    });
+    
     console.log(LOG_MESSAGES.clearedCacheEntries(keysToDelete.length, lessonId));
+    console.log(`🎯 [DEBUG] Also cleared ${schemaKeysToDelete.length} schema selection cache entries`);
   }
 
   getCacheSize(): number {
     return this.cache.size;
+  }
+
+  // Clear cache for a specific lesson when switching lessons
+  clearCacheForLessonSwitch(lessonId: string): void {
+    console.log(`🎯 [DEBUG] Clearing cache for lesson switch to: ${lessonId}`);
+    this.clearCacheForLesson(lessonId);
   }
 }
 
