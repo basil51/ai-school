@@ -1,1 +1,1 @@
-cd /home/basel/Projects/AI-school/web && npx prisma studio --port 5556
+cd /home/basel/Projects/ai-school/web && npx prisma studio --port 5556

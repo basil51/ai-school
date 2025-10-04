@@ -34,7 +34,7 @@ interface Subject {
   level: string;
   isActive: boolean;
   createdAt: string;
-  topics: Topic[];
+  topics?: Topic[];
   _count: {
     enrollments: number;
   };
@@ -45,7 +45,7 @@ interface Topic {
   name: string;
   description: string;
   order: number;
-  lessons: Lesson[];
+  lessons?: Lesson[];
 }
 
 interface Lesson {
@@ -74,6 +74,15 @@ export default function TeacherCurriculumPage() {
     description: '',
     level: 'high'
   });
+
+  // Topic form state
+  const [showTopicForm, setShowTopicForm] = useState(false);
+  const [selectedSubjectForTopic, setSelectedSubjectForTopic] = useState<string>('');
+  const [topicFormData, setTopicFormData] = useState({
+    name: '',
+    description: ''
+  });
+  const [creatingTopic, setCreatingTopic] = useState(false);
 
   useEffect(() => {
     fetchSubjects();
@@ -106,7 +115,9 @@ export default function TeacherCurriculumPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setSubjects(prev => [...prev, data.subject]);
+        // Ensure the new subject has an empty topics array
+        const newSubject = { ...data.subject, topics: [] };
+        setSubjects(prev => [...prev, newSubject]);
         setShowCreateForm(false);
         setFormData({ subjectName: '', description: '', level: 'high' });
       } else {
@@ -118,6 +129,46 @@ export default function TeacherCurriculumPage() {
       alert('Failed to create subject');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const createTopic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubjectForTopic || !topicFormData.name) {
+      alert('Please select a subject and enter a topic name');
+      return;
+    }
+
+    setCreatingTopic(true);
+
+    try {
+      const response = await fetch('/api/curriculum/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subjectId: selectedSubjectForTopic,
+          name: topicFormData.name,
+          description: topicFormData.description
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Refresh subjects to show the new topic
+        fetchSubjects();
+        setShowTopicForm(false);
+        setSelectedSubjectForTopic('');
+        setTopicFormData({ name: '', description: '' });
+        alert('Topic created successfully!');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to create topic');
+      }
+    } catch (error) {
+      console.error('Error creating topic:', error);
+      alert('Failed to create topic');
+    } finally {
+      setCreatingTopic(false);
     }
   };
 
@@ -133,7 +184,7 @@ export default function TeacherCurriculumPage() {
   };
 
   const getTotalLessons = (subject: Subject) => {
-    return subject.topics.reduce((acc, topic) => acc + topic.lessons.length, 0);
+    return subject.topics?.reduce((acc, topic) => acc + (topic.lessons?.length || 0), 0) || 0;
   };
 
   if (loading) {
@@ -151,26 +202,36 @@ export default function TeacherCurriculumPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BookOpen className="h-8 w-8 text-blue-600" />
-              {dict?.teacher?.curriculum || "Curriculum Management"}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {dict?.teacher?.curriculumDescription || "Create and manage subjects for your students"}
-            </p>
-          </div>
-          <Button 
-            onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            {dict?.teacher?.createSubject || "Create Subject"}
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <BookOpen className="h-8 w-8 text-blue-600" />
+            {dict?.teacher?.curriculum || "Curriculum Management"}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {dict?.teacher?.curriculumDescription || "Create and manage subjects and topics for your students"}
+          </p>
         </div>
 
         <div className="grid gap-6">
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button 
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Subject
+            </Button>
+            <Button 
+              onClick={() => setShowTopicForm(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Topic
+            </Button>
+          </div>
+
           {/* Create Subject Form */}
           {showCreateForm && (
             <Card>
@@ -263,6 +324,102 @@ export default function TeacherCurriculumPage() {
             </Card>
           )}
 
+          {/* Create Topic Form */}
+          {showTopicForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Create New Topic
+                </CardTitle>
+                <CardDescription>
+                  Add a new topic to an existing subject
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={createTopic} className="space-y-4">
+                  <div>
+                    <Label htmlFor="subjectSelect">
+                      Select Subject *
+                    </Label>
+                    <Select 
+                      value={selectedSubjectForTopic} 
+                      onValueChange={setSelectedSubjectForTopic}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subjects.map((subject) => (
+                          <SelectItem key={subject.id} value={subject.id}>
+                            {subject.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="topicName">
+                      Topic Name *
+                    </Label>
+                    <Input
+                      id="topicName"
+                      value={topicFormData.name}
+                      onChange={(e) => setTopicFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Linear Equations, World War II, Photosynthesis"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="topicDescription">
+                      Description
+                    </Label>
+                    <Textarea
+                      id="topicDescription"
+                      value={topicFormData.description}
+                      onChange={(e) => setTopicFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Brief description of the topic"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      type="submit" 
+                      disabled={creatingTopic}
+                      className="flex-1"
+                    >
+                      {creatingTopic ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Topic
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => {
+                        setShowTopicForm(false);
+                        setSelectedSubjectForTopic('');
+                        setTopicFormData({ name: '', description: '' });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Subjects List */}
           <Card>
             <CardHeader>
@@ -317,7 +474,7 @@ export default function TeacherCurriculumPage() {
                             <span className="text-gray-600">
                               {dict?.teacher?.topics || "Topics"}
                             </span>
-                            <span className="font-medium">{subject.topics.length}</span>
+                            <span className="font-medium">{subject.topics?.length || 0}</span>
                           </div>
                           
                           <div className="flex items-center justify-between text-sm">
@@ -382,7 +539,7 @@ export default function TeacherCurriculumPage() {
                   {/* Subject Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{selectedSubject.topics.length}</div>
+                      <div className="text-2xl font-bold text-blue-600">{selectedSubject.topics?.length || 0}</div>
                       <div className="text-sm text-gray-600">{dict?.teacher?.topics || "Topics"}</div>
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -407,7 +564,7 @@ export default function TeacherCurriculumPage() {
                       {dict?.teacher?.curriculumStructure || "Curriculum Structure"}
                     </h3>
                     <div className="space-y-4">
-                      {selectedSubject.topics.map((topic) => (
+                      {selectedSubject.topics?.map((topic) => (
                         <Card key={topic.id} className="border-l-4 border-l-blue-500">
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between mb-3">
@@ -416,12 +573,12 @@ export default function TeacherCurriculumPage() {
                                 <p className="text-sm text-gray-600">{topic.description}</p>
                               </div>
                               <Badge variant="outline">
-                                {topic.lessons.length} {dict?.teacher?.lessons || "lessons"}
+                                {topic.lessons?.length || 0} {dict?.teacher?.lessons || "lessons"}
                               </Badge>
                             </div>
                             
                             <div className="space-y-2">
-                              {topic.lessons.map((lesson) => (
+                              {topic.lessons?.map((lesson) => (
                                 <div key={lesson.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                                   <div className="flex items-center gap-3">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>

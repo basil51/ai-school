@@ -21,7 +21,7 @@ import {
 
 interface InteractiveContent {
   title: string;
-  type: 'code_playground' | 'quiz' | 'drag_drop' | 'timeline' | 'calculator';
+  type?: 'code_playground' | 'quiz' | 'drag_drop' | 'timeline' | 'calculator';
   instructions: string;
   initialCode?: string;
   questions?: Array<{
@@ -48,6 +48,8 @@ export default function EnhancedInteractiveRenderer({
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [code, setCode] = useState(content.initialCode || '');
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [dropZones, setDropZones] = useState<Record<string, string[]>>({});
   const [showResults, setShowResults] = useState(false);
   const [completedModes, setCompletedModes] = useState<Set<string>>(new Set());
 
@@ -93,10 +95,10 @@ export default function EnhancedInteractiveRenderer({
   const renderInstructions = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="text-6xl mb-4">{getInteractiveIcon(content.type)}</div>
+        <div className="text-6xl mb-4">{getInteractiveIcon(content.type || 'default')}</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">{content.title}</h2>
         <Badge variant="outline" className="mb-4">
-          {content.type.replace('_', ' ').toUpperCase()}
+          {content.type?.replace('_', ' ').toUpperCase() || 'INTERACTIVE'}
         </Badge>
       </div>
       
@@ -205,21 +207,177 @@ export default function EnhancedInteractiveRenderer({
     </div>
   );
 
+  const renderDragDrop = () => {
+    // Sample geometric shapes for drag and drop
+    const shapes = [
+      { id: 'circle', name: 'Circle', emoji: '⭕' },
+      { id: 'square', name: 'Square', emoji: '⬜' },
+      { id: 'triangle', name: 'Triangle', emoji: '🔺' },
+      { id: 'rectangle', name: 'Rectangle', emoji: '⬛' }
+    ];
+    
+    const shapeCategories = [
+      { id: 'round', name: 'Round Shapes', description: 'Shapes with curves' },
+      { id: 'angular', name: 'Angular Shapes', description: 'Shapes with straight edges' }
+    ];
+
+    const handleDragStart = (e: React.DragEvent, shapeId: string) => {
+      setDraggedItem(shapeId);
+      e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e: React.DragEvent, categoryId: string) => {
+      e.preventDefault();
+      if (draggedItem) {
+        setDropZones(prev => ({
+          ...prev,
+          [categoryId]: [...(prev[categoryId] || []), draggedItem]
+        }));
+        setDraggedItem(null);
+      }
+    };
+
+    const isCorrect = (shapeId: string, categoryId: string) => {
+      const correctMappings: Record<string, string> = {
+        'circle': 'round',
+        'square': 'angular',
+        'triangle': 'angular',
+        'rectangle': 'angular'
+      };
+      return correctMappings[shapeId] === categoryId;
+    };
+
+    const getScore = () => {
+      let correct = 0;
+      let total = 0;
+      Object.entries(dropZones).forEach(([categoryId, shapeIds]) => {
+        shapeIds.forEach(shapeId => {
+          total++;
+          if (isCorrect(shapeId, categoryId)) {
+            correct++;
+          }
+        });
+      });
+      return { correct, total };
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Drag and Drop Geometric Shapes
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Drag each shape to its correct category
+          </p>
+        </div>
+
+        {/* Shapes to drag */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {shapes.map((shape) => (
+            <div
+              key={shape.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, shape.id)}
+              className={`p-4 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-move hover:border-blue-400 transition-colors ${
+                draggedItem === shape.id ? 'opacity-50' : ''
+              }`}
+            >
+              <div className="text-4xl mb-2">{shape.emoji}</div>
+              <div className="text-sm font-medium">{shape.name}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Drop zones */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {shapeCategories.map((category) => (
+            <div
+              key={category.id}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, category.id)}
+              className={`min-h-[120px] p-6 border-2 border-dashed rounded-lg transition-colors ${
+                dropZones[category.id] 
+                  ? 'border-green-400 bg-green-50' 
+                  : 'border-gray-300 hover:border-blue-400'
+              }`}
+            >
+              <h4 className="font-semibold text-gray-800 mb-2">{category.name}</h4>
+              <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+              
+              {dropZones[category.id] && dropZones[category.id].length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {dropZones[category.id].map((shapeId, index) => {
+                    const shape = shapes.find(s => s.id === shapeId);
+                    return (
+                      <div
+                        key={`${shapeId}-${index}`}
+                        className={`text-center p-2 rounded-lg ${
+                          isCorrect(shapeId, category.id) 
+                            ? 'bg-green-100 border border-green-300' 
+                            : 'bg-red-100 border border-red-300'
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">{shape?.emoji}</div>
+                        <div className="text-xs font-medium">{shape?.name}</div>
+                        {isCorrect(shapeId, category.id) ? (
+                          <div className="text-green-600 text-xs">✓</div>
+                        ) : (
+                          <div className="text-red-600 text-xs">✗</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Score and Reset */}
+        <div className="text-center space-y-4">
+          <div className="text-2xl font-bold text-blue-600 mb-2">
+            Score: {getScore().correct}/{getScore().total}
+          </div>
+          {getScore().total === shapes.length && getScore().correct === shapes.length && (
+            <div className="text-green-600 font-semibold">
+              🎉 Perfect! You've sorted all shapes correctly!
+            </div>
+          )}
+          <Button 
+            onClick={() => setDropZones({})}
+            variant="outline"
+            size="sm"
+          >
+            Reset Game
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const renderInteractive = () => {
-    switch (content.type) {
+    switch (content.type || 'default') {
       case 'code_playground':
         return renderCodePlayground();
       case 'quiz':
         return renderQuiz();
+      case 'drag_drop':
+        return renderDragDrop();
       default:
         return (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">{getInteractiveIcon(content.type)}</div>
+            <div className="text-6xl mb-4">{getInteractiveIcon(content.type || 'default')}</div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {content.type.replace('_', ' ').toUpperCase()} Interactive
+              {content.type?.replace('_', ' ').toUpperCase() || 'INTERACTIVE'} Interactive
             </h3>
             <p className="text-gray-600">
-              Interactive {content.type} component would render here
+              Interactive {content.type || 'default'} component would render here
             </p>
           </div>
         );
@@ -240,7 +398,7 @@ export default function EnhancedInteractiveRenderer({
           <p className="text-gray-600">You&#39;ve completed the interactive activity</p>
         </div>
         
-        {content.type === 'quiz' && (
+        {(content.type || '') === 'quiz' && (
           <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-400">
             <h3 className="font-semibold text-blue-900 mb-3">Quiz Results</h3>
             <div className="text-3xl font-bold text-blue-800 mb-2">

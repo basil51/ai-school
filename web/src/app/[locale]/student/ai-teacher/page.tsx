@@ -91,13 +91,24 @@ export default function UnifiedSmartTeachingPage() {
     }
   }, [activeTab]);
 
+  // Add a refresh function that can be called manually
+  const refreshData = async () => {
+    if (activeTab === 'courses') {
+      await fetchSubjects();
+      await fetchEnrollments();
+    }
+  };
+
   const fetchSubjects = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/curriculum/generate');
       if (response.ok) {
         const data = await response.json();
+        console.log('📚 [DEBUG] Fetched subjects:', data.subjects);
         setSubjects(data.subjects || []);
+      } else {
+        console.error('❌ [DEBUG] Failed to fetch subjects:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching subjects:', error);
@@ -275,6 +286,18 @@ export default function UnifiedSmartTeachingPage() {
           /* Courses Tab Content */
           <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">
             <div className="mx-auto max-w-fit">
+              {/* Refresh Button */}
+              <div className="mb-4 flex justify-end">
+                <Button 
+                  onClick={refreshData}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Loader2 className="h-4 w-4" />
+                  Refresh Courses
+                </Button>
+              </div>
               {/* Current Enrollments */}
               {enrollments.length > 0 && (
                 <Card className="mb-6">

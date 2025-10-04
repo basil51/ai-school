@@ -319,6 +319,14 @@ model RagDocument {
   content   String   @db.Text
   length    Int
   organizationId String?
+  
+  // New fields to connect with curriculum structure
+  subject   String?  // Subject name (e.g., "Mathematics", "Physics")
+  topic     String?  // Topic name (e.g., "Linear Equations", "Newton's Laws")
+  difficulty String? // "beginner", "intermediate", "advanced"
+  learningStyle String? // "visual", "audio", "kinesthetic", "analytical"
+  estimatedTime Int? // Estimated time in minutes
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   
@@ -330,7 +338,7 @@ model RagChunk {
   id        String   @id @default(cuid())
   docId     String
   content   String   @db.Text
-  // embedding Unsupported("vector(1536)") // Temporarily disabled for initial setup
+  embedding Unsupported("vector(1536)") // Vector embeddings for semantic search
   document  RagDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }

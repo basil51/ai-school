@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 export default function SuperAdminLayout({
   children,
@@ -11,15 +12,17 @@ export default function SuperAdminLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   useEffect(() => {
     if (status === 'loading') return;
     
     const userRole = (session as any)?.role;
     if (!session || userRole !== 'super_admin') {
-      router.push('/dashboard');
+      router.push(`/${locale}/dashboard`);
     }
-  }, [session, status, router]);
+  }, [session, status, router, locale]);
 
   if (status === 'loading') {
     return (

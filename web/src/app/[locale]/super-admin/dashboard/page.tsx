@@ -5,35 +5,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 //import { Button } from '@/components/ui/button';
 import { School, Users, BarChart3, Settings, Shield, Globe, Database, Activity } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export default function SuperAdminDashboard() {
+  const params = useParams();
+  const locale = params.locale as string;
+
   const quickActions = [
     {
       title: 'Organizations',
       description: 'Manage all schools and organizations',
       icon: School,
-      href: '/super-admin/organizations',
+      href: `/${locale}/super-admin/organizations`,
       gradient: 'from-purple-500 to-pink-500'
     },
     {
       title: 'All Users',
       description: 'System-wide user management',
       icon: Users,
-      href: '/super-admin/users',
+      href: `/${locale}/super-admin/users`,
       gradient: 'from-green-500 to-emerald-500'
     },
     {
       title: 'Global Analytics',
       description: 'System-wide performance metrics',
       icon: BarChart3,
-      href: '/super-admin/analytics',
+      href: `/${locale}/super-admin/analytics`,
       gradient: 'from-orange-500 to-red-500'
     },
     {
       title: 'System Settings',
       description: 'Configure global system settings',
       icon: Settings,
-      href: '/super-admin/settings',
+      href: `/${locale}/super-admin/settings`,
       gradient: 'from-gray-500 to-gray-700'
     }
   ];

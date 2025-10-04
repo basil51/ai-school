@@ -8,10 +8,15 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
+    const subject = formData.get("subject") as string;
+    const topic = formData.get("topic") as string;
+    const difficulty = formData.get("difficulty") as string;
+    const learningStyle = formData.get("learningStyle") as string;
+    const estimatedTime = formData.get("estimatedTime") as string;
 
-    if (!file || !title) {
+    if (!file || !title || !subject || !topic) {
       return NextResponse.json(
-        { error: "File and title are required" },
+        { error: "File, title, subject, and topic are required" },
         { status: 400 }
       );
     }
@@ -32,12 +37,22 @@ export async function POST(request: NextRequest) {
         title,
         content,
         length,
+        subject: subject || null,
+        topic: topic || null,
+        difficulty: difficulty || null,
+        learningStyle: learningStyle || null,
+        estimatedTime: estimatedTime ? parseInt(estimatedTime) : null,
       },
     });
 
     return NextResponse.json({
       docId: document.id,
       title: document.title,
+      subject: document.subject,
+      topic: document.topic,
+      difficulty: document.difficulty,
+      learningStyle: document.learningStyle,
+      estimatedTime: document.estimatedTime,
       chars: document.length,
     });
   } catch (error) {

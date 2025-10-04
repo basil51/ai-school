@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, 
   Search, 
@@ -387,87 +388,122 @@ export default function SuperAdminUsersPage() {
         {/* Search and Filters */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Search users by name, email, or organization..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+            <div className="space-y-4">
+              {/* Search Bar - Full Width */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search users by name, email, or organization..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+              
+              {/* Filter Dropdowns - Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Role Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Role</label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="teacher">Teachers</SelectItem>
+                      <SelectItem value="student">Students</SelectItem>
+                      <SelectItem value="admin">Admins</SelectItem>
+                      <SelectItem value="super_admin">Super Admins</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Organization Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Organization</label>
+                  <Select value={selectedOrganization} onValueChange={setSelectedOrganization}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Organizations</SelectItem>
+                      {organizations.map(org => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedRole === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('all')}
-                >
-                  All Roles
-                </Button>
-                <Button
-                  variant={selectedRole === 'teacher' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('teacher')}
-                >
-                  Teachers
-                </Button>
-                <Button
-                  variant={selectedRole === 'student' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('student')}
-                >
-                  Students
-                </Button>
-                <Button
-                  variant={selectedRole === 'admin' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('admin')}
-                >
-                  Admins
-                </Button>
-                <Button
-                  variant={selectedRole === 'super_admin' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('super_admin')}
-                >
-                  Super Admins
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedOrganization === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedOrganization('all')}
-                >
-                  All Organizations
-                </Button>
-                {organizations.map(org => (
-                  <Button
-                    key={org.id}
-                    variant={selectedOrganization === org.id ? 'default' : 'outline'}
-                    onClick={() => setSelectedOrganization(org.id)}
+
+              {/* Active Filters Display */}
+              {(selectedRole !== 'all' || selectedOrganization !== 'all' || selectedStatus !== 'all') && (
+                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                  <span className="text-sm text-gray-600">Active filters:</span>
+                  {selectedRole !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Role: {selectedRole}
+                      <button 
+                        onClick={() => setSelectedRole('all')}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  )}
+                  {selectedOrganization !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Org: {organizations.find(org => org.id === selectedOrganization)?.name}
+                      <button 
+                        onClick={() => setSelectedOrganization('all')}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  )}
+                  {selectedStatus !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Status: {selectedStatus}
+                      <button 
+                        onClick={() => setSelectedStatus('all')}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setSelectedRole('all');
+                      setSelectedOrganization('all');
+                      setSelectedStatus('all');
+                    }}
+                    className="text-xs"
                   >
-                    {org.name}
+                    Clear all
                   </Button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedStatus === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('all')}
-                >
-                  All Status
-                </Button>
-                <Button
-                  variant={selectedStatus === 'active' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('active')}
-                >
-                  Active
-                </Button>
-                <Button
-                  variant={selectedStatus === 'inactive' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('inactive')}
-                >
-                  Inactive
-                </Button>
-              </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

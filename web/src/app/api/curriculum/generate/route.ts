@@ -212,6 +212,8 @@ export async function GET(req: NextRequest) {
 
     // Use provided organizationId or user's organization
     const targetOrgId = organizationId || user.organizationId;
+    
+    console.log('🔍 [DEBUG] Fetching subjects for organization:', targetOrgId, 'User:', user.id);
 
     const subjects = await prisma.subject.findMany({
       where: {
@@ -237,6 +239,8 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { name: 'asc' }
     });
+
+    console.log('📚 [DEBUG] Found subjects:', subjects.map(s => ({ id: s.id, name: s.name, topics: s.topics.length })));
 
     return NextResponse.json({ subjects });
 

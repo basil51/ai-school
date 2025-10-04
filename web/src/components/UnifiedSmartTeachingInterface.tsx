@@ -13,7 +13,7 @@ const componentLocks = new Set<string>();
 import { 
   Brain, Target, Settings, Users, MessageCircle, FileText, Image, Calculator, Globe, Play, 
   Video, VideoOff, Mic, MicOff, Camera, Award, Zap, Plus, Minus, RotateCcw,
-  Download, Save, MousePointer, TrendingUp, Clock, BarChart3
+  Download, Save, MousePointer, TrendingUp, Clock, BarChart3, Loader2
 } from 'lucide-react';
 
 
@@ -322,6 +322,18 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       // Clear any existing content and cache when switching lessons
       setGeneratedContent(null);
       setContentStatuses({});
+      setIsGenerating(false);
+      setGenerationProgress(null);
+      
+      // Reset all content statuses to loading state for new lesson
+      setContentStatuses({
+        text: { status: 'loading' },
+        video: { status: 'loading' },
+        math: { status: 'loading' },
+        diagram: { status: 'loading' },
+        interactive: { status: 'loading' },
+        assessment: { status: 'loading' }
+      });
       
       componentLocks.add(lockKey);
       loadLessonData(selectedLessonId).finally(() => {
@@ -332,6 +344,8 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       setLessonData(null);
       setGeneratedContent(null);
       setContentStatuses({});
+      setIsGenerating(false);
+      setGenerationProgress(null);
     }
   }, [selectedLessonId, loadLessonData, componentId]);
 
@@ -742,7 +756,8 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
     console.log('🎯 [DEBUG] renderMediaHub called with generatedContent:', generatedContent);
     // Check if we have video content available
     const hasVideoContent = generatedContent?.video;
-    console.log('🎯 [DEBUG] hasVideoContent:', hasVideoContent);
+    const videoStatus = contentStatuses?.video?.status;
+    console.log('🎯 [DEBUG] hasVideoContent:', hasVideoContent, 'videoStatus:', videoStatus);
     
     if (hasVideoContent) {
       console.log('🎯 [DEBUG] Rendering video content:', hasVideoContent);
@@ -770,6 +785,38 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
       );
     }
     
+    // Show loading state when video content is being generated
+    if (videoStatus === 'loading' || (lessonData && !hasVideoContent)) {
+      return (
+        <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub</h3>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Loader2 className="w-16 h-16 text-orange-500 mx-auto mb-4 animate-spin" />
+              <h4 className="text-lg font-medium text-gray-600 mb-2">Generating Video Content</h4>
+              <p className="text-sm text-gray-500">
+                Creating personalized video content for this lesson...
+              </p>
+              {generationProgress !== null && (
+                <div className="mt-4 w-64 mx-auto">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Progress</span>
+                    <span>{Math.round(generationProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${generationProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="w-full h-full bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Media Hub</h3>
@@ -778,16 +825,14 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
             <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h4 className="text-lg font-medium text-gray-600 mb-2">No Video Content Available</h4>
             <p className="text-sm text-gray-500">
-              {lessonData ? 'Video content is being generated...' : 'Select a lesson to view video content'}
+              Select a lesson to view video content
             </p>
-            {!lessonData && (
-              <button
-                onClick={() => setActiveTab('smart-teaching')}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Go to Smart Teaching
-              </button>
-            )}
+            <button
+              onClick={() => setActiveTab('smart-teaching')}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Smart Teaching
+            </button>
           </div>
         </div>
       </div>
@@ -860,22 +905,45 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
           </div>
         )}
         
-        {/* Fallback when no content is available */}
-        {!mathContent && !diagramContent && !interactiveContent && (
+        {/* Show loading state when content is being generated */}
+        {!mathContent && !diagramContent && !interactiveContent && lessonData && (
+          <div className="text-center py-8">
+            <Loader2 className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-spin" />
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Generating Interactive Content</h4>
+            <p className="text-sm text-gray-500">
+              Creating personalized interactive tools for this lesson...
+            </p>
+            {generationProgress !== null && (
+              <div className="mt-4 w-64 mx-auto">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Progress</span>
+                  <span>{Math.round(generationProgress)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${generationProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Fallback when no lesson is selected */}
+        {!mathContent && !diagramContent && !interactiveContent && !lessonData && (
           <div className="text-center py-8">
             <Calculator className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-600 mb-2">Interactive Content Loading</h4>
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Interactive Content</h4>
             <p className="text-sm text-gray-500">
-              {lessonData ? 'Interactive tools are being generated...' : 'Select a lesson to view interactive content'}
+              Select a lesson to view interactive content
             </p>
-            {!lessonData && (
-              <button
-                onClick={() => setActiveTab('smart-teaching')}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Go to Smart Teaching
-              </button>
-            )}
+            <button
+              onClick={() => setActiveTab('smart-teaching')}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Smart Teaching
+            </button>
           </div>
         )}
       </div>
@@ -928,22 +996,45 @@ const UnifiedSmartTeachingInterface: React.FC<UnifiedInterfaceProps> = ({
           </div>
         )}
         
-        {/* Fallback when no content is available */}
-        {!assessmentContent && (!lessonData || !currentSessionId) && (
+        {/* Show loading state when content is being generated */}
+        {!assessmentContent && lessonData && !currentSessionId && (
+          <div className="text-center py-8">
+            <Loader2 className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-spin" />
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Generating Assessment Content</h4>
+            <p className="text-sm text-gray-500">
+              Creating personalized assessment questions for this lesson...
+            </p>
+            {generationProgress !== null && (
+              <div className="mt-4 w-64 mx-auto">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Progress</span>
+                  <span>{Math.round(generationProgress)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${generationProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Fallback when no lesson is selected */}
+        {!assessmentContent && !lessonData && (
           <div className="text-center py-8">
             <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-600 mb-2">Assessment Loading</h4>
+            <h4 className="text-lg font-medium text-gray-600 mb-2">Assessment Center</h4>
             <p className="text-sm text-gray-500">
-              {lessonData ? 'Assessment content is being generated...' : 'Select a lesson to view assessments'}
+              Select a lesson to view assessments
             </p>
-            {!lessonData && (
-              <button
-                onClick={() => setActiveTab('smart-teaching')}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Go to Smart Teaching
-              </button>
-            )}
+            <button
+              onClick={() => setActiveTab('smart-teaching')}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Smart Teaching
+            </button>
           </div>
         )}
       </div>

@@ -5,56 +5,59 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 //import { Button } from '@/components/ui/button';
 import { BookOpen, ClipboardCheck, Users, BarChart3, FileText, MessageSquare, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export default function TeacherDashboard() {
+  const params = useParams();
+  const locale = params.locale as string;
   const quickActions = [
     {
       title: 'My Subjects',
       description: 'Manage your curriculum and lessons',
       icon: BookOpen,
-      href: '/teacher/curriculum',
+      href: `/${locale}/teacher/curriculum`,
       gradient: 'from-violet-500 to-purple-500'
     },
     {
       title: 'Assessments',
       description: 'Create and manage tests',
       icon: ClipboardCheck,
-      href: '/teacher/assessments',
+      href: `/${locale}/teacher/assessments`,
       gradient: 'from-yellow-500 to-orange-500'
     },
     {
       title: 'My Students',
       description: 'View and manage your students',
       icon: Users,
-      href: '/teacher/students',
+      href: `/${locale}/teacher/students`,
       gradient: 'from-green-500 to-teal-500'
     },
     {
       title: 'Class Progress',
       description: 'Monitor student performance',
       icon: BarChart3,
-      href: '/teacher/progress',
+      href: `/${locale}/teacher/progress`,
       gradient: 'from-pink-500 to-rose-500'
     },
     {
       title: 'Upload Content',
       description: 'Add materials to RAG system',
       icon: FileText,
-      href: '/teacher/rag',
+      href: `/${locale}/teacher/rag`,
       gradient: 'from-indigo-500 to-purple-500'
     },
     {
       title: 'Student Chat',
       description: 'Communicate with students',
       icon: MessageSquare,
-      href: '/teacher/chat',
+      href: `/${locale}/teacher/chat`,
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
       title: 'Adaptive Teaching',
       description: 'AI-powered teaching insights',
       icon: Sparkles,
-      href: '/teacher/adaptive-teaching',
+      href: `/${locale}/teacher/adaptive-teaching`,
       gradient: 'from-purple-500 to-pink-500'
     }
   ];

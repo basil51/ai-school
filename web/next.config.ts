@@ -1,4 +1,3 @@
-import { tr } from "date-fns/locale";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -6,9 +5,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  turbopack: {
-    root: "/Users/baseljerjawi/Projects/AI-School/ai-school/web",
-  },
+  // Removed turbopack config to avoid path issues
 };
 
 export default nextConfig;

@@ -36,7 +36,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -68,14 +70,14 @@ export default function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
               <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-4 h-auto">
-                <Link href="/login" className="flex items-center gap-2">
+                <Link href={`/${locale}/login`} className="flex items-center gap-2">
                   Start Learning Today
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               
               <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white/10 text-lg px-8 py-4 h-auto">
-                <Link href="/demo">
+                <Link href={`/${locale}/demo`}>
                   <PlayCircle className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Link>
@@ -507,14 +509,14 @@ export default function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
               <Button size="lg" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-8 py-4 h-auto">
-                <Link href="/login" className="flex items-center gap-2">
+                <Link href={`/${locale}/login`} className="flex items-center gap-2">
                   Get Started Free
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               
               <Button size="lg" variant="outline" asChild className="text-lg px-8 py-4 h-auto">
-                <Link href="/contact">
+                <Link href={`/${locale}/contact`}>
                   Contact Sales
                 </Link>
               </Button>

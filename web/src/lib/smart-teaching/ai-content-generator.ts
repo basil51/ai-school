@@ -816,7 +816,7 @@ export class SmartTeachingContentGenerator {
     console.log('📝 Generating optimized content with all required types...');
     
     const subjectGuidelines = getSubjectSpecificGuidelines(subject);
-    const learningStyleGuidelines = getLearningStyleGuidelines(learningStyle);
+    const learningStyleGuidelines: string = getLearningStyleGuidelines(learningStyle);
     const contentTypeInstructions = getContentTypeInstructions(optimizedTypes, title);
     const systemPrompt = buildOptimizedSystemPrompt(subject, topic, title, difficulty, learningStyle, optimizedTypes, subjectGuidelines, learningStyleGuidelines, contentTypeInstructions);
     
