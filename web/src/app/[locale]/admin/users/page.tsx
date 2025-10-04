@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, 
   Search, 
@@ -293,10 +294,40 @@ export default function AdminUsersPage() {
           </Card>
         </div>
 
-        {/* Search and Filters */}
+        {/* Filters and Search */}
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row gap-4">
+              {/* Filters */}
+              <div className="flex gap-4">
+                <div className="min-w-[150px]">
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="teacher">Teachers</SelectItem>
+                      <SelectItem value="student">Students</SelectItem>
+                      <SelectItem value="admin">Admins</SelectItem>
+                      <SelectItem value="guardian">Guardians</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="min-w-[150px]">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {/* Search */}
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -307,58 +338,6 @@ export default function AdminUsersPage() {
                     className="pl-10"
                   />
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedRole === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('all')}
-                >
-                  All Roles
-                </Button>
-                <Button
-                  variant={selectedRole === 'teacher' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('teacher')}
-                >
-                  Teachers
-                </Button>
-                <Button
-                  variant={selectedRole === 'student' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('student')}
-                >
-                  Students
-                </Button>
-                <Button
-                  variant={selectedRole === 'admin' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('admin')}
-                >
-                  Admins
-                </Button>
-                <Button
-                  variant={selectedRole === 'guardian' ? 'default' : 'outline'}
-                  onClick={() => setSelectedRole('guardian')}
-                >
-                  Guardians
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedStatus === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('all')}
-                >
-                  All Status
-                </Button>
-                <Button
-                  variant={selectedStatus === 'active' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('active')}
-                >
-                  Active
-                </Button>
-                <Button
-                  variant={selectedStatus === 'inactive' ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus('inactive')}
-                >
-                  Inactive
-                </Button>
               </div>
             </div>
           </CardContent>

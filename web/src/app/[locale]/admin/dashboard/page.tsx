@@ -5,63 +5,66 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, BookOpen, BarChart3, Settings, MessageSquare, FileText, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export default function AdminDashboard() {
+  const params = useParams();
+  const locale = params.locale as string;
   const quickActions = [
     {
       title: 'Manage Users',
       description: 'Add, edit, and manage users',
       icon: Users,
-      href: '/admin/users',
+      href: `/${locale}/admin/users`,
       gradient: 'from-green-500 to-emerald-500'
     },
     {
       title: 'Curriculum',
       description: 'Manage school curriculum',
       icon: BookOpen,
-      href: '/admin/curriculum',
+      href: `/${locale}/admin/curriculum`,
       gradient: 'from-violet-500 to-purple-500'
     },
     {
       title: 'School Analytics',
       description: 'View performance metrics',
       icon: BarChart3,
-      href: '/admin/analytics',
+      href: `/${locale}/admin/analytics`,
       gradient: 'from-orange-500 to-red-500'
     },
     {
       title: 'School Settings',
       description: 'Configure school settings',
       icon: Settings,
-      href: '/admin/settings',
+      href: `/${locale}/admin/settings`,
       gradient: 'from-gray-500 to-gray-700'
     },
     {
       title: 'Documents',
       description: 'Manage school documents',
       icon: FileText,
-      href: '/admin/documents',
+      href: `/${locale}/admin/documents`,
       gradient: 'from-indigo-500 to-purple-500'
     },
     {
       title: 'Guardians',
       description: 'Manage parent relationships',
       icon: Shield,
-      href: '/admin/guardians',
+      href: `/${locale}/admin/guardians`,
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
       title: 'Evaluations',
       description: 'Review and manage evaluations',
       icon: BarChart3,
-      href: '/admin/evaluations',
+      href: `/${locale}/admin/evaluations`,
       gradient: 'from-pink-500 to-rose-500'
     },
     {
       title: 'Chat Management',
       description: 'Monitor communications',
       icon: MessageSquare,
-      href: '/admin/chat',
+      href: `/${locale}/admin/chat`,
       gradient: 'from-purple-500 to-pink-500'
     }
   ];
