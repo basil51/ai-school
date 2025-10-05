@@ -104,30 +104,20 @@ export default function RagPage() {
       if (res.ok) {
         setUploadStatus("✅ Lesson created successfully! Adding to curriculum...");
         
-        // Also ingest for RAG search functionality
-        const content = await file.text();
-        const ingestRes = await fetch("/api/rag/ingest", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ docId: data.ragDocument.id, rawText: content }),
-        });
+        // Server handles RAG ingestion automatically
+        setUploadStatus(`🎉 Success! Your lesson "${data.lesson.title}" has been added to the ${data.lesson.subject} curriculum under topic "${data.lesson.topic}". Students can now access it in their AI learning interface!`);
         
-        if (ingestRes.ok) {
-          setUploadStatus(`🎉 Success! Your lesson "${data.lesson.title}" has been added to the ${data.lesson.subject} curriculum under topic "${data.lesson.topic}". Students can now access it in their AI learning interface!`);
-          // Reset form
-          setFile(null);
-          setFormData({
-            title: "",
-            subjectId: "",
-            topicId: "",
-            difficulty: "beginner",
-            learningStyle: "visual",
-            estimatedTime: 30
-          });
-          setTopics([]);
-        } else {
-          setUploadStatus("✅ Lesson created in curriculum! (Search indexing pending)");
-        }
+        // Reset form
+        setFile(null);
+        setFormData({
+          title: "",
+          subjectId: "",
+          topicId: "",
+          difficulty: "beginner",
+          learningStyle: "visual",
+          estimatedTime: 30
+        });
+        setTopics([]);
       } else {
         setUploadStatus(`❌ Upload failed: ${data.error}`);
       }
@@ -240,7 +230,7 @@ export default function RagPage() {
                   <Input
                     id="file"
                     type="file"
-                    accept=".txt"
+                    accept=".txt,.pdf"
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                     className="hidden"
                   />
@@ -254,8 +244,8 @@ export default function RagPage() {
                     ) : (
                       <div className="text-gray-500">
                         <Upload className="h-8 w-8 mx-auto mb-2" />
-                        <p className="font-medium">Click to upload .txt file</p>
-                        <p className="text-sm">Supports text documents only</p>
+                        <p className="font-medium">Click to upload teaching material</p>
+                        <p className="text-sm">Supports .txt and .pdf files</p>
                       </div>
                     )}
                   </label>

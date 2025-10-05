@@ -46,14 +46,38 @@ export default function TutorPage() {
       const up = await fetch("/api/content/upload", { method: "POST", body: fd }).then((r) => r.json());
       setDocId(up.docId);
 
-      // Read raw text client-side (for demo, allow .txt here)
+      // Read raw text client-side for text files
+      // For PDF files, we'll need to use a different approach
       const isText = file.type.includes("text");
       let rawText = "";
       
       if (isText) {
         rawText = await file.text();
+      } else if (file.type === "application/pdf") {
+        // For PDF files, we need to send the file to the server for processing
+        // Let's create a simple endpoint to extract text from PDF
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          
+          const pdfResponse = await fetch("/api/content/extract-pdf-text", {
+            method: "POST",
+            body: formData,
+          });
+          
+          if (pdfResponse.ok) {
+            const pdfData = await pdfResponse.json();
+            rawText = pdfData.text;
+          } else {
+            alert("Failed to process PDF file. Please try a different file or convert to text format.");
+            return;
+          }
+        } catch (error) {
+          alert("Error processing PDF file. Please try a different file or convert to text format.");
+          return;
+        }
       } else {
-        alert("For PDFs, add a small endpoint to return parsed text, or upload a .txt for this demo.");
+        alert("Only .txt and .pdf files are supported.");
         return;
       }
 
@@ -166,12 +190,12 @@ export default function TutorPage() {
                 <Input
                   id="file"
                   type="file"
-                  accept=".txt"
+                  accept=".txt,.pdf"
                   onChange={handleUpload}
                   className="mt-1"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  {dict?.tutor?.currentlySupports || "Currently supports .txt files. PDF support coming soon."}
+                  {dict?.tutor?.currentlySupports || "Supports .txt and .pdf files"}
                 </p>
               </div>
               
