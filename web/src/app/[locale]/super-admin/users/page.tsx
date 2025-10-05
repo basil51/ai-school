@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,27 @@ export default function SuperAdminUsersPage() {
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedOrganization, setSelectedOrganization] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [organizations, setOrganizations] = useState<Array<{ id: string; name: string; location?: string }>>([]);
+  const [userItems, setUserItems] = useState<Array<{
+    id: string | number;
+    name: string;
+    email: string;
+    avatar?: string;
+    role: string;
+    status: string;
+    organization: string;
+    organizationId: string | null;
+    lastLogin?: string;
+    joinDate?: string;
+    subjects: string[];
+    students: number | null;
+    phone?: string;
+    department?: string;
+    location?: string;
+  }>>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [total, setTotal] = useState(0);
 
   // Mock data for all users across organizations
   const users = [
@@ -197,21 +218,60 @@ export default function SuperAdminUsersPage() {
     }
   ];
 
-  const organizations = [
-    { id: 'org-1', name: 'Al-Noor School', users: 6, location: 'Riyadh' },
-    { id: 'org-2', name: 'International School', users: 2, location: 'Jeddah' },
-    { id: 'org-3', name: 'Premium Academy', users: 1, location: 'Dammam' }
-  ];
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const res = await fetch('/api/super-admin/organizations');
+        if (!res.ok) return;
+        const data = await res.json();
+        const mapped = (data || []).map((o: any) => ({ id: o.id, name: o.name, location: o.domain || '' }));
+        setOrganizations(mapped);
+      } catch (e) {
+        // silent fail for now
+      }
+    };
+    fetchOrganizations();
+  }, []);
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.organization.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'all' || user.role === selectedRole;
-    const matchesOrg = selectedOrganization === 'all' || user.organizationId === selectedOrganization;
-    const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus;
-    return matchesSearch && matchesRole && matchesOrg && matchesStatus;
-  });
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('pageSize', String(pageSize));
+        if (selectedRole !== 'all') params.set('role', selectedRole);
+        if (selectedOrganization !== 'all') params.set('organizationId', selectedOrganization);
+        if (searchTerm) params.set('search', searchTerm);
+        const res = await fetch(`/api/super-admin/users?${params.toString()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const mapped = (data.items || []).map((u: any) => ({
+          id: u.id,
+          name: u.name || u.email,
+          email: u.email,
+          avatar: '',
+          role: u.role,
+          status: 'active',
+          organization: u.organization?.name || '—',
+          organizationId: u.organizationId || null,
+          lastLogin: '',
+          joinDate: new Date(u.createdAt).toISOString().slice(0, 10),
+          subjects: [],
+          students: null,
+          phone: '',
+          department: '',
+          location: '',
+        }));
+        setUserItems(mapped);
+        setTotal(data.total || 0);
+      } catch (e) {
+        // silent fail for now
+      }
+    };
+    fetchUsers();
+  }, [page, pageSize, selectedRole, selectedOrganization, searchTerm]);
+
+  const filteredUsers = userItems; // now filtered server-side
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -287,13 +347,13 @@ export default function SuperAdminUsersPage() {
         </div>
 
         {/* Global Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-xl font-bold text-gray-900">{globalStats.totalUsers}</p>
+                      <p className="text-xl font-bold text-gray-900">{total}</p>
                 </div>
                 <Users className="w-6 h-6 text-gray-600" />
               </div>
@@ -454,7 +514,7 @@ export default function SuperAdminUsersPage() {
               </div>
 
               {/* Active Filters Display */}
-              {(selectedRole !== 'all' || selectedOrganization !== 'all' || selectedStatus !== 'all') && (
+              {(selectedRole !== 'all' || selectedOrganization !== 'all' || selectedStatus !== 'all' || searchTerm) && (
                 <div className="flex flex-wrap gap-2 pt-2 border-t">
                   <span className="text-sm text-gray-600">Active filters:</span>
                   {selectedRole !== 'all' && (
@@ -490,6 +550,17 @@ export default function SuperAdminUsersPage() {
                       </button>
                     </Badge>
                   )}
+                  {searchTerm && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Search: {searchTerm}
+                      <button 
+                        onClick={() => setSearchTerm('')}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  )}
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -497,6 +568,7 @@ export default function SuperAdminUsersPage() {
                       setSelectedRole('all');
                       setSelectedOrganization('all');
                       setSelectedStatus('all');
+                      setSearchTerm('');
                     }}
                     className="text-xs"
                   >
@@ -595,12 +667,47 @@ export default function SuperAdminUsersPage() {
                 </Card>
               ))}
             </div>
+            {/* Pagination controls */}
+            <div className="flex items-center justify-between pt-2">
+              <div className="text-sm text-gray-600">
+                Page {page} of {Math.max(1, Math.ceil(total / pageSize))}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= Math.ceil(total / pageSize)}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Next
+                </Button>
+                <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setPage(1); }}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue placeholder="Page size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 / page</SelectItem>
+                    <SelectItem value="20">20 / page</SelectItem>
+                    <SelectItem value="50">50 / page</SelectItem>
+                    <SelectItem value="100">100 / page</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="organizations" className="space-y-4">
             <div className="grid gap-4">
               {organizations.map((org) => {
-                const orgUsers = users.filter(u => u.organizationId === org.id);
+                const orgUsers = userItems.filter(u => u.organizationId === org.id);
                 return (
                   <Card key={org.id}>
                     <CardHeader>

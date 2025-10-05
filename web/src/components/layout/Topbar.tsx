@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { locales, Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/useTranslations";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -34,6 +35,7 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
   const homeHref = session ? `/${currentLocale}/dashboard` : `/${currentLocale}`;
   const userRole = (session as any)?.role;
   const { dict } = useTranslations();
+  const { organization, loading: orgLoading } = useOrganization();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [_searchOpen, _setSearchOpen] = useState(false);
@@ -84,9 +86,20 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
-              {currentLocale === 'ar' ? 'أكاديمية اجواء العلم بالذكاء الصناعي' : 'AI Academy'}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+                {currentLocale === 'ar' ? 'أكاديمية اجواء العلم بالذكاء الصناعي' : 'AI Academy'}
+              </span>
+              {/* Organization Name - only show for authenticated users with organization */}
+              {session && organization && userRole !== 'super_admin' && (
+                <div className="flex items-center gap-1">
+                  <Building2 className="w-3 h-3 text-gray-500" />
+                  <span className="text-xs text-gray-600 font-medium truncate max-w-[200px]">
+                    {organization.name}
+                  </span>
+                </div>
+              )}
+            </div>
           </Link>
         </div>
 
