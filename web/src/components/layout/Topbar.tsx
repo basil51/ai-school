@@ -178,10 +178,10 @@ export default function Topbar({ sidebarOpen, onSidebarToggle }: HeaderProps) {
               onMouseLeave={(e) => {
                 // Check if mouse is moving to the dropdown menu
                 const relatedTarget = e.relatedTarget as HTMLElement;
-                if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                if (!relatedTarget || !e.currentTarget?.contains(relatedTarget)) {
                   // Add a small delay to allow mouse to move to dropdown
                   setTimeout(() => {
-                    if (!e.currentTarget.querySelector(':hover')) {
+                    if (e.currentTarget && !e.currentTarget.querySelector(':hover')) {
                       setIsUserDropdownOpen(false);
                     }
                   }, 100);

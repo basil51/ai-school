@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
@@ -43,6 +43,19 @@ export default function RagPage() {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [topics, setTopics] = useState<any[]>([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
+
+  // Book upload state
+  const [bookFile, setBookFile] = useState<File | null>(null);
+  const [bookFormData, setBookFormData] = useState({
+    title: "",
+    subjectId: "",
+    academicYear: "",
+    semester: "full",
+    language: "en"
+  });
+  const [bookUploadLoading, setBookUploadLoading] = useState(false);
+  const [bookUploadStatus, setBookUploadStatus] = useState("");
+  const [activeTab, setActiveTab] = useState<"lesson" | "book">("lesson");
 
   // Check if user has permission to access this page
   useEffect(() => {
@@ -126,6 +139,49 @@ export default function RagPage() {
       console.error("Upload failed:", error);
     } finally {
       setUploadLoading(false);
+    }
+  }
+
+  async function handleBookUpload() {
+    if (!bookFile || !bookFormData.title || !bookFormData.subjectId || !bookFormData.academicYear) {
+      setBookUploadStatus("Please fill in all required fields: title, subject, and academic year");
+      return;
+    }
+    
+    setBookUploadLoading(true);
+    setBookUploadStatus("Uploading and processing your curriculum book...");
+    const fd = new FormData();
+    fd.append("file", bookFile);
+    fd.append("title", bookFormData.title);
+    fd.append("subjectId", bookFormData.subjectId);
+    fd.append("academicYear", bookFormData.academicYear);
+    fd.append("semester", bookFormData.semester);
+    fd.append("language", bookFormData.language);
+    
+    try {
+      const res = await fetch("/api/curriculum/books/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setBookUploadStatus("✅ Book uploaded successfully! Processing will begin in the background. The system will create lessons and extract questions from your curriculum book.");
+        
+        // Reset form
+        setBookFile(null);
+        setBookFormData({
+          title: "",
+          subjectId: "",
+          academicYear: "",
+          semester: "full",
+          language: "en"
+        });
+      } else {
+        setBookUploadStatus(`❌ Upload failed: ${data.error}`);
+      }
+    } catch (error) {
+      setBookUploadStatus("❌ Upload failed. Please check your connection and try again.");
+      console.error("Book upload failed:", error);
+    } finally {
+      setBookUploadLoading(false);
     }
   }
 
@@ -213,13 +269,39 @@ export default function RagPage() {
             <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Upload className="h-6 w-6" />
-                Create Lesson
+                Create Content
               </CardTitle>
               <CardDescription className="text-blue-100">
-                Upload teaching materials to create structured lessons in the curriculum
+                Upload teaching materials to create structured lessons or full curriculum books
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6">
+              {/* Tab Navigation */}
+              <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setActiveTab("lesson")}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "lesson"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Single Lesson
+                </button>
+                <button
+                  onClick={() => setActiveTab("book")}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "book"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Full Book
+                </button>
+              </div>
+
+              {activeTab === "lesson" ? (
+                <div className="space-y-6">
               {/* File Upload */}
               <div className="space-y-2">
                 <Label htmlFor="file" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -395,6 +477,153 @@ export default function RagPage() {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription className="text-sm">{uploadStatus}</AlertDescription>
                 </Alert>
+              )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Book File Upload */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bookFile" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Curriculum Book
+                    </Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                      <Input
+                        id="bookFile"
+                        type="file"
+                        accept=".txt,.pdf"
+                        onChange={(e) => setBookFile(e.target.files?.[0] ?? null)}
+                        className="hidden"
+                      />
+                      <label htmlFor="bookFile" className="cursor-pointer">
+                        {bookFile ? (
+                          <div className="text-green-600">
+                            <CheckCircle className="h-8 w-8 mx-auto mb-2" />
+                            <p className="font-medium">{bookFile.name}</p>
+                            <p className="text-sm text-gray-500">Click to change</p>
+                          </div>
+                        ) : (
+                          <div className="text-gray-500">
+                            <Upload className="h-8 w-8 mx-auto mb-2" />
+                            <p className="font-medium">Click to upload curriculum book</p>
+                            <p className="text-sm">Supports .txt and .pdf files</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Book Details Form */}
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bookTitle" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Book Title *
+                      </Label>
+                      <Input
+                        id="bookTitle"
+                        value={bookFormData.title}
+                        onChange={(e) => setBookFormData({...bookFormData, title: e.target.value})}
+                        placeholder="e.g., Mathematics Grade 9"
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Subject *
+                        </Label>
+                        <Select 
+                          value={bookFormData.subjectId} 
+                          onValueChange={(value) => setBookFormData({...bookFormData, subjectId: value})}
+                          disabled={loadingSubjects}
+                        >
+                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <SelectValue placeholder={loadingSubjects ? "Loading subjects..." : "Select a subject"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subjects.map((subject) => (
+                              <SelectItem key={subject.id} value={subject.id}>
+                                {subject.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Academic Year *
+                        </Label>
+                        <Input
+                          value={bookFormData.academicYear}
+                          onChange={(e) => setBookFormData({...bookFormData, academicYear: e.target.value})}
+                          placeholder="e.g., 2024-2025"
+                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-700">Semester</Label>
+                        <Select value={bookFormData.semester} onValueChange={(value) => setBookFormData({...bookFormData, semester: value})}>
+                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="full">Full Year</SelectItem>
+                            <SelectItem value="first">First Semester</SelectItem>
+                            <SelectItem value="second">Second Semester</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-700">Language</Label>
+                        <Select value={bookFormData.language} onValueChange={(value) => setBookFormData({...bookFormData, language: value})}>
+                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="ar">Arabic</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="fr">French</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={handleBookUpload}
+                    disabled={!bookFile || !bookFormData.title || !bookFormData.subjectId || !bookFormData.academicYear || bookUploadLoading}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {bookUploadLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing Book...
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen className="h-5 w-5 mr-2" />
+                        Upload Curriculum Book
+                      </>
+                    )}
+                  </Button>
+                  
+                  {bookUploadStatus && (
+                    <Alert className={`${bookUploadStatus.includes('✅') || bookUploadStatus.includes('🎉') ? 'border-green-200 bg-green-50' : bookUploadStatus.includes('❌') ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="text-sm">{bookUploadStatus}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>

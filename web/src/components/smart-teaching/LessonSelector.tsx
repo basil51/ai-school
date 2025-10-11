@@ -11,7 +11,8 @@ import {
   ChevronRight,
   Star,
   TrendingUp,
-  Award
+  Award,
+  BookMarked
 } from 'lucide-react';
 
 interface Lesson {
@@ -28,6 +29,15 @@ interface Lesson {
   };
   hasAssessment: boolean;
   assessmentId: string | null;
+  source?: {
+    type: 'book' | 'manual';
+    bookTitle?: string;
+    bookUnit?: string;
+    academicYear?: string;
+    semester?: string;
+    pageRange?: string;
+    source?: string;
+  };
 }
 
 interface Topic {
@@ -35,6 +45,14 @@ interface Topic {
   name: string;
   description: string;
   order: number;
+  type?: 'topic' | 'book-unit';
+  bookInfo?: {
+    id: string;
+    title: string;
+    academicYear: string;
+    semester: string;
+    pageRange?: string;
+  };
   lessons: Lesson[];
 }
 
@@ -47,6 +65,16 @@ interface Subject {
     enrolledAt: string;
   };
   topics: Topic[];
+  books?: Array<{
+    id: string;
+    title: string;
+    academicYear: string;
+    semester: string;
+    pageCount?: number;
+    language: string;
+    unitCount: number;
+    totalLessons: number;
+  }>;
   progress: {
     totalLessons: number;
     completedLessons: number;
@@ -347,6 +375,14 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                         <div>
                           <h4 className="font-semibold text-gray-800">{subject.subject.name}</h4>
                           <p className="text-sm text-gray-600">{subject.subject.description}</p>
+                          {subject.books && subject.books.length > 0 && (
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-xs text-purple-600 flex items-center">
+                                <BookOpen className="w-3 h-3 mr-1" />
+                                {subject.books.length} book{subject.books.length > 1 ? 's' : ''} available
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
@@ -384,7 +420,15 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                                 ) : (
                                   <ChevronRight className="w-4 h-4 text-gray-500" />
                                 )}
-                                <h5 className="font-medium text-gray-700">{topic.name}</h5>
+                                <div className="flex items-center space-x-2">
+                                  <h5 className="font-medium text-gray-700">{topic.name}</h5>
+                                  {topic.type === 'book-unit' && topic.bookInfo && (
+                                    <span className="flex items-center text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                                      <BookOpen className="w-3 h-3 mr-1" />
+                                      {topic.bookInfo.academicYear} {topic.bookInfo.semester}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <span className="text-sm text-gray-500">
                                 {topic.lessons.length} lessons
@@ -410,7 +454,15 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                                     <div className="flex items-center space-x-3">
                                       {getStatusIcon(lesson.progress.status)}
                                       <div>
-                                        <h6 className="font-medium text-gray-800">{lesson.title}</h6>
+                                        <div className="flex items-center space-x-2">
+                                          <h6 className="font-medium text-gray-800">{lesson.title}</h6>
+                                          {lesson.source?.type === 'book' && (
+                                            <span className="flex items-center text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                                              <BookOpen className="w-3 h-3 mr-1" />
+                                              Book
+                                            </span>
+                                          )}
+                                        </div>
                                         <div className="flex items-center space-x-3 text-sm text-gray-600">
                                           <span className="flex items-center">
                                             <Clock className="w-3 h-3 mr-1" />
@@ -423,6 +475,12 @@ export default function LessonSelector({ onLessonSelect, selectedLessonId }: Les
                                             <span className="flex items-center text-blue-600">
                                               <Award className="w-3 h-3 mr-1" />
                                               Assessment
+                                            </span>
+                                          )}
+                                          {lesson.source?.type === 'book' && lesson.source.pageRange && (
+                                            <span className="flex items-center text-purple-600 text-xs">
+                                              <BookMarked className="w-3 h-3 mr-1" />
+                                              {lesson.source.pageRange}
                                             </span>
                                           )}
                                         </div>

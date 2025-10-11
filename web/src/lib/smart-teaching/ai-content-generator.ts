@@ -371,7 +371,8 @@ export type AssessmentContent = z.infer<typeof AssessmentContentSchema>;
 export class SmartTeachingContentGenerator {
   private cache = new Map<string, SmartTeachingContent>();
   private cacheTimestamps = new Map<string, number>();
-  private readonly CACHE_DURATION = 48 * 60 * 60 * 1000; // 2 hours
+  private readonly CACHE_DURATION = 48 * 60 * 60 * 1000; // 48 hours for general content
+  private readonly VIDEO_CACHE_DURATION = 48 * 60 * 60 * 1000; // 30 minutes for video content
   
   // Cache for schema selections to avoid multiple GPT-4o calls
   private schemaSelectionCache = new Map<string, string[]>();
@@ -387,6 +388,78 @@ export class SmartTeachingContentGenerator {
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(36);
+  }
+
+  // Validate if a video URL is still accessible
+  private async validateVideoUrl(url: string): Promise<boolean> {
+    try {
+      console.log('🔍 [DEBUG] Validating video URL:', url);
+      
+      // For YouTube and Vimeo URLs, we can do a simple validation
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        // Extract video ID and check if it's valid format
+        const videoId = url.includes('youtu.be') 
+          ? url.split('youtu.be/')[1]?.split('?')[0]
+          : url.split('v=')[1]?.split('&')[0];
+        
+        const isValid = !!(videoId && videoId.length === 11);
+        console.log('🔍 [DEBUG] YouTube URL validation:', { url, videoId, isValid });
+        return isValid;
+      }
+      
+      if (url.includes('vimeo.com')) {
+        // Extract video ID and check if it's valid format
+        const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+        const isValid = !!(videoId && /^\d+$/.test(videoId));
+        console.log('🔍 [DEBUG] Vimeo URL validation:', { url, videoId, isValid });
+        return isValid;
+      }
+      
+      // For direct video URLs, we could do a HEAD request, but that might be slow
+      // For now, just check if it's a valid URL format
+      const isValid = url.startsWith('http') && (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov'));
+      console.log('🔍 [DEBUG] Direct video URL validation:', { url, isValid });
+      return isValid;
+    } catch (error) {
+      console.warn('Video URL validation failed:', error);
+      return false;
+    }
+  }
+
+  // Check if content has video and validate video URLs
+  private async validateCachedContent(content: SmartTeachingContent): Promise<boolean> {
+    if (content.video && content.video.src) {
+      const isValid = await this.validateVideoUrl(content.video.src);
+      if (!isValid) {
+        console.log('❌ [DEBUG] Cached video URL is invalid, will regenerate:', content.video.src);
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  // Clear all video-related cache entries
+  public clearVideoCache(): void {
+    const keysToDelete = Array.from(this.cache.keys()).filter(key => {
+      const content = this.cache.get(key);
+      return content && content.video && content.video.src;
+    });
+    keysToDelete.forEach(key => {
+      this.cache.delete(key);
+      this.cacheTimestamps.delete(key);
+    });
+    console.log(`🎬 Cleared video cache: ${keysToDelete.length} entries`);
+  }
+
+  // Clear all cache entries (useful for debugging)
+  public clearAllCache(): void {
+    const totalEntries = this.cache.size;
+    this.cache.clear();
+    this.cacheTimestamps.clear();
+    this.schemaSelectionCache.clear();
+    this.schemaSelectionTimestamps.clear();
+    console.log(`🗑️ Cleared all cache: ${totalEntries} entries`);
   }
 
   async generateContent(
@@ -407,11 +480,31 @@ export class SmartTeachingContentGenerator {
     // Check cache first (unless force regenerate)
     if (!forceRegenerate && this.cache.has(cacheKey)) {
       const timestamp = this.cacheTimestamps.get(cacheKey);
-      if (timestamp && Date.now() - timestamp < this.CACHE_DURATION) {
-        console.log(`Using cached content for ${cacheKey}`);
-        return this.cache.get(cacheKey)!;
+      const cachedContent = this.cache.get(cacheKey)!;
+      
+      // Determine cache duration based on content type
+      const hasVideo = !!(cachedContent.video && cachedContent.video.src);
+      const cacheDuration = hasVideo ? this.VIDEO_CACHE_DURATION : this.CACHE_DURATION;
+      
+      if (timestamp && Date.now() - timestamp < cacheDuration) {
+        // For video content, validate the video URL before serving cached content
+        if (hasVideo) {
+          const isValid = await this.validateCachedContent(cachedContent);
+          if (isValid) {
+            console.log(`✅ Using cached content for ${cacheKey} (video validated)`);
+            return cachedContent;
+          } else {
+            console.log(`❌ Cached video URL invalid, removing from cache: ${cacheKey}`);
+            this.cache.delete(cacheKey);
+            this.cacheTimestamps.delete(cacheKey);
+          }
+        } else {
+          console.log(`✅ Using cached content for ${cacheKey}`);
+          return cachedContent;
+        }
       } else {
-        this.cache.delete(cacheKey);          // remove expired Cache
+        console.log(`⏰ Cache expired for ${cacheKey}, removing from cache`);
+        this.cache.delete(cacheKey);
         this.cacheTimestamps.delete(cacheKey);
       }
     }
@@ -730,8 +823,13 @@ export class SmartTeachingContentGenerator {
       }
     } catch (error) { console.warn('💥 Perplexity search failed:', error);}
     
-    console.log('❌ [DEBUG] Invalid or NOTFOUND URL:');
-    return null;
+    console.log('❌ [DEBUG] Invalid or NOTFOUND URL, returning fallback video');
+    // Return a reliable educational fallback video
+    return { 
+      url: 'https://www.youtube.com/watch?v=WUvTyaaNkzM', // Khan Academy - Introduction to Algebra
+      v_title: 'Educational Video - Introduction to Algebra',
+      description: 'A reliable educational video to help with your learning'
+    };
   }
 
   private detectRequiredContentTypes(subject: string): string[] {

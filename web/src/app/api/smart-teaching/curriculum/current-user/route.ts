@@ -43,12 +43,45 @@ export async function GET(req: NextRequest) {
                     assessments: {
                       where: { isActive: true },
                       take: 1
+                    },
+                    bookUnit: {
+                      include: {
+                        book: true
+                      }
                     }
                   },
                   orderBy: { order: 'asc' }
                 }
               },
               orderBy: { order: 'asc' }
+            },
+            books: {
+              where: { isActive: true },
+              include: {
+                units: {
+                  where: { isActive: true },
+                  include: {
+                    lessons: {
+                      where: { isActive: true },
+                      include: {
+                        progress: {
+                          where: { studentId: userId }
+                        },
+                        assessments: {
+                          where: { isActive: true },
+                          take: 1
+                        }
+                      },
+                      orderBy: { order: 'asc' }
+                    }
+                  },
+                  orderBy: { order: 'asc' }
+                }
+              },
+              orderBy: [
+                { academicYear: 'desc' },
+                { title: 'asc' }
+              ]
             }
           }
         }
@@ -86,47 +119,116 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform data for smart teaching interface
-    const smartTeachingCurriculum = enrollments.map(enrollment => ({
-      subject: {
-        id: enrollment.subject.id,
-        name: enrollment.subject.name,
-        description: enrollment.subject.description,
-        level: enrollment.subject.level,
-        enrolledAt: enrollment.startedAt
-      },
-      topics: enrollment.subject.topics.map(topic => ({
-        id: topic.id,
-        name: topic.name,
-        description: topic.description,
-        order: topic.order,
-        lessons: topic.lessons.map(lesson => ({
-          id: lesson.id,
-          title: lesson.title,
-          objectives: lesson.objectives,
-          difficulty: lesson.difficulty,
-          estimatedTime: lesson.estimatedTime,
-          order: lesson.order,
-          progress: lesson.progress[0] || {
-            status: 'not_started',
-            progressPercentage: 0,
-            timeSpent: 0
-          },
-          hasAssessment: lesson.assessments.length > 0,
-          assessmentId: lesson.assessments[0]?.id || null
-        }))
-      })),
-      progress: {
-        totalLessons: enrollment.subject.topics.reduce((sum, topic) => sum + topic.lessons.length, 0),
-        completedLessons: enrollment.subject.topics.reduce((sum, topic) => 
-          sum + topic.lessons.filter(lesson => lesson.progress[0]?.status === 'completed').length, 0
-        ),
-        totalTimeSpent: enrollment.subject.topics.reduce((sum, topic) => 
-          sum + topic.lessons.reduce((lessonSum, lesson) => 
-            lessonSum + (lesson.progress[0]?.timeSpent || 0), 0
-          ), 0
+    const smartTeachingCurriculum = enrollments.map(enrollment => {
+      // Combine regular topics and book units into a unified structure
+      const allTopics = [
+        // Regular topics
+        ...enrollment.subject.topics.map(topic => ({
+          id: topic.id,
+          name: topic.name,
+          description: topic.description,
+          order: topic.order,
+          type: 'topic' as const,
+          lessons: topic.lessons.map(lesson => ({
+            id: lesson.id,
+            title: lesson.title,
+            objectives: lesson.objectives,
+            difficulty: lesson.difficulty,
+            estimatedTime: lesson.estimatedTime,
+            order: lesson.order,
+            progress: lesson.progress[0] || {
+              status: 'not_started',
+              progressPercentage: 0,
+              timeSpent: 0
+            },
+            hasAssessment: lesson.assessments.length > 0,
+            assessmentId: lesson.assessments[0]?.id || null,
+            source: lesson.bookUnit ? {
+              type: 'book',
+              bookTitle: lesson.bookUnit.book.title,
+              bookUnit: lesson.bookUnit.title,
+              academicYear: lesson.bookUnit.book.academicYear,
+              semester: lesson.bookUnit.book.semester
+            } : {
+              type: 'manual',
+              source: 'teacher-created'
+            }
+          }))
+        })),
+        // Book units as topics
+        ...enrollment.subject.books.flatMap(book => 
+          book.units.map(unit => ({
+            id: `book-unit-${unit.id}`,
+            name: `${book.title} - ${unit.title}`,
+            description: unit.description || `Content from ${book.title}`,
+            order: unit.order,
+            type: 'book-unit' as const,
+            bookInfo: {
+              id: book.id,
+              title: book.title,
+              academicYear: book.academicYear,
+              semester: book.semester,
+              pageRange: unit.pageRange
+            },
+            lessons: unit.lessons.map(lesson => ({
+              id: lesson.id,
+              title: lesson.title,
+              objectives: lesson.objectives,
+              difficulty: lesson.difficulty,
+              estimatedTime: lesson.estimatedTime,
+              order: lesson.order,
+              progress: lesson.progress[0] || {
+                status: 'not_started',
+                progressPercentage: 0,
+                timeSpent: 0
+              },
+              hasAssessment: lesson.assessments.length > 0,
+              assessmentId: lesson.assessments[0]?.id || null,
+              source: {
+                type: 'book',
+                bookTitle: book.title,
+                bookUnit: unit.title,
+                academicYear: book.academicYear,
+                semester: book.semester,
+                pageRange: unit.pageRange
+              }
+            }))
+          }))
         )
-      }
-    }));
+      ].sort((a, b) => a.order - b.order);
+
+      return {
+        subject: {
+          id: enrollment.subject.id,
+          name: enrollment.subject.name,
+          description: enrollment.subject.description,
+          level: enrollment.subject.level,
+          enrolledAt: enrollment.startedAt
+        },
+        topics: allTopics,
+        books: enrollment.subject.books.map(book => ({
+          id: book.id,
+          title: book.title,
+          academicYear: book.academicYear,
+          semester: book.semester,
+          pageCount: book.pageCount,
+          language: book.language,
+          unitCount: book.units.length,
+          totalLessons: book.units.reduce((sum, unit) => sum + unit.lessons.length, 0)
+        })),
+        progress: {
+          totalLessons: allTopics.reduce((sum, topic) => sum + topic.lessons.length, 0),
+          completedLessons: allTopics.reduce((sum, topic) => 
+            sum + topic.lessons.filter(lesson => lesson.progress.status === 'completed').length, 0
+          ),
+          totalTimeSpent: allTopics.reduce((sum, topic) => 
+            sum + topic.lessons.reduce((lessonSum, lesson) => 
+              lessonSum + lesson.progress.timeSpent, 0
+            ), 0
+          )
+        }
+      };
+    });
 
     // Calculate overall progress
     const overallProgress = {

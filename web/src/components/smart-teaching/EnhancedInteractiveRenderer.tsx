@@ -162,7 +162,7 @@ export default function EnhancedInteractiveRenderer({
           <CardContent className="space-y-4">
             <p className="text-gray-800">{question.question}</p>
             
-            {question.options && (
+            {question.options && question.options.length > 0 ? (
               <div className="space-y-2">
                 {question.options.map((option, optionIndex) => (
                   <label key={optionIndex} className="flex items-center space-x-2 cursor-pointer">
@@ -180,13 +180,38 @@ export default function EnhancedInteractiveRenderer({
                   </label>
                 ))}
               </div>
+            ) : (
+              <div className="space-y-2">
+                <textarea
+                  value={quizAnswers[index] || ''}
+                  onChange={(e) => setQuizAnswers(prev => ({
+                    ...prev,
+                    [index]: e.target.value
+                  }))}
+                  placeholder="Enter your answer here..."
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={4}
+                />
+                <p className="text-sm text-gray-500">
+                  Type your answer in the text area above
+                </p>
+              </div>
             )}
             
             {showResults && (
-              <div className="mt-4 p-3 rounded-lg border-l-4 border-green-400 bg-green-50">
-                <p className="text-green-800 text-sm">
-                  <strong>Explanation:</strong> {question.explanation}
-                </p>
+              <div className="mt-4 space-y-3">
+                {quizAnswers[index] && (
+                  <div className="p-3 rounded-lg border-l-4 border-blue-400 bg-blue-50">
+                    <p className="text-blue-800 text-sm">
+                      <strong>Your Answer:</strong> {quizAnswers[index]}
+                    </p>
+                  </div>
+                )}
+                <div className="p-3 rounded-lg border-l-4 border-green-400 bg-green-50">
+                  <p className="text-green-800 text-sm">
+                    <strong>Explanation:</strong> {question.explanation}
+                  </p>
+                </div>
               </div>
             )}
           </CardContent>
@@ -200,10 +225,17 @@ export default function EnhancedInteractiveRenderer({
             handleModeComplete('interactive');
           }}
           className="bg-blue-600 hover:bg-blue-700"
+          disabled={Object.keys(quizAnswers).length === 0}
         >
           Check Answers
         </Button>
       </div>
+      
+      {Object.keys(quizAnswers).length > 0 && (
+        <div className="text-center text-sm text-gray-600">
+          {Object.keys(quizAnswers).length} of {content.questions?.length || 0} questions answered
+        </div>
+      )}
     </div>
   );
 
@@ -346,7 +378,7 @@ export default function EnhancedInteractiveRenderer({
           </div>
           {getScore().total === shapes.length && getScore().correct === shapes.length && (
             <div className="text-green-600 font-semibold">
-              🎉 Perfect! You've sorted all shapes correctly!
+              🎉 Perfect! You&#39;ve sorted all shapes correctly!
             </div>
           )}
           <Button 

@@ -1,15 +1,61 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 //import { Button } from '@/components/ui/button';
-import { School, Users, BarChart3, Settings, Shield, Globe, Database, Activity } from 'lucide-react';
+import { School, Users, BarChart3, Settings, Shield, Globe, Database, Activity, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+
+interface DashboardStats {
+  totalOrganizations: {
+    value: string;
+    change: string;
+    trend: string;
+  };
+  totalUsers: {
+    value: string;
+    change: string;
+    trend: string;
+  };
+  activeSessions: {
+    value: string;
+    change: string;
+    trend: string;
+  };
+  systemHealth: {
+    value: string;
+    change: string;
+    trend: string;
+  };
+}
 
 export default function SuperAdminDashboard() {
   const params = useParams();
   const locale = params.locale as string;
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/super-admin/dashboard-stats');
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard stats');
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const quickActions = [
     {
@@ -42,36 +88,40 @@ export default function SuperAdminDashboard() {
     }
   ];
 
-  const systemStats = [
+  const systemStats = stats ? [
     {
       title: 'Total Organizations',
-      value: '24',
+      value: stats.totalOrganizations.value,
       icon: School,
       gradient: 'from-purple-500 to-pink-500',
-      change: '+2 this month'
+      change: stats.totalOrganizations.change,
+      trend: stats.totalOrganizations.trend
     },
     {
       title: 'Total Users',
-      value: '1,247',
+      value: stats.totalUsers.value,
       icon: Users,
       gradient: 'from-green-500 to-emerald-500',
-      change: '+89 this week'
+      change: stats.totalUsers.change,
+      trend: stats.totalUsers.trend
     },
     {
       title: 'Active Sessions',
-      value: '342',
+      value: stats.activeSessions.value,
       icon: Activity,
       gradient: 'from-blue-500 to-cyan-500',
-      change: '+12 today'
+      change: stats.activeSessions.change,
+      trend: stats.activeSessions.trend
     },
     {
       title: 'System Health',
-      value: '99.9%',
+      value: stats.systemHealth.value,
       icon: Shield,
       gradient: 'from-emerald-500 to-green-500',
-      change: 'Excellent'
+      change: stats.systemHealth.change,
+      trend: stats.systemHealth.trend
     }
-  ];
+  ] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-6">
@@ -88,22 +138,67 @@ export default function SuperAdminDashboard() {
 
         {/* System Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {systemStats.map((stat, index) => (
-            <Card key={index} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-xs text-green-600 mt-1">{stat.change}</p>
+          {loading ? (
+            // Loading state
+            Array.from({ length: 4 }).map((_, index) => (
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-gray-200 animate-pulse">
+                      <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                    </div>
                   </div>
-                  <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.gradient}`}>
-                    <stat.icon className="w-6 h-6 text-white" />
+                </CardContent>
+              </Card>
+            ))
+          ) : error ? (
+            // Error state
+            <div className="col-span-full">
+              <Card className="bg-red-50 border-red-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Shield className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-red-800">Error Loading Dashboard</p>
+                      <p className="text-sm text-red-600">{error}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            // Success state with real data
+            systemStats.map((stat, index) => (
+              <Card key={index} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
+                      <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                      <p className={`text-xs mt-1 ${
+                        stat.trend === 'up' ? 'text-green-600' : 
+                        stat.trend === 'excellent' ? 'text-green-600' : 
+                        stat.trend === 'good' ? 'text-blue-600' : 
+                        'text-gray-600'
+                      }`}>
+                        {stat.change}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.gradient}`}>
+                      <stat.icon className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Quick Actions Grid */}

@@ -286,19 +286,24 @@ const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
 
   // Validate and get working video URL
   const getWorkingVideoUrl = (originalUrl: string): string => {
+    console.log('🔍 [DEBUG] Validating video URL:', originalUrl);
+    
     // If it's already a valid YouTube or Vimeo URL, use it as-is
     if (isYouTubeUrl(originalUrl) || isVimeoUrl(originalUrl)) {
+      console.log('✅ [DEBUG] Valid video URL detected:', originalUrl);
       return originalUrl;
     }
   
     // If it's a direct video URL, use it
     if (originalUrl.startsWith('http') && (originalUrl.includes('.mp4') || originalUrl.includes('.webm') || originalUrl.includes('.mov'))) {
+      console.log('✅ [DEBUG] Valid direct video URL detected:', originalUrl);
       return originalUrl;
     }
   
-    // Simple fallback - use a known working educational video
-    console.warn('=====> Invalid video URL, using fallback:', originalUrl);
-    return 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // Rick Roll as a test (replace with your preferred fallback)
+    // Better fallback - use a known working educational video
+    console.warn('❌ [DEBUG] Invalid video URL, using educational fallback:', originalUrl);
+    // Use a reliable educational video that won't redirect
+    return 'https://www.youtube.com/watch?v=WUvTyaaNkzM'; // Khan Academy - Introduction to Algebra
   };
 
   // Get the working video URL

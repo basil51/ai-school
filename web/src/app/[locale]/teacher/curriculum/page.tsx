@@ -18,8 +18,8 @@ import {
   //CheckCircle,
   //AlertCircle,
   Loader2,
-  //Edit,
-  //Trash2,
+  Edit,
+  Trash2,
   Eye,
   BarChart3,
   Target
@@ -51,7 +51,7 @@ interface Topic {
 interface Lesson {
   id: string;
   title: string;
-  content: string;
+  content?: string;
   objectives: string[];
   difficulty: string;
   estimatedTime: number;
@@ -67,6 +67,11 @@ export default function TeacherCurriculumPage() {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [showAssessmentManager, setShowAssessmentManager] = useState(false);
+  const [showLessonEditor, setShowLessonEditor] = useState(false);
+  const [lessonEditorLoading, setLessonEditorLoading] = useState(false);
+  const [lessonEditor, setLessonEditor] = useState<{ id: string; title: string; content: string; estimatedTime: number; difficulty: string } | null>(null);
+  const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
+  const [subjectFilter, setSubjectFilter] = useState<string>("__all__");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -88,9 +93,12 @@ export default function TeacherCurriculumPage() {
     fetchSubjects();
   }, []);
 
-  const fetchSubjects = async () => {
+  const fetchSubjects = async (subjectId?: string) => {
     try {
-      const response = await fetch('/api/curriculum/generate');
+      const qs = new URLSearchParams();
+      qs.set('includeContent', 'false');
+      if (subjectId) qs.set('subjectId', subjectId);
+      const response = await fetch(`/api/curriculum/manage?${qs.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setSubjects(data.subjects || []);
@@ -100,6 +108,98 @@ export default function TeacherCurriculumPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openLessonEditor = async (lessonId: string) => {
+    try {
+      setLessonEditorLoading(true);
+      const res = await fetch(`/api/curriculum/lessons/${lessonId}`);
+      if (!res.ok) throw new Error('Failed to load lesson');
+      const data = await res.json();
+      const l = data.lesson;
+      setLessonEditor({ id: l.id, title: l.title, content: l.content || '', estimatedTime: l.estimatedTime, difficulty: l.difficulty });
+      setShowLessonEditor(true);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to load lesson');
+    } finally {
+      setLessonEditorLoading(false);
+    }
+  };
+
+  const saveLessonEditor = async () => {
+    if (!lessonEditor) return;
+    try {
+      setLessonEditorLoading(true);
+      const res = await fetch(`/api/curriculum/lessons/${lessonEditor.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: lessonEditor.content })
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setShowLessonEditor(false);
+      setLessonEditor(null);
+      // Refresh subjects to reflect any previews/counts
+      fetchSubjects();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save lesson');
+    } finally {
+      setLessonEditorLoading(false);
+    }
+  };
+
+  const deleteLesson = async (lessonId: string) => {
+    if (!confirm('Are you sure you want to delete this lesson? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`/api/curriculum/lessons/${lessonId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete lesson');
+        return;
+      }
+      // Optimistic refresh
+      fetchSubjects();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete lesson');
+    }
+  };
+
+  const moveLesson = async (topicId: string, lessonId: string, direction: 'up' | 'down') => {
+    // Find topic and lessons
+    const subjectIndex = subjects.findIndex(s => s.topics?.some(t => t.id === topicId));
+    if (subjectIndex === -1) return;
+    const subject = subjects[subjectIndex];
+    const topic = subject.topics?.find(t => t.id === topicId);
+    if (!topic || !topic.lessons) return;
+    const idx = topic.lessons.findIndex(l => l.id === lessonId);
+    if (idx === -1) return;
+    const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= topic.lessons.length) return;
+    // Compute new orders
+    const l1 = topic.lessons[idx];
+    const l2 = topic.lessons[swapWith];
+    const payload = [
+      { id: l1.id, order: l2.order },
+      { id: l2.id, order: l1.order }
+    ];
+    try {
+      const res = await fetch('/api/curriculum/lessons/reorder', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessons: payload })
+      });
+      if (!res.ok) throw new Error('Failed to reorder');
+      fetchSubjects();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to reorder lessons');
+    }
+  };
+
+  const toggleLessonPreview = (lessonId: string) => {
+    setExpandedLessons(prev => ({ ...prev, [lessonId]: !prev[lessonId] }));
   };
 
   const createSubject = async (e: React.FormEvent) => {
@@ -210,6 +310,43 @@ export default function TeacherCurriculumPage() {
           <p className="text-gray-600 mt-2">
             {dict?.teacher?.curriculumDescription || "Create and manage subjects and topics for your students"}
           </p>
+          <div className="mt-4 flex flex-wrap gap-3 items-center">
+            <div className="w-72">
+              <Label className="mb-1 block">Subject Filter</Label>
+              <Select value={subjectFilter} onValueChange={(v) => setSubjectFilter(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All subjects" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All subjects</SelectItem>
+                  {subjects.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setLoading(true);
+                fetchSubjects(subjectFilter === "__all__" ? undefined : subjectFilter);
+              }}
+            >
+              Apply
+            </Button>
+            {subjectFilter && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSubjectFilter("__all__");
+                  setLoading(true);
+                  fetchSubjects();
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -481,7 +618,7 @@ export default function TeacherCurriculumPage() {
                             <span className="text-gray-600">
                               {dict?.teacher?.enrolledStudents || "Enrolled Students"}
                             </span>
-                            <span className="font-medium">{subject._count.enrollments}</span>
+                            <span className="font-medium">{(subject as any)._count?.enrollments ?? 0}</span>
                           </div>
                         </div>
 
@@ -547,7 +684,7 @@ export default function TeacherCurriculumPage() {
                       <div className="text-sm text-gray-600">{dict?.teacher?.lessons || "Lessons"}</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">{selectedSubject._count.enrollments}</div>
+                      <div className="text-2xl font-bold text-purple-600">{(selectedSubject as any)._count?.enrollments ?? 0}</div>
                       <div className="text-sm text-gray-600">{dict?.teacher?.students || "Students"}</div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
@@ -578,33 +715,88 @@ export default function TeacherCurriculumPage() {
                             </div>
                             
                             <div className="space-y-2">
-                              {topic.lessons?.map((lesson) => (
-                                <div key={lesson.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span className="text-sm font-medium">{lesson.title}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                      <Clock className="h-3 w-3" />
-                                      <span>{lesson.estimatedTime} {dict?.teacher?.min || "min"}</span>
-                                      <Badge variant="outline" className="text-xs">
-                                        {lesson.difficulty}
-                                      </Badge>
+                              {topic.lessons?.map((lesson, i) => (
+                                <div key={lesson.id} className="p-3 bg-gray-50 rounded">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                      <span className="text-sm font-medium">{lesson.title}</span>
                                     </div>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedLesson(lesson);
-                                        setShowAssessmentManager(true);
-                                      }}
-                                      className="ml-2"
-                                    >
-                                      <Target className="h-3 w-3 mr-1" />
-                                      Assessments
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                      {((lesson as any).source?.type === 'book') ? (
+                                        <Badge variant="outline" className="text-xs">Book</Badge>
+                                      ) : (
+                                        <Badge variant="outline" className="text-xs">Manual</Badge>
+                                      )}
+                                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <Clock className="h-3 w-3" />
+                                        <span>{lesson.estimatedTime} {dict?.teacher?.min || "min"}</span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {lesson.difficulty}
+                                        </Badge>
+                                      </div>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => toggleLessonPreview(lesson.id)}
+                                      >
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        {expandedLessons[lesson.id] ? 'Hide' : 'Preview'}
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => openLessonEditor(lesson.id)}
+                                      >
+                                        <Edit className="h-3 w-3 mr-1" />
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => deleteLesson(lesson.id)}
+                                      >
+                                        <Trash2 className="h-3 w-3 mr-1" />
+                                        Delete
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedLesson(lesson);
+                                          setShowAssessmentManager(true);
+                                        }}
+                                      >
+                                        <Target className="h-3 w-3 mr-1" />
+                                        Assessments
+                                      </Button>
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="ghost" size="sm" disabled={i === 0} onClick={() => moveLesson(topic.id, lesson.id, 'up')}>↑</Button>
+                                        <Button variant="ghost" size="sm" disabled={i === (topic.lessons!.length - 1)} onClick={() => moveLesson(topic.id, lesson.id, 'down')}>↓</Button>
+                                      </div>
+                                    </div>
                                   </div>
+                                  {expandedLessons[lesson.id] && (
+                                    <div className="mt-3 text-sm text-gray-700 bg-white border rounded p-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="text-xs text-gray-500">
+                                          {((lesson as any).source?.type === 'book') && (
+                                            <span>
+                                              {(lesson as any).source?.bookTitle} • {(lesson as any).source?.bookUnit}
+                                              {(lesson as any).source?.pageRange ? ` • ${((lesson as any).source?.pageRange)}` : ''}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="whitespace-pre-wrap">
+                                        {((lesson as any).contentPreview) ? (
+                                          <>{(lesson as any).contentPreview}</>
+                                        ) : (
+                                          <span className="text-gray-400">No preview available.</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -646,6 +838,38 @@ export default function TeacherCurriculumPage() {
                   // Refresh data if needed
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lesson Editor Modal */}
+      {showLessonEditor && lessonEditor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold">Edit Lesson</h2>
+                  <p className="text-gray-600">{lessonEditor.title}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => { setShowLessonEditor(false); setLessonEditor(null); }}>Close</Button>
+                  <Button onClick={saveLessonEditor} disabled={lessonEditorLoading}>
+                    {lessonEditorLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>) : 'Save'}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label>Content</Label>
+                  <Textarea
+                    rows={14}
+                    value={lessonEditor.content}
+                    onChange={(e) => setLessonEditor(prev => prev ? { ...prev, content: e.target.value } : prev)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
