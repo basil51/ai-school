@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { Queue, Job } from "bullmq";
 import IORedis from "ioredis";
 
-const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
-const queue = new Queue("rag_ingest", { connection });
+let ingestQueue: Queue | null = null;
+
+function getIngestQueue(): Queue {
+  if (!ingestQueue) {
+    const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+    });
+    ingestQueue = new Queue("rag_ingest", { connection });
+  }
+  return ingestQueue;
+}
 
 export async function GET(req: NextRequest) {
+  const queue = getIngestQueue();
   try {
     const jobId = req.nextUrl.searchParams.get("jobId");
 

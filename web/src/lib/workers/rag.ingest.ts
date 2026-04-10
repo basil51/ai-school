@@ -4,7 +4,9 @@ import { PrismaClient } from "@prisma/client";
 import { chunkText } from "@/lib/rag/chunk";
 import { embedTexts } from "@/lib/rag/embed";
 
-const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
+const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", {
+  maxRetriesPerRequest: null,
+});
 const prisma = new PrismaClient();
 
 export const ingestWorker = new Worker(

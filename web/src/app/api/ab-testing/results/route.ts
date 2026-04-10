@@ -103,24 +103,24 @@ export async function POST(request: NextRequest) {
       if (participantCount === 0) continue;
 
       // Calculate basic metrics
-      const totalInteractions = participants.reduce((sum, p) => sum + p.interactions.length, 0);
+      const totalInteractions = participants.reduce((sum: number, p: any) => sum + p.interactions.length, 0);
       const avgInteractionsPerParticipant = totalInteractions / participantCount;
 
       // Calculate completion rates
-      const lessonCompletions = participants.reduce((sum, p) => {
-        return sum + p.interactions.filter(i => i.interactionType === 'lesson_complete').length;
+      const lessonCompletions = participants.reduce((sum: number, p: any) => {
+        return sum + p.interactions.filter((i: any) => i.interactionType === 'lesson_complete').length;
       }, 0);
       const completionRate = lessonCompletions / participantCount;
 
       // Calculate engagement metrics
-      const totalDuration = participants.reduce((sum, p) => {
-        return sum + p.interactions.reduce((s, i) => s + (i.duration || 0), 0);
+      const totalDuration = participants.reduce((sum: number, p: any) => {
+        return sum + p.interactions.reduce((s: number, i: any) => s + (i.duration || 0), 0);
       }, 0);
       const avgSessionDuration = totalDuration / participantCount;
 
       // Calculate success metrics
-      const successfulInteractions = participants.reduce((sum, p) => {
-        return sum + p.interactions.filter(i => i.outcome === 'success').length;
+      const successfulInteractions = participants.reduce((sum: number, p: any) => {
+        return sum + p.interactions.filter((i: any) => i.outcome === 'success').length;
       }, 0);
       const successRate = totalInteractions > 0 ? successfulInteractions / totalInteractions : 0;
 
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         };
 
         // Calculate statistical significance (simplified)
-        const controlVariant = experiment.variants.find(v => v.isControl);
+        const controlVariant = experiment.variants.find((v: any) => v.isControl);
         let statisticalSignificance = null;
         let pValue = null;
         let effectSize = null;
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
         if (controlVariant && controlVariant.id !== variant.id) {
           const controlParticipants = controlVariant.participants;
           const controlValue = controlParticipants.length > 0 ? 
-            controlParticipants.reduce((sum, p) => sum + p.interactions.length, 0) / controlParticipants.length : 0;
+            controlParticipants.reduce((sum: number, p: any) => sum + p.interactions.length, 0) / controlParticipants.length : 0;
           
           // Simplified t-test calculation
           const pooledStd = Math.sqrt((metric.value * (1 - metric.value) + controlValue * (1 - controlValue)) / 2);

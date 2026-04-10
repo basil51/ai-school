@@ -53,9 +53,9 @@ function hasRoleAccess(userRole: string, pathname: string): boolean {
   return allowedRoutes.some(route => pathname.includes(route));
 }
 
-// Combine auth middleware with tenant middleware and locale handling
+// Combine auth proxy with tenant middleware and locale handling
 export default withAuth(
-  async function middleware(request: NextRequest) {
+  async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const token = (request as any).nextauth?.token;
     

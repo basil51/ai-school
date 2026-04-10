@@ -1,4 +1,5 @@
-import { PrismaClient, Role, OrganizationTier, SubjectLevel, DifficultyLevel, AssessmentType, QuestionType, ProgressStatus, AttendanceStatus, PerformancePeriod, PathwayType, InterventionType, EmailFrequency, ReportFrequency, ReportFormat, MessageType, GuardianRelationshipStatus, EmailStatus, FailureType, PaceLevel } from '@prisma/client';
+/// <reference types="node" />
+import { PrismaClient, Role, User, Lesson, Assessment, GradeCategory, Question, OrganizationTier, SubjectLevel, DifficultyLevel, AssessmentType, QuestionType, ProgressStatus, AttendanceStatus, PerformancePeriod, PathwayType, InterventionType, EmailFrequency, ReportFrequency, ReportFormat, MessageType, GuardianRelationshipStatus, EmailStatus, FailureType, PaceLevel } from '@prisma/client';
 import argon2 from 'argon2';
 
 const prisma = new PrismaClient();
@@ -44,7 +45,7 @@ async function main() {
     { email: "student3@example.com", role: Role.student, name: "Student Alex", pass: "study123", orgId: defaultOrg.id },
   ];
 
-  const createdUsers = [];
+  const createdUsers: User[] = [];
   for (const u of users) {
     const hash = await argon2.hash(u.pass, { type: argon2.argon2id });
     const user = await prisma.user.upsert({
@@ -363,7 +364,7 @@ Key concepts:
     }
   ];
 
-  const createdLessons = [];
+  const createdLessons: Lesson[] = [];
   for (const lessonData of lessons) {
     const lesson = await prisma.lesson.upsert({
       where: {
@@ -457,7 +458,7 @@ Key concepts:
   console.log('✅ Created student profiles');
 
   // Create assessments
-  const assessments = [];
+  const assessments: Assessment[] = [];
   for (const lesson of createdLessons) {
     // Check if assessment already exists
     const existingAssessment = await prisma.assessment.findFirst({
@@ -467,7 +468,7 @@ Key concepts:
       }
     });
 
-    let assessment;
+    let assessment: Assessment;
     if (existingAssessment) {
       assessment = existingAssessment;
     } else {
@@ -518,7 +519,7 @@ Key concepts:
         }
       });
 
-      let question;
+      let question: Question;
       if (existingQuestion) {
         question = existingQuestion;
       } else {
@@ -751,7 +752,7 @@ Key concepts:
     { name: 'Projects', description: 'Long-term projects', weight: 0.1, color: '#8b5cf6' }
   ];
 
-  const createdGradeCategories = [];
+  const createdGradeCategories: GradeCategory[] = [];
   for (const categoryData of gradeCategories) {
     const category = await prisma.gradeCategory.upsert({
       where: {

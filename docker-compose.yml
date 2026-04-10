@@ -1,0 +1,139 @@
+# EduVibe / AI School — Postgres (pgvector), Redis, Next.js web, BullMQ worker, Traefik labels
+#
+# Prerequisites:
+#   - External Docker network that Traefik uses (default name: traefik). Create if needed:
+#       docker network create traefik
+#   - DNS: eduvibe.sparkco.localhost → host running Traefik (often 127.0.0.1 with *.localhost)
+#
+# Copy docker/env.example → .env next to this file, set secrets, then:
+#   docker compose --env-file .env up -d --build
+#
+# Demo users: `db_seed` runs once per `up` (migrate + pnpm db:seed) before web starts.
+# To seed manually instead: docker compose run --rm worker pnpm db:seed
+#
+# If web restarts with P3009 after an old phase19 failure, remove the stale row (phase19 was reordered to run after User exists):
+#   docker compose exec postgres psql -U eduvibe -d ai_school -c "DELETE FROM \"_prisma_migrations\" WHERE migration_name = '20250101000000_phase19_advanced_features';"
+#   docker compose up -d web
+# Or wipe the DB volume: docker compose down -v && docker compose up -d --build
+
+name: eduvibe
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: eduvibe_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eduvibe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eduvibe}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_school}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eduvibe} -d ${POSTGRES_DB:-ai_school}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: eduvibe_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internal
+
+  # One-shot: Prisma migrate + demo users (upserts). Exits 0; web waits on first boot.
+  db_seed:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: worker
+    container_name: eduvibe_db_seed
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eduvibe}:${POSTGRES_PASSWORD:-eduvibe}@postgres:5432/${POSTGRES_DB:-ai_school}?schema=public
+    command: ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm db:seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: web
+    container_name: eduvibe_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eduvibe}:${POSTGRES_PASSWORD:-eduvibe}@postgres:5432/${POSTGRES_DB:-ai_school}?schema=public
+      REDIS_URL: redis://redis:6379
+      SKIP_DB_MIGRATE: ${SKIP_DB_MIGRATE:-false}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://eduvibe.sparkco.localhost}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in .env}
+      # Pass through any API keys your app needs (OpenAI, Resend, etc.)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db_seed:
+        condition: service_completed_successfully
+    networks:
+      internal: {}
+      traefik:
+        aliases:
+          - web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - "traefik.http.routers.eduvibe.rule=Host(`${EDUVIBE_HOST:-eduvibe.sparkco.localhost}`)"
+      - traefik.http.routers.eduvibe.entrypoints=${TRAEFIK_ENTRYPOINT:-web}
+      - traefik.http.services.eduvibe.loadbalancer.server.port=3000
+
+  worker:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: worker
+    container_name: eduvibe_worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eduvibe}:${POSTGRES_PASSWORD:-eduvibe}@postgres:5432/${POSTGRES_DB:-ai_school}?schema=public
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  internal:
+    driver: bridge
+  traefik:
+    name: ${TRAEFIK_NETWORK:-traefik}
+    external: true

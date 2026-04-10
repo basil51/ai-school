@@ -4,7 +4,8 @@ export async function parsePDF(buffer: Buffer, language: string = 'en'): Promise
     // Dynamic import of CommonJS entry to avoid ESM worker import issues in Next.js
     const { createRequire } = await import('module');
     const requireCjs = createRequire(import.meta.url);
-    const pdf = requireCjs('pdf-parse/dist/cjs/index.cjs');
+    const pdfModule = requireCjs('pdf-parse');
+    const pdfParse = typeof pdfModule === 'function' ? pdfModule : pdfModule.default;
     
     // Try multiple configurations for better compatibility
     let pdfData;
@@ -12,7 +13,7 @@ export async function parsePDF(buffer: Buffer, language: string = 'en'): Promise
     
     // Configuration 1: Language-specific settings
     try {
-      pdfData = await pdf.default(buffer, {
+      pdfData = await pdfParse(buffer, {
         max: 0, // No page limit
         worker: false,
         normalizeWhitespace: true,
@@ -35,7 +36,7 @@ export async function parsePDF(buffer: Buffer, language: string = 'en'): Promise
     
     // Configuration 2: Basic settings
     try {
-      pdfData = await pdf.default(buffer, {
+      pdfData = await pdfParse(buffer, {
         max: 0,
         worker: false,
         normalizeWhitespace: false
@@ -56,7 +57,7 @@ export async function parsePDF(buffer: Buffer, language: string = 'en'): Promise
     
     // Configuration 3: Minimal settings
     try {
-      pdfData = await pdf.default(buffer, {
+      pdfData = await pdfParse(buffer, {
         max: 0,
         worker: false
       });
@@ -188,12 +189,13 @@ export async function parsePDFAlternative(buffer: Buffer): Promise<{ text: strin
     const requireCjs = createRequire(import.meta.url);
     
     // Try with different configurations
-    const pdf = requireCjs('pdf-parse/dist/cjs/index.cjs');
+    const pdfModule = requireCjs('pdf-parse');
+    const pdfParse = typeof pdfModule === 'function' ? pdfModule : pdfModule.default;
     
     // Try with minimal configuration first
     let pdfData;
     try {
-      pdfData = await pdf.default(buffer, {
+      pdfData = await pdfParse(buffer, {
         max: 0,
         worker: false,
         normalizeWhitespace: false,
@@ -202,7 +204,7 @@ export async function parsePDFAlternative(buffer: Buffer): Promise<{ text: strin
     } catch (error) {
       console.log('Trying alternative PDF parsing configuration...');
       // Try with even more basic configuration
-      pdfData = await pdf.default(buffer, {
+      pdfData = await pdfParse(buffer, {
         max: 0,
         worker: false
       });

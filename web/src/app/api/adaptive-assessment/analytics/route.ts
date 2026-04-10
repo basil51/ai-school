@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Aggregate analytics by metric type
-    const aggregatedAnalytics = analytics.reduce((acc: any, analytic) => {
+    const aggregatedAnalytics = analytics.reduce((acc: any, analytic: (typeof analytics)[number]) => {
       const key = analytic.metricType;
       if (!acc[key]) {
         acc[key] = {
@@ -127,9 +127,13 @@ export async function GET(request: NextRequest) {
         learningGaps,
         predictions,
         summary: {
-          totalAssessments: new Set(analytics.map(a => a.adaptiveAssessmentId)).size,
+          totalAssessments: new Set(
+            analytics.map((a: (typeof analytics)[number]) => a.adaptiveAssessmentId)
+          ).size,
           totalGaps: learningGaps.length,
-          unresolvedGaps: learningGaps.filter(g => !g.isResolved).length,
+          unresolvedGaps: learningGaps.filter(
+            (g: (typeof learningGaps)[number]) => !g.isResolved
+          ).length,
           totalPredictions: predictions.length,
           averageAccuracy: aggregatedAnalytics.RETENTION_RATE?.average || 0,
           averageVelocity: aggregatedAnalytics.LEARNING_VELOCITY?.average || 0,

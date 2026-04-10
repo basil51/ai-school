@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 
+/** 32-byte key for AES-256 from an arbitrary secret string. */
+function deriveAes256Key(secret: string): Buffer {
+  return crypto.createHash("sha256").update(secret, "utf8").digest();
+}
+
 export interface SecurityConfig {
   enableRateLimiting: boolean;
   enableInputValidation: boolean;
@@ -106,12 +111,13 @@ export class ProductionHardeningEngine {
 
     const encryptionKey = key || process.env.ENCRYPTION_KEY || 'default-key';
     const algorithm = 'aes-256-cbc';
+    const keyBuf = deriveAes256Key(encryptionKey);
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher(algorithm, encryptionKey);
-    
+    const cipher = crypto.createCipheriv(algorithm, keyBuf, iv);
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     return iv.toString('hex') + ':' + encrypted;
   }
 
@@ -123,14 +129,18 @@ export class ProductionHardeningEngine {
 
     const encryptionKey = key || process.env.ENCRYPTION_KEY || 'default-key';
     const algorithm = 'aes-256-cbc';
+    const keyBuf = deriveAes256Key(encryptionKey);
     const parts = encryptedData.split(':');
-    //const iv = Buffer.from(parts[0], 'hex');
+    if (parts.length !== 2) {
+      throw new Error('Invalid encrypted payload format');
+    }
+    const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
-    
-    const decipher = crypto.createDecipher(algorithm, encryptionKey);
+
+    const decipher = crypto.createDecipheriv(algorithm, keyBuf, iv);
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 

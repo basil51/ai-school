@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     // Check subject filter
     if (targetAudience.subjects) {
-      const userSubjects = user.studentEnrollments.map(e => e.subject.name);
+      const userSubjects = user.studentEnrollments.map((e: any) => e.subject.name);
       const hasMatchingSubject = targetAudience.subjects.some((subject: string) => 
         userSubjects.includes(subject)
       );
